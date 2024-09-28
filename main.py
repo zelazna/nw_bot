@@ -38,7 +38,7 @@ class Widget(QWidget):
         for i in ("", "Q", "E", "R", "T", "A", "ESC", "SPACE"):
             self.keys.addItem(str(i))
 
-        self.middle_layout.addWidget(QLabel("Selectionne"))
+        self.middle_layout.addWidget(QLabel("Selection"))
         self.middle_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # Right
@@ -56,6 +56,7 @@ class Widget(QWidget):
         # Main Layout
         self.v_layout = QVBoxLayout(self)
         self.button_layout = QHBoxLayout()
+        self.button_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.main_layout = QHBoxLayout()
         self.main_layout.addLayout(self.left_layout, 1)
         self.main_layout.addLayout(self.middle_layout, 1)
@@ -63,8 +64,8 @@ class Widget(QWidget):
         self.start_button = QPushButton("Depart")
         self.end_button = QPushButton("Arret")
         self.bot_label = QLabel("NW BOT")
-        self.bot_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.v_layout.addWidget(self.bot_label, 1)
+        self.bot_label.setObjectName('appTitle')
+        self.v_layout.addWidget(self.bot_label)
         self.button_layout.addWidget(self.start_button)
         self.button_layout.addWidget(self.end_button)
         self.v_layout.addLayout(self.main_layout, 8)
@@ -121,6 +122,10 @@ if __name__ == "__main__":
     window = MainWindow(widget)
     window.resize(800, 600)
     window.show()
+
+    with open("style.qss", "r") as f:
+        _style = f.read()
+        app.setStyleSheet(_style)
 
     # Execute application
     sys.exit(app.exec())
