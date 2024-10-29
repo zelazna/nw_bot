@@ -22,6 +22,22 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 
+
+
+style = '''
+QPushButton {
+    padding: 5px;
+    min-width: 10em;
+}
+
+QLabel#appTitle {
+    qproperty-alignment: AlignCenter;
+    font: bold 14px;
+    font-size: 36px;
+    margin: 20px;
+}
+'''
+
 class Widget(QWidget):
     def __init__(self):
         super().__init__()
@@ -144,10 +160,7 @@ if __name__ == "__main__":
     widget = Widget()
     # QMainWindow using QWidget as central widget
     window = MainWindow(widget)
-
-    with open("style.qss", "r") as f:
-        _style = f.read()
-        app.setStyleSheet(_style)
+    app.setStyleSheet(style)
 
     # Execute application
     sys.exit(app.exec())
