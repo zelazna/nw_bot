@@ -13,11 +13,20 @@ from PySide6.QtWidgets import (
     QLabel,
 )
 
+from core.control import run, KEYMAP
+from core.worker import Worker
+import logging
+import itertools
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
+
+
 class Widget(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.data = {"keys": []}
+        self.registered_keys = []
 
         # Left
         self.left_layout = QVBoxLayout()
@@ -35,7 +44,7 @@ class Widget(QWidget):
         self.middle_layout.addWidget(QLabel("Touches"))
         self.middle_layout.addWidget(self.keys)
 
-        for i in ("", "Q", "E", "R", "T", "A", "ESC", "SPACE"):
+        for i in itertools.chain("", KEYMAP.keys()):
             self.keys.addItem(str(i))
 
         self.middle_layout.addWidget(QLabel("Selection"))
@@ -47,9 +56,9 @@ class Widget(QWidget):
         self.interval.setClearButtonEnabled(1)
         self.limit = QLineEdit()
         self.limit.setClearButtonEnabled(1)
-        self.right_layout.addWidget(QLabel("Intervale ( en m )"))
+        self.right_layout.addWidget(QLabel("Intervale entre les touches (en s)"))
         self.right_layout.addWidget(self.interval)
-        self.right_layout.addWidget(QLabel("Limite de temps ( en m )"))
+        self.right_layout.addWidget(QLabel("Limite de temps (en m)"))
         self.right_layout.addWidget(self.limit)
         self.right_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
@@ -64,7 +73,7 @@ class Widget(QWidget):
         self.start_button = QPushButton("Depart")
         self.end_button = QPushButton("Arret")
         self.bot_label = QLabel("NW BOT")
-        self.bot_label.setObjectName('appTitle')
+        self.bot_label.setObjectName("appTitle")
         self.v_layout.addWidget(self.bot_label)
         self.button_layout.addWidget(self.start_button)
         self.button_layout.addWidget(self.end_button)
@@ -73,36 +82,49 @@ class Widget(QWidget):
 
         # Signals and Slots
         self.keys.currentTextChanged.connect(self.add_key)
-        self.window_number.currentTextChanged.connect(self.set_win_num)
         self.start_button.clicked.connect(self.start_bot)
         self.end_button.clicked.connect(self.stop_bot)
 
     @Slot()
     def add_key(self, key):
-        self.data["keys"].append(key)
+        self.registered_keys.append(key)
         b = QPushButton(key)
         b.clicked.connect(
-            functools.partial(self.remove_button, b, len(self.data["keys"]) - 1)
+            functools.partial(self.remove_button, b, len(self.registered_keys) - 1)
         )
         self.middle_layout.addWidget(b, 0.1)
-    
-    @Slot()
-    def set_win_num(self, win_num):
-        self.data["win_num"] = win_num
 
     @Slot()
     def remove_button(self, button: QPushButton, idx: int):
         button.deleteLater()
-        self.data["keys"].pop(idx)
+        self.registered_keys.pop(idx)
+
+    def thread_complete(self):
+        logging.info("done!")
+        self.start_button.setDisabled(False)
 
     @Slot()
-    def start_bot(self): 
-        print(self.data)
-        print(self.interval.text())
-        print(self.limit.text())
+    def start_bot(self):
+        # TODO cast in int with QT
+        self.start_button.setDisabled(True)
+        self.worker = Worker(
+            run,
+            {
+                "keys": self.registered_keys,
+                "interval": int(self.interval.text()),
+                "limit": int(self.limit.text()),
+                "win_num": int(self.window_number.currentText()),
+            },
+        )  # Any other args, kwargs are passed to the run function
+        # TODO handle exit
+        self.worker.signals.finished.connect(self.thread_complete)
+        self.worker.start()
+
 
     @Slot()
-    def stop_bot(self): 
+    def stop_bot(self):
+        self.worker.terminate()
+        self.worker.wait()
         self.parent().close()
 
 
@@ -111,6 +133,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("NW Bot")
         self.setCentralWidget(widget)
+        self.resize(800, 600)
+        self.show()
 
 
 if __name__ == "__main__":
@@ -120,8 +144,6 @@ if __name__ == "__main__":
     widget = Widget()
     # QMainWindow using QWidget as central widget
     window = MainWindow(widget)
-    window.resize(800, 600)
-    window.show()
 
     with open("style.qss", "r") as f:
         _style = f.read()

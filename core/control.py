@@ -1,19 +1,33 @@
 import ctypes
 import time
+from typing import TypedDict
+import logging
 
 SendInput = ctypes.windll.user32.SendInput
+logger = logging.getLogger(__name__)
 
-# directx scan codes https://gist.github.com/tracend/912308
-E_KEY = 0x12
-R_KEY = 0x13
-Q_KEY = 0x10
-ALT_KEY = 0x38
-TAB_KEY = 0x0F
-DIK_SPACE = 0x39
-DIK_4 = 0x05
-DIK_5 = 0x06
-DIK_6 = 0x07
-DIK_7 = 0x08
+# DirectX scan codes https://gist.github.com/tracend/912308
+KEYMAP = {
+    "Q": 0x10,
+    "W": 0x11,
+    "E": 0x12,
+    "R": 0x13,
+    "T": 0x14,
+    "Y": 0x15,
+    "U": 0x16,
+    "I": 0x17,
+    "O": 0x18,
+    "P": 0x19,
+    "A": 0x1E,
+    "ALT": 0x38,
+    "TAB": 0x0F,
+    "SPACE": 0x39,
+    "4": 0x05,
+    "5": 0x06,
+    "6": 0x07,
+    "7": 0x08,
+}
+
 
 # C struct redefinitions
 PUL = ctypes.POINTER(ctypes.c_ulong)
@@ -56,10 +70,8 @@ class Input(ctypes.Structure):
     _fields_ = [("type", ctypes.c_ulong), ("ii", Input_I)]
 
 
-# Actuals Functions
-
-
-def press_key(hex_key_code):
+# Actual Functions
+def press_key(hex_key_code: int):
     extra = ctypes.c_ulong(0)
     ii_ = Input_I()
     ii_.ki = KeyBdInput(0, hex_key_code, 0x0008, 0, ctypes.pointer(extra))
@@ -67,7 +79,7 @@ def press_key(hex_key_code):
     ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
 
-def release_key(hex_key_code):
+def release_key(hex_key_code: int):
     extra = ctypes.c_ulong(0)
     ii_ = Input_I()
     ii_.ki = KeyBdInput(0, hex_key_code, 0x0008 | 0x0002, 0, ctypes.pointer(extra))
@@ -76,39 +88,35 @@ def release_key(hex_key_code):
 
 
 def change_window():
-    press_key(ALT_KEY)
-    press_key(TAB_KEY)
-    time.sleep(1)
-    release_key(TAB_KEY)
-    release_key(ALT_KEY)
+    logging.debug("Window change")
+    press_key(KEYMAP["ALT"])
+    press_key(KEYMAP["TAB"])
+    time.sleep(0.5)
+    release_key(KEYMAP["TAB"])
+    release_key(KEYMAP["ALT"])
 
 
-def launch_encounter(key):
-    press_key(key)
-    time.sleep(1)
-    release_key(key)
+def keystroke(key: int) -> None:
+    key_code = KEYMAP[key.upper()]
+    logging.debug("Keystroke %s", key)
+    press_key(key_code)
+    time.sleep(0.5)
+    release_key(key_code)
 
 
-def share_hospitality():
-    def inner():
-        for i in [DIK_4, DIK_5, DIK_6]:
-            launch_encounter(i)
-            time.sleep(1)
-            launch_encounter(DIK_SPACE)
-            time.sleep(2)
-    inner()
-    change_window()
-    inner()
-    change_window()
+class ParamsDict(TypedDict):
+    limit: int
+    keys: list[str]
+    win_num: int
+    interval: int
 
 
-def farm_stuff():
-    launch_encounter(E_KEY)
-    change_window()
-    time.sleep(1)
-    launch_encounter(E_KEY)
-    time.sleep(5)
-
-
-while True:
-    share_hospitality()
+def run(params: ParamsDict):
+    end = time.time() + params["limit"] * 60
+    logger.debug("run with params: %s", params)
+    while time.time() < end:
+        for _ in range(params["win_num"]):
+            for key in params["keys"]:
+                keystroke(key)
+                time.sleep(params["interval"])
+            change_window()
