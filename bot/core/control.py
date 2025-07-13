@@ -2,6 +2,7 @@ import ctypes
 import time
 from typing import TypedDict
 import logging
+import random
 
 SendInput = ctypes.windll.user32.SendInput
 logger = logging.getLogger(__name__)
@@ -109,7 +110,7 @@ class ParamsDict(TypedDict):
     limit: int
     keys: list[str]
     win_num: int
-    interval: int
+    interval: list[int]
 
 
 def run(params: ParamsDict):
@@ -119,6 +120,8 @@ def run(params: ParamsDict):
         for _ in range(params["win_num"]):
             for key in params["keys"]:
                 keystroke(key)
-                time.sleep(params["interval"])
+                sleep_time = random.choice(params["interval"])
+                logger.debug("Waiting for %s", sleep_time)
+                time.sleep(sleep_time)
             if params["win_num"] > 1:
                 change_window()

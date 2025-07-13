@@ -4,6 +4,8 @@ from PySide6.QtCore import Slot, Signal, QObject, QThread
 import sys
 import traceback
 
+from bot.core.control import ParamsDict
+
 
 class WorkerSignals(QObject):
     """
@@ -45,25 +47,24 @@ class Worker(QThread):
     """
 
     def __init__(
-        self, fn: Callable[[Any], Any], *args: dict[str, Any], **kwargs: dict[str, Any]
+        self, fn: Callable[[ParamsDict], Any], *args: ParamsDict
     ):
         super(Worker, self).__init__()
 
         # Store constructor arguments (re-used for processing)
         self.fn = fn
         self.args = args
-        self.kwargs = kwargs
         self.signals = WorkerSignals()
 
     @Slot()
     def run(self):
         """
-        Initialise the runner function with passed args, kwargs.
+        Initialise the runner function with passed args.
         """
 
         # Retrieve args/kwargs here; and fire processing using them
         try:
-            result = self.fn(*self.args, **self.kwargs)
+            result = self.fn(*self.args)
         except Exception:
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]

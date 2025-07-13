@@ -67,9 +67,12 @@ class Widget(QWidget):
 
         # Right
         self.right_layout = QVBoxLayout()
-        self.interval = QLineEdit()
+        self.interval = QLineEdit(
+            placeholderText="1 ou 1-5 pour aleatoire entre deux valeurs"
+        )
         self.interval.setClearButtonEnabled(True)
         self.limit = QLineEdit()
+        self.limit.setText("2")
         self.limit.setClearButtonEnabled(True)
         self.right_layout.addWidget(QLabel("Intervale entre les touches (en s)"))
         self.right_layout.addWidget(self.interval)
@@ -123,11 +126,20 @@ class Widget(QWidget):
     def start_bot(self):
         # TODO cast in int with QT
         self.start_button.setDisabled(True)
+
+        interval = self.interval.text()
+        
+        if "-" in interval:
+            min, max = interval.split("-")
+            final_interval = list(range(int(min), int(max)))
+        else:
+            final_interval = [int(interval)]
+
         self.worker = Worker(
             run,
             {
                 "keys": self.registered_keys,
-                "interval": int(self.interval.text()),
+                "interval": final_interval,
                 "limit": int(self.limit.text()),
                 "win_num": int(self.window_number.currentText()),
             },
@@ -142,6 +154,7 @@ class Widget(QWidget):
             self.worker.terminate()
             self.worker.wait()
             self.worker.terminate()
+        self.start_button.setDisabled(False)
 
 
 class MainWindow(QMainWindow):
