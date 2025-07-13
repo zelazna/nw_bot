@@ -14,4 +14,3 @@ python main.py
 
 ````bash
 pyinstaller nwbot.spec
-```
