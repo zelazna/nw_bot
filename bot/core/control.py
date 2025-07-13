@@ -8,6 +8,8 @@ logger = logging.getLogger(__name__)
 
 # DirectX scan codes https://gist.github.com/tracend/912308
 KEYMAP = {
+    "A": 0x1E,
+    "Z": 0x2C,
     "Q": 0x10,
     "W": 0x11,
     "E": 0x12,
@@ -18,7 +20,6 @@ KEYMAP = {
     "I": 0x17,
     "O": 0x18,
     "P": 0x19,
-    "A": 0x1E,
     "ALT": 0x38,
     "TAB": 0x0F,
     "SPACE": 0x39,
@@ -96,7 +97,7 @@ def change_window():
     release_key(KEYMAP["ALT"])
 
 
-def keystroke(key: int) -> None:
+def keystroke(key: str) -> None:
     key_code = KEYMAP[key.upper()]
     logging.debug("Keystroke %s", key)
     press_key(key_code)
@@ -119,4 +120,5 @@ def run(params: ParamsDict):
             for key in params["keys"]:
                 keystroke(key)
                 time.sleep(params["interval"])
-            change_window()
+            if params["win_num"] > 1:
+                change_window()
