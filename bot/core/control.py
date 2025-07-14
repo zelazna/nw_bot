@@ -116,6 +116,7 @@ class ParamsDict(TypedDict):
 
 
 def run(params: ParamsDict):
+    time.sleep(5) # Allow to switch window in time
     end = time.time() + params["limit"] * 60
     logger.debug("run with params: %s", params)
     while time.time() < end:

@@ -59,7 +59,7 @@ class Widget(QWidget):
         self.middle_layout.addWidget(QLabel("Touches"))
         self.middle_layout.addWidget(self.keys)
 
-        for i in itertools.chain("", KEYMAP.keys()):
+        for i in itertools.chain([""], KEYMAP.keys()):
             self.keys.addItem(str(i))
 
         self.middle_layout.addWidget(QLabel("Selection"))
@@ -89,28 +89,31 @@ class Widget(QWidget):
         self.main_layout.addLayout(self.middle_layout, 1)
         self.main_layout.addLayout(self.right_layout, 1)
         self.start_button = QPushButton("Depart")
-        self.end_button = QPushButton("Arret")
+        self.stop_button = QPushButton("Arret")
+        self.stop_button.setDisabled(True)
         self.bot_label = QLabel("NW BOT")
         self.bot_label.setObjectName("appTitle")
         self.v_layout.addWidget(self.bot_label)
         self.button_layout.addWidget(self.start_button)
-        self.button_layout.addWidget(self.end_button)
+        self.button_layout.addWidget(self.stop_button)
         self.v_layout.addLayout(self.main_layout, 8)
         self.v_layout.addLayout(self.button_layout)
 
         # Signals and Slots
         self.keys.currentTextChanged.connect(self.add_key)
         self.start_button.clicked.connect(self.start_bot)
-        self.end_button.clicked.connect(self.stop_bot)
+        self.stop_button.clicked.connect(self.stop_bot)
 
     @Slot()
     def add_key(self, key: str):
-        self.registered_keys.append(key)
-        b = QPushButton(key)
-        b.clicked.connect(
-            functools.partial(self.remove_button, b, len(self.registered_keys) - 1)
-        )
-        self.middle_layout.addWidget(b)
+        if len(key):
+            self.registered_keys.append(key)
+            b = QPushButton(key)
+            b.clicked.connect(
+                functools.partial(self.remove_button, b, len(self.registered_keys) - 1)
+            )
+            self.middle_layout.addWidget(b)
+        self.keys.setCurrentIndex(0)
 
     @Slot()
     def remove_button(self, button: QPushButton, idx: int):
@@ -125,6 +128,7 @@ class Widget(QWidget):
     @Slot()
     def start_bot(self):
         # TODO cast in int with QT
+        self.stop_button.setDisabled(False)
         self.start_button.setDisabled(True)
 
         interval = self.interval.text()
@@ -150,11 +154,13 @@ class Widget(QWidget):
 
     @Slot()
     def stop_bot(self):
+        logger.debug("Stopping")
         if self.worker:
             self.worker.terminate()
             self.worker.wait()
             self.worker.terminate()
         self.start_button.setDisabled(False)
+        self.stop_button.setDisabled(True)
 
 
 class MainWindow(QMainWindow):
