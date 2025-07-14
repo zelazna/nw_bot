@@ -9,11 +9,12 @@ logger = logging.getLogger(__name__)
 
 # DirectX scan codes https://gist.github.com/tracend/912308
 KEYMAP = {
+    "ESPACE": 0x39,
     "A": 0x1E,
     "Z": 0x2C,
-    "Q": 0x10,
-    "W": 0x11,
     "E": 0x12,
+    "W": 0x11,
+    "Q": 0x10,
     "R": 0x13,
     "T": 0x14,
     "Y": 0x15,
@@ -23,7 +24,8 @@ KEYMAP = {
     "P": 0x19,
     "ALT": 0x38,
     "TAB": 0x0F,
-    "SPACE": 0x39,
+    "ECHAP": 0x01,
+    "3": 0x04,
     "4": 0x05,
     "5": 0x06,
     "6": 0x07,
