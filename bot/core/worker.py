@@ -42,7 +42,6 @@ class Worker(QThread):
                      kwargs will be passed through to the runner.
     :type callback: function
     :param args: Arguments to pass to the callback function
-    :param kwargs: Keywords to pass to the callback function
 
     """
 

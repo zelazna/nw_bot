@@ -1,7 +1,5 @@
-import functools
 import itertools
 import logging
-from contextlib import suppress
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
@@ -9,6 +7,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QListView,
     QMainWindow,
     QPushButton,
     QVBoxLayout,
@@ -17,6 +16,7 @@ from PySide6.QtWidgets import (
 
 from bot.core.control import KEYMAP, run
 from bot.core.worker import Worker
+from bot.models.keys_model import KeysModel
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -41,7 +41,6 @@ class Widget(QWidget):
     def __init__(self):
         super().__init__()
         self.worker = None
-        self.registered_keys: list[str] = []
 
         # Left
         self.left_layout = QVBoxLayout()
@@ -62,9 +61,17 @@ class Widget(QWidget):
         for i in itertools.chain([""], KEYMAP.keys()):
             self.keys.addItem(str(i))
 
+        self.key_model = KeysModel()
+        self.keys_list_view = QListView()
+        self.keys_list_view.setModel(self.key_model)
+
+        self.delete_button = QPushButton("Supprimer")
         self.middle_layout.addWidget(QLabel("Selection"))
         self.middle_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
+        self.middle_layout.addWidget(self.keys_list_view)
+        self.middle_layout.addWidget(self.delete_button)
+        self.delete_button.pressed.connect(self.delete)
+        
         # Right
         self.right_layout = QVBoxLayout()
         self.interval = QLineEdit(
@@ -107,23 +114,25 @@ class Widget(QWidget):
     @Slot()
     def add_key(self, key: str):
         if len(key):
-            self.registered_keys.append(key)
-            b = QPushButton(key)
-            b.clicked.connect(
-                functools.partial(self.remove_button, b, len(self.registered_keys) - 1)
-            )
-            self.middle_layout.addWidget(b)
+            self.key_model.keys.append(key)
+            self.key_model.layoutChanged.emit()
         self.keys.setCurrentIndex(0)
 
-    @Slot()
-    def remove_button(self, button: QPushButton, idx: int):
-        button.deleteLater()
-        with suppress(IndexError):
-            self.registered_keys.pop(idx)
+    def delete(self):
+        indexes = self.keys_list_view.selectedIndexes()
+        if indexes:
+            # Indexes is a list of a single item in single-select mode.
+            index = indexes[0]
+            # Remove the item and refresh.
+            del self.key_model.keys[index.row()]
+            self.key_model.layoutChanged.emit()
+            # Clear the selection (as it is no longer valid).
+            self.keys_list_view.clearSelection()
 
     def thread_complete(self):
         logging.info("done!")
         self.start_button.setDisabled(False)
+        self.stop_button.setDisabled(True)
 
     @Slot()
     def start_bot(self):
@@ -132,7 +141,7 @@ class Widget(QWidget):
         self.start_button.setDisabled(True)
 
         interval = self.interval.text()
-        
+
         if "-" in interval:
             min, max = interval.split("-")
             final_interval = list(range(int(min), int(max)))
@@ -142,7 +151,7 @@ class Widget(QWidget):
         self.worker = Worker(
             run,
             {
-                "keys": self.registered_keys,
+                "keys": self.key_model.keys,
                 "interval": final_interval,
                 "limit": int(self.limit.text()),
                 "win_num": int(self.window_number.currentText()),
