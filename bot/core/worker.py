@@ -45,9 +45,7 @@ class Worker(QThread):
 
     """
 
-    def __init__(
-        self, fn: Callable[[ParamsDict], Any], *args: ParamsDict
-    ):
+    def __init__(self, fn: Callable[[ParamsDict], Any], *args: ParamsDict):
         super(Worker, self).__init__()
 
         # Store constructor arguments (re-used for processing)

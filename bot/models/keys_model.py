@@ -4,15 +4,16 @@ from PySide6.QtCore import QAbstractListModel, QModelIndex, QPersistentModelInde
 
 
 class KeysModel(QAbstractListModel):
-    def __init__(self, keys: list[str] | None = None, *args: Any, **kwargs: Any):
+    def __init__(self, keys: list[tuple[int, str]] | None = None, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        self.keys: list[str] = keys if keys else []
+        self.keys: list[tuple[int, str]] = keys if keys else []
 
     def data(
         self, index: QModelIndex | QPersistentModelIndex, role: int = 0
     ) -> str | None:
         if role == Qt.ItemDataRole.DisplayRole:
-            return self.keys[index.row()]
+            _, key = self.keys[index.row()]
+            return key
 
     def rowCount(
         self, parent: QModelIndex | QPersistentModelIndex = QModelIndex()

@@ -1,7 +1,8 @@
-import itertools
+import functools
 import logging
 
 from PySide6.QtCore import Qt, Slot
+from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -14,7 +15,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from bot.core.control import KEYMAP, run
+from bot.core.control import run
 from bot.core.worker import Worker
 from bot.models.keys_model import KeysModel
 
@@ -41,6 +42,7 @@ class Widget(QWidget):
     def __init__(self):
         super().__init__()
         self.worker = None
+        self.is_recording = False
 
         # Left
         self.left_layout = QVBoxLayout()
@@ -53,25 +55,29 @@ class Widget(QWidget):
             self.window_number.addItem(str(i))
 
         # Middle
+        self.start_key_logger_button = QPushButton("Demarrer Enregistrement")
+        self.stop_key_logger_button = QPushButton("Arreter Enregistrement")
+        self.stop_key_logger_button.setVisible(False)
         self.middle_layout = QVBoxLayout()
-        self.keys = QComboBox()
-        self.middle_layout.addWidget(QLabel("Touches"))
-        self.middle_layout.addWidget(self.keys)
-
-        for i in itertools.chain([""], KEYMAP.keys()):
-            self.keys.addItem(str(i))
+        self.middle_layout.addWidget(self.start_key_logger_button)
+        self.middle_layout.addWidget(self.stop_key_logger_button)
+        self.start_key_logger_button.clicked.connect(
+            functools.partial(self.switch_record_keystrokes, True)
+        )
+        self.stop_key_logger_button.clicked.connect(
+            functools.partial(self.switch_record_keystrokes, False)
+        )
 
         self.key_model = KeysModel()
         self.keys_list_view = QListView()
         self.keys_list_view.setModel(self.key_model)
 
         self.delete_button = QPushButton("Supprimer")
-        self.middle_layout.addWidget(QLabel("Selection"))
         self.middle_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.middle_layout.addWidget(self.keys_list_view)
         self.middle_layout.addWidget(self.delete_button)
         self.delete_button.pressed.connect(self.delete)
-        
+
         # Right
         self.right_layout = QVBoxLayout()
         self.interval = QLineEdit(
@@ -95,28 +101,27 @@ class Widget(QWidget):
         self.main_layout.addLayout(self.left_layout, 1)
         self.main_layout.addLayout(self.middle_layout, 1)
         self.main_layout.addLayout(self.right_layout, 1)
+
         self.start_button = QPushButton("Depart")
+        self.start_button.clicked.connect(self.start_bot)
+
         self.stop_button = QPushButton("Arret")
         self.stop_button.setDisabled(True)
+        self.stop_button.clicked.connect(self.stop_bot)
+
         self.bot_label = QLabel("NW BOT")
         self.bot_label.setObjectName("appTitle")
+
         self.v_layout.addWidget(self.bot_label)
         self.button_layout.addWidget(self.start_button)
         self.button_layout.addWidget(self.stop_button)
         self.v_layout.addLayout(self.main_layout, 8)
         self.v_layout.addLayout(self.button_layout)
 
-        # Signals and Slots
-        self.keys.currentTextChanged.connect(self.add_key)
-        self.start_button.clicked.connect(self.start_bot)
-        self.stop_button.clicked.connect(self.stop_bot)
-
-    @Slot()
-    def add_key(self, key: str):
-        if len(key):
-            self.key_model.keys.append(key)
-            self.key_model.layoutChanged.emit()
-        self.keys.setCurrentIndex(0)
+    def switch_record_keystrokes(self, state: bool):
+        self.start_key_logger_button.setVisible(not state)
+        self.stop_key_logger_button.setVisible(state)
+        self.is_recording = state
 
     def delete(self):
         indexes = self.keys_list_view.selectedIndexes()
@@ -129,7 +134,7 @@ class Widget(QWidget):
             # Clear the selection (as it is no longer valid).
             self.keys_list_view.clearSelection()
 
-    def thread_complete(self):
+    def bot_thread_complete(self):
         logging.info("done!")
         self.start_button.setDisabled(False)
         self.stop_button.setDisabled(True)
@@ -158,7 +163,7 @@ class Widget(QWidget):
             },
         )  # Any other args, kwargs are passed to the run function
         # TODO handle exit
-        self.worker.signals.finished.connect(self.thread_complete)
+        self.worker.signals.finished.connect(self.bot_thread_complete)
         self.worker.start()
 
     @Slot()
@@ -170,6 +175,13 @@ class Widget(QWidget):
             self.worker.terminate()
         self.start_button.setDisabled(False)
         self.stop_button.setDisabled(True)
+
+    def keyReleaseEvent(self, event: QKeyEvent) -> None:
+        if self.is_recording:
+            key = event.text()
+            if key.isalpha():
+                self.key_model.keys.append((event.nativeScanCode(), key.upper()))
+                self.key_model.layoutChanged.emit()
 
 
 class MainWindow(QMainWindow):
