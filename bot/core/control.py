@@ -4,8 +4,9 @@ from typing import TypedDict
 import logging
 import random
 
+from bot.utils import logger
+
 SendInput = ctypes.windll.user32.SendInput
-logger = logging.getLogger(__name__)
 
 # DirectX scan codes https://gist.github.com/tracend/912308
 KEYMAP = {
@@ -31,6 +32,8 @@ KEYMAP = {
     "6": 0x07,
     "7": 0x08,
 }
+
+INVERTED_KEYMAP = {v: k for k, v in KEYMAP.items()}
 
 
 # C struct redefinitions
@@ -110,18 +113,18 @@ def keystroke(key: str) -> None:
 
 class ParamsDict(TypedDict):
     limit: int
-    keys: list[str]
+    keys: list[tuple[int, str]]
     win_num: int
     interval: list[int]
 
 
 def run(params: ParamsDict):
-    time.sleep(5) # Allow to switch window in time
+    time.sleep(5)  # Allow to switch window in time
     end = time.time() + params["limit"] * 60
     logger.debug("run with params: %s", params)
     while time.time() < end:
         for _ in range(params["win_num"]):
-            for key in params["keys"]:
+            for _, key in params["keys"]:
                 keystroke(key)
                 sleep_time = random.choice(params["interval"])
                 logger.debug("Waiting for %s", sleep_time)
