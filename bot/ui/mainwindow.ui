@@ -221,7 +221,25 @@
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuParametres">
+    <property name="title">
+     <string>Fichier</string>
+    </property>
+    <addaction name="actionSaveConfig"/>
+    <addaction name="actionLoadConfig"/>
+   </widget>
+   <addaction name="menuParametres"/>
   </widget>
+  <action name="actionSaveConfig">
+   <property name="text">
+    <string>Sauver la config</string>
+   </property>
+  </action>
+  <action name="actionLoadConfig">
+   <property name="text">
+    <string>Charger la config</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

@@ -1,21 +1,18 @@
 import functools
-from typing import cast
+import json
+import os
 
-from PySide6.QtCore import Slot, QTimer
+from PySide6.QtCore import QTimer, Slot
 from PySide6.QtGui import QKeyEvent
-from PySide6.QtWidgets import (
-    QComboBox,
-    QLineEdit,
-    QListView,
-    QMainWindow,
-    QPushButton,
-)
+from PySide6.QtWidgets import QFileDialog, QMainWindow
 
+from bot.core import Keystroke
 from bot.core.control import run
-from bot.core.keystroke_adapter import match
+from bot.core.keystroke_adapter import ModifierKey, encode_value, match
 from bot.core.worker import Worker
 from bot.models.keys_model import KeysModel
-from bot.ui.mainwindow import QLabel, Ui_MainWindow
+from bot.ui.mainwindow import Ui_MainWindow
+from bot.ui.modals import FileNameModal
 from bot.utils import logger
 
 
@@ -33,50 +30,42 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)  # type: ignore
 
         self.key_model = KeysModel()
-        self.keys_list_view = cast(QListView, self.findChild(QListView, "keyListView"))
-        self.keys_list_view.setModel(self.key_model)
-        self.window_number = cast(QComboBox, self.findChild(QComboBox, "winNum"))
+        self.ui.keyListView.setModel(self.key_model)
+
+        self.ui.actionSaveConfig.triggered.connect(self.save_config)
+        self.ui.actionLoadConfig.triggered.connect(self.load_config)
 
         for i in range(1, 10):
-            self.window_number.addItem(str(i))
+            self.ui.winNum.addItem(str(i))
 
-        (
-            self.stop_record_button,
-            self.start_record_button,
-            self.delete_key_button,
-            self.start_bot_button,
-            self.stop_bot_button,
-        ) = self.findChildren(QPushButton)
-
-        self.stop_record_button.setVisible(False)
-        self.start_record_button.clicked.connect(
+        self.ui.stopRecordButton.setVisible(False)
+        self.ui.startRecordButton.clicked.connect(
             functools.partial(self.switch_record_keystrokes, True)
         )
-        self.stop_record_button.clicked.connect(
+        self.ui.stopRecordButton.clicked.connect(
             functools.partial(self.switch_record_keystrokes, False)
         )
-        self.delete_key_button.pressed.connect(self.delete)
+        self.ui.deleteKey.clicked.connect(self.delete)
 
-        self.interval = cast(QLineEdit, self.findChild(QLineEdit, "interval"))
+        self.interval = self.ui.interval
         self.interval.setClearButtonEnabled(True)
 
-        self.limit = cast(QLineEdit, self.findChild(QLineEdit, "limit"))
+        self.limit = self.ui.limit
         self.limit.setClearButtonEnabled(True)
 
-        self.remaining_time = cast(QLabel, self.findChild(QLabel, "remainingTime"))
-        self.remaining_time.setVisible(False)
+        self.ui.remainingTime.setVisible(False)
 
-        self.stop_bot_button.setDisabled(True)
-        self.stop_bot_button.clicked.connect(self.stop_bot)
-        self.start_bot_button.clicked.connect(self.start_bot)
+        self.ui.stopButton.setDisabled(True)
+        self.ui.stopButton.clicked.connect(self.stop_bot)
+        self.ui.startButton.clicked.connect(self.start_bot)
 
     def switch_record_keystrokes(self, state: bool):
-        self.start_record_button.setVisible(not state)
-        self.stop_record_button.setVisible(state)
+        self.ui.startRecordButton.setVisible(not state)
+        self.ui.stopRecordButton.setVisible(state)
         self.is_recording = state
 
     def delete(self):
-        indexes = self.keys_list_view.selectedIndexes()
+        indexes = self.ui.keyListView.selectedIndexes()
         if indexes:
             # Indexes is a list of a single item in single-select mode.
             index = indexes[0]
@@ -84,7 +73,7 @@ class MainWindow(QMainWindow):
             del self.key_model.keys[index.row()]
             self.key_model.layoutChanged.emit()
             # Clear the selection (as it is no longer valid).
-            self.keys_list_view.clearSelection()
+            self.ui.keyListView.clearSelection()
 
     def keyReleaseEvent(self, event: QKeyEvent) -> None:
         if self.is_recording:
@@ -94,15 +83,15 @@ class MainWindow(QMainWindow):
 
     def bot_thread_complete(self):
         logger.info("done!")
-        self.start_bot_button.setDisabled(False)
-        self.stop_bot_button.setDisabled(True)
-        self.remaining_time.setVisible(False)
+        self.ui.startButton.setDisabled(False)
+        self.ui.stopButton.setDisabled(True)
+        self.ui.remainingTime.setVisible(False)
 
     @Slot()
     def start_bot(self):
-        self.remaining_time.setVisible(True)
-        self.stop_bot_button.setDisabled(False)
-        self.start_bot_button.setDisabled(True)
+        self.ui.remainingTime.setVisible(True)
+        self.ui.stopButton.setDisabled(False)
+        self.ui.startButton.setDisabled(True)
 
         interval = self.interval.text()
         self.start_timer()
@@ -119,7 +108,7 @@ class MainWindow(QMainWindow):
                 "keys": self.key_model.keys,
                 "interval": final_interval,
                 "limit": int(self.limit.text()),
-                "win_num": int(self.window_number.currentText()),
+                "win_num": int(self.ui.winNum.currentText()),
             },
         )  # Any other args, kwargs are passed to the run function
         self.worker.signals.finished.connect(self.bot_thread_complete)
@@ -131,7 +120,7 @@ class MainWindow(QMainWindow):
         )  # Convert minutes to milliseconds
         format_time = self._format_time(self.time_left_int)
         logger.debug(f"Starting timer with {format_time} minutes")
-        self.remaining_time.setText(format_time)
+        self.ui.remainingTime.setText(format_time)
         self.bot_timer.start(500)
 
     def timer_tick(self):
@@ -142,7 +131,7 @@ class MainWindow(QMainWindow):
             self.bot_timer.stop()
             self.bot_thread_complete()
 
-        self.remaining_time.setText(self._format_time(self.time_left_int))
+        self.ui.remainingTime.setText(self._format_time(self.time_left_int))
 
     @Slot()
     def stop_bot(self):
@@ -151,10 +140,51 @@ class MainWindow(QMainWindow):
             self.worker.terminate()
             self.worker.wait()
             self.worker.terminate()
-        self.start_bot_button.setDisabled(False)
-        self.stop_bot_button.setDisabled(True)
-        self.remaining_time.setVisible(False)
+        self.ui.startButton.setDisabled(False)
+        self.ui.stopButton.setDisabled(True)
+        self.ui.remainingTime.setVisible(False)
         self.bot_timer.stop()
+
+    def save_config(self):
+        config = self._dump_config()
+        folder = QFileDialog.getExistingDirectory(
+            self, "Sauvegarder le fichier de config"
+        )
+        if folder:
+            dlg = FileNameModal()
+            if dlg.exec():
+                filepath = os.path.join(folder, dlg.filename)
+                with open(filepath, "w") as f:
+                    json.dump(config, f, indent=4, default=encode_value)
+                logger.info(f"Config saved to {filepath}")
+
+    def load_config(self):
+        dialog = QFileDialog(self, "Choisir le fichier de config")
+        filename, _ = dialog.getOpenFileName(self, filter="JSON files (*.json)")
+        if filename:
+            with open(filename, "r") as f:
+                config = json.load(f)
+
+            for key in config["keys"]:
+                if modifier := key.get("modifier", {}):
+                    self.key_model.keys.append(
+                        Keystroke(**{**key, "modifier": ModifierKey(**modifier)})  # type: ignore
+                    )
+                else:
+                    self.key_model.keys.append(Keystroke(**key))
+
+            self.key_model.layoutChanged.emit()
+            self.interval.setText(config["interval"])
+            self.limit.setText(config["limit"])
+            self.ui.winNum.setCurrentText(str(config["win_num"]))
+
+    def _dump_config(self):
+        return {
+            "keys": self.key_model.keys,
+            "interval": self.interval.text(),
+            "limit": self.limit.text(),
+            "win_num": self.ui.winNum.currentText(),
+        }
 
     def _format_time(self, milliseconds: int) -> str:
         secs = milliseconds / 1000

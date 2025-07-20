@@ -17,6 +17,5 @@ if __name__ == "__main__":
     app.setWindowIcon(QtGui.QIcon(os.path.join(basedir, "nwbot.ico")))
     window = MainWindow()
     window.setWindowTitle("NW Bot")
-    window.resize(800, 600)
     window.show()
     sys.exit(app.exec())

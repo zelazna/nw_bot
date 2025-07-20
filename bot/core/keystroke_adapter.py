@@ -1,9 +1,12 @@
+import dataclasses
+import datetime
+import functools
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeyEvent
 
 from bot.core.constants import INVERTED_KEYMAP, KEYMAP
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 from abc import ABC
 
 from bot.core.constants import ALT, CTRL
@@ -27,6 +30,15 @@ class Keystroke(BaseKey):
         if self.modifier:
             return f"{self.modifier.key}+{self.key}"
         return self.key
+
+
+@functools.singledispatch
+def encode_value(x: Any) -> Any:
+    if dataclasses.is_dataclass(x):
+        return dataclasses.asdict(x) # type: ignore
+    elif isinstance(x, datetime.datetime):
+        return x.isoformat()
+    return x
 
 
 ALT_TAB = Keystroke(
