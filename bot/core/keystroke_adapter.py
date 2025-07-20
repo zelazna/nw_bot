@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeyEvent
 
-from bot.core import INVERTED_KEYMAP, KEYMAP
+from bot.core.constants import INVERTED_KEYMAP, KEYMAP
 from dataclasses import dataclass
 from typing import Optional
 from abc import ABC

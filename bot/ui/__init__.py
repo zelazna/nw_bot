@@ -1,6 +1,4 @@
-from datetime import timedelta
 import functools
-from math import log
 from typing import cast
 
 from PySide6.QtCore import Slot, QTimer

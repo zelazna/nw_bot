@@ -70,6 +70,8 @@ def release_key(hex_key_code: int):
 
 
 def change_window():
+    # TODO: Use win32gui.SetForegroundWindow instead of ALT_TAB
+    # https://github.com/learncodebygaming/multiple-minimized-windows
     keystroke(ALT_TAB)
 
 
