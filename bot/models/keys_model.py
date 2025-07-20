@@ -1,14 +1,17 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from PySide6.QtCore import QAbstractListModel, QModelIndex, QPersistentModelIndex, Qt
+from PySide6.QtCore import QAbstractListModel, Qt, QModelIndex, QPersistentModelIndex
 
-from bot.core import Keystroke
+if TYPE_CHECKING:
+    from bot.models import Keystroke
 
 
 class KeysModel(QAbstractListModel):
-    def __init__(self, keys: list[Keystroke] | None = None, *args: Any, **kwargs: Any):
+    def __init__(
+        self, keys: list["Keystroke"] | None = None, *args: Any, **kwargs: Any
+    ):
         super().__init__(*args, **kwargs)
-        self.keys: list[Keystroke] = keys if keys else []
+        self.keys: list["Keystroke"] = keys if keys else []
 
     def data(
         self, index: QModelIndex | QPersistentModelIndex, role: int = 0

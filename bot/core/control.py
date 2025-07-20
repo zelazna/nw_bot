@@ -3,9 +3,10 @@ import logging
 import random
 import time
 from contextlib import contextmanager
-from typing import Generator, TypedDict
+from typing import Generator
 
 from bot.core.keystroke_adapter import ALT_TAB, Keystroke
+from bot.models import Params
 from bot.utils import logger
 
 SendInput = ctypes.windll.user32.SendInput
@@ -95,23 +96,16 @@ def keystroke(stroke: Keystroke, hold_sec: float = 0.5) -> None:
         release_key(stroke.scan_code)
 
 
-class ParamsDict(TypedDict):
-    limit: int
-    keys: list[Keystroke]
-    win_num: int
-    interval: list[int]
-
-
-def run(params: ParamsDict):
+def run(params: Params):
     time.sleep(5)  # Allow to switch window in time
-    end = time.time() + params["limit"] * 60
+    end = time.time() + params.limit * 60
     logger.debug("run with params: %s", params)
     while time.time() < end:
-        for _ in range(params["win_num"]):
-            for stroke in params["keys"]:
+        for _ in range(params.win_num):
+            for stroke in params.keys:
                 keystroke(stroke)
-                sleep_time = random.choice(params["interval"])
+                sleep_time = random.choice(params.interval_range)
                 logger.debug("Waiting for %s", sleep_time)
                 time.sleep(sleep_time)
-            if params["win_num"] > 1:
+            if params.win_num > 1:
                 change_window()

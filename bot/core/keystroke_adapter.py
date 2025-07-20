@@ -1,45 +1,8 @@
-import dataclasses
-import datetime
-import functools
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeyEvent
 
-from bot.core.constants import INVERTED_KEYMAP, KEYMAP
-from dataclasses import dataclass
-from typing import Any, Optional
-from abc import ABC
-
-from bot.core.constants import ALT, CTRL
-
-
-@dataclass(frozen=True)
-class BaseKey(ABC):
-    key: str
-    scan_code: int
-
-
-@dataclass(frozen=True)
-class ModifierKey(BaseKey): ...
-
-
-@dataclass(frozen=True)
-class Keystroke(BaseKey):
-    modifier: Optional[ModifierKey] = None
-
-    def __repr__(self) -> str:
-        if self.modifier:
-            return f"{self.modifier.key}+{self.key}"
-        return self.key
-
-
-@functools.singledispatch
-def encode_value(x: Any) -> Any:
-    if dataclasses.is_dataclass(x):
-        return dataclasses.asdict(x) # type: ignore
-    elif isinstance(x, datetime.datetime):
-        return x.isoformat()
-    return x
-
+from bot.core.constants import ALT, CTRL, INVERTED_KEYMAP, KEYMAP
+from bot.models import Keystroke, ModifierKey
 
 ALT_TAB = Keystroke(
     key="TAB", scan_code=KEYMAP["TAB"], modifier=ModifierKey("ALT", 0x38)

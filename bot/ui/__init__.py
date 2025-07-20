@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QFileDialog, QMainWindow
 from bot.core.control import run
 from bot.core.keystroke_adapter import match
 from bot.core.worker import Worker
-from bot.models.keys_model import KeysModel
+from bot.models import KeysModel, Params
 from bot.ui.mainwindow import Ui_MainWindow
 from bot.ui.modals import FileNameModal
 from bot.utils import logger
@@ -91,24 +91,9 @@ class MainWindow(QMainWindow):
         self.ui.stopButton.setDisabled(False)
         self.ui.startButton.setDisabled(True)
 
-        interval = self.interval.text()
         self.start_timer()
 
-        if "-" in interval:
-            min, max = interval.split("-")
-            final_interval = list(range(int(min), int(max)))
-        else:
-            final_interval = [int(interval)]
-
-        self.worker = Worker(
-            run,
-            {
-                "keys": self.key_model.keys,
-                "interval": final_interval,
-                "limit": int(self.limit.text()),
-                "win_num": int(self.ui.winNum.currentText()),
-            },
-        )  # Any other args, kwargs are passed to the run function
+        self.worker = Worker(run, self._dump_config())
         self.worker.signals.finished.connect(self.bot_thread_complete)
         self.worker.start()
 
@@ -140,14 +125,15 @@ class MainWindow(QMainWindow):
         self.bot_timer.stop()
 
     def _save_config(self):
-        config = self._dump_config()
         folder = QFileDialog.getExistingDirectory(
             self, "Sauvegarder le fichier de config"
         )
         if folder:
             dlg = FileNameModal()
             if dlg.exec():
-                save_config(dlg.filename, folder, config)
+                save_config(
+                    dlg.filename, folder, self._dump_config()
+                )
 
     def _load_config(self):
         dialog = QFileDialog(self, "Choisir le fichier de config")
@@ -159,13 +145,13 @@ class MainWindow(QMainWindow):
             self.limit.setText(config["limit"])
             self.ui.winNum.setCurrentText(str(config["win_num"]))
 
-    def _dump_config(self):
-        return {
-            "keys": self.key_model.keys,
-            "interval": self.interval.text(),
-            "limit": self.limit.text(),
-            "win_num": self.ui.winNum.currentText(),
-        }
+    def _dump_config(self) -> Params:
+        return Params(
+            keys=self.key_model.keys,
+            interval=self.interval.text(),
+            limit=int(self.limit.text()),
+            win_num=int(self.ui.winNum.currentText()),
+        )
 
     def _format_time(self, milliseconds: int) -> str:
         secs = milliseconds / 1000

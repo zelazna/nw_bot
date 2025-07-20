@@ -4,7 +4,7 @@ from PySide6.QtCore import Slot, Signal, QObject, QThread
 import sys
 import traceback
 
-from bot.core.control import ParamsDict
+from bot.models import Params
 
 
 class WorkerSignals(QObject):
@@ -45,7 +45,7 @@ class Worker(QThread):
 
     """
 
-    def __init__(self, fn: Callable[[ParamsDict], Any], *args: ParamsDict):
+    def __init__(self, fn: Callable[[Params], Any], *args: Params):
         super(Worker, self).__init__()
 
         # Store constructor arguments (re-used for processing)
