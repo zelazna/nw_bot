@@ -1,7 +1,9 @@
+from datetime import timedelta
 import functools
+from math import log
 from typing import cast
 
-from PySide6.QtCore import Slot
+from PySide6.QtCore import Slot, QTimer
 from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import (
     QComboBox,
@@ -15,7 +17,7 @@ from bot.core.control import run
 from bot.core.keystroke_adapter import match
 from bot.core.worker import Worker
 from bot.models.keys_model import KeysModel
-from bot.ui.mainwindow import Ui_MainWindow
+from bot.ui.mainwindow import QLabel, Ui_MainWindow
 from bot.utils import logger
 
 
@@ -25,6 +27,9 @@ class MainWindow(QMainWindow):
 
         self.worker = None
         self.is_recording = False
+        self.time_left_int = 0
+        self.bot_timer = QTimer(self)
+        self.bot_timer.timeout.connect(self.timerTimeout)
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)  # type: ignore
@@ -60,6 +65,9 @@ class MainWindow(QMainWindow):
         self.limit = cast(QLineEdit, self.findChild(QLineEdit, "limit"))
         self.limit.setClearButtonEnabled(True)
 
+        self.remaining_time = cast(QLabel, self.findChild(QLabel, "remainingTime"))
+        self.remaining_time.setVisible(False)
+
         self.stop_bot_button.setDisabled(True)
         self.stop_bot_button.clicked.connect(self.stop_bot)
         self.start_bot_button.clicked.connect(self.start_bot)
@@ -90,13 +98,16 @@ class MainWindow(QMainWindow):
         logger.info("done!")
         self.start_bot_button.setDisabled(False)
         self.stop_bot_button.setDisabled(True)
+        self.remaining_time.setVisible(False)
 
     @Slot()
     def start_bot(self):
+        self.remaining_time.setVisible(True)
         self.stop_bot_button.setDisabled(False)
         self.start_bot_button.setDisabled(True)
 
         interval = self.interval.text()
+        self.start_timer()
 
         if "-" in interval:
             min, max = interval.split("-")
@@ -113,9 +124,27 @@ class MainWindow(QMainWindow):
                 "win_num": int(self.window_number.currentText()),
             },
         )  # Any other args, kwargs are passed to the run function
-        # TODO handle exit
         self.worker.signals.finished.connect(self.bot_thread_complete)
         self.worker.start()
+
+    def start_timer(self):
+        self.time_left_int = (
+            int(self.limit.text()) * 60 * 1000
+        )  # Convert minutes to milliseconds
+        format_time = self._format_time(self.time_left_int)
+        logger.debug(f"Starting timer with {format_time} minutes")
+        self.remaining_time.setText(format_time)
+        self.bot_timer.start(500)
+
+    def timerTimeout(self):
+        self.time_left_int -= 1000  # Decrease by 1 second
+        print(self.time_left_int)
+
+        if self.time_left_int <= 0:
+            self.bot_timer.stop()
+            self.bot_thread_complete()
+
+        self.remaining_time.setText(self._format_time(self.time_left_int))
 
     @Slot()
     def stop_bot(self):
@@ -126,3 +155,14 @@ class MainWindow(QMainWindow):
             self.worker.terminate()
         self.start_bot_button.setDisabled(False)
         self.stop_bot_button.setDisabled(True)
+        self.remaining_time.setVisible(False)
+        self.bot_timer.stop()
+
+    def _format_time(self, milliseconds: int) -> str:
+        secs = milliseconds / 1000
+        secs = secs % (24 * 3600)
+        hours = secs // 3600
+        secs %= 3600
+        mins = secs // 60
+        secs %= 60
+        return f"{int(hours):02d}:{int(mins):02d}:{int(secs):02d}"

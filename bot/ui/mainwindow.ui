@@ -6,46 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>796</width>
+    <height>634</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="nwbot_title">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>-40</y>
-      <width>261</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>34</pointsize>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="layoutDirection">
-     <enum>Qt::LayoutDirection::RightToLeft</enum>
-    </property>
-    <property name="text">
-     <string>NW BOT</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignmentFlag::AlignCenter</set>
-    </property>
-   </widget>
    <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>60</y>
+      <y>30</y>
       <width>771</width>
-      <height>441</height>
+      <height>561</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -77,7 +52,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QWidget" name="widget_2" native="true">
+      <widget class="QWidget" name="middle" native="true">
        <widget class="QPushButton" name="startRecordButton">
         <property name="geometry">
          <rect>
@@ -193,35 +168,48 @@
          <string>2</string>
         </property>
        </widget>
+       <widget class="QPushButton" name="startButton">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>523</y>
+          <width>121</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Depart</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="stopButton">
+        <property name="geometry">
+         <rect>
+          <x>140</x>
+          <y>523</y>
+          <width>101</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Arret</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="remainingTime">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>500</y>
+          <width>49</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>00:00:00</string>
+        </property>
+       </widget>
       </widget>
      </item>
     </layout>
-   </widget>
-   <widget class="QPushButton" name="startButton">
-    <property name="geometry">
-     <rect>
-      <x>530</x>
-      <y>540</y>
-      <width>121</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Depart</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="stopButton">
-    <property name="geometry">
-     <rect>
-      <x>670</x>
-      <y>540</y>
-      <width>101</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Arret</string>
-    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -229,7 +217,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>796</width>
      <height>21</height>
     </rect>
    </property>
