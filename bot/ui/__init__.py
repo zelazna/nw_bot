@@ -29,7 +29,7 @@ class MainWindow(QMainWindow):
         self.is_recording = False
         self.time_left_int = 0
         self.bot_timer = QTimer(self)
-        self.bot_timer.timeout.connect(self.timerTimeout)
+        self.bot_timer.timeout.connect(self.timer_tick)
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)  # type: ignore
@@ -136,7 +136,7 @@ class MainWindow(QMainWindow):
         self.remaining_time.setText(format_time)
         self.bot_timer.start(500)
 
-    def timerTimeout(self):
+    def timer_tick(self):
         self.time_left_int -= 1000  # Decrease by 1 second
         print(self.time_left_int)
 
