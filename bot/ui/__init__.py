@@ -1,19 +1,17 @@
 import functools
-import json
-import os
 
 from PySide6.QtCore import QTimer, Slot
 from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import QFileDialog, QMainWindow
 
-from bot.core import Keystroke
 from bot.core.control import run
-from bot.core.keystroke_adapter import ModifierKey, encode_value, match
+from bot.core.keystroke_adapter import match
 from bot.core.worker import Worker
 from bot.models.keys_model import KeysModel
 from bot.ui.mainwindow import Ui_MainWindow
 from bot.ui.modals import FileNameModal
 from bot.utils import logger
+from bot.utils.config import load_config, save_config
 
 
 class MainWindow(QMainWindow):
@@ -32,8 +30,8 @@ class MainWindow(QMainWindow):
         self.key_model = KeysModel()
         self.ui.keyListView.setModel(self.key_model)
 
-        self.ui.actionSaveConfig.triggered.connect(self.save_config)
-        self.ui.actionLoadConfig.triggered.connect(self.load_config)
+        self.ui.actionSaveConfig.triggered.connect(self._save_config)
+        self.ui.actionLoadConfig.triggered.connect(self._load_config)
 
         for i in range(1, 10):
             self.ui.winNum.addItem(str(i))
@@ -125,11 +123,9 @@ class MainWindow(QMainWindow):
 
     def timer_tick(self):
         self.time_left_int -= 1000  # Decrease by 1 second
-        print(self.time_left_int)
 
         if self.time_left_int <= 0:
-            self.bot_timer.stop()
-            self.bot_thread_complete()
+            self.stop_bot()
 
         self.ui.remainingTime.setText(self._format_time(self.time_left_int))
 
@@ -140,12 +136,10 @@ class MainWindow(QMainWindow):
             self.worker.terminate()
             self.worker.wait()
             self.worker.terminate()
-        self.ui.startButton.setDisabled(False)
-        self.ui.stopButton.setDisabled(True)
-        self.ui.remainingTime.setVisible(False)
+        self.bot_thread_complete()
         self.bot_timer.stop()
 
-    def save_config(self):
+    def _save_config(self):
         config = self._dump_config()
         folder = QFileDialog.getExistingDirectory(
             self, "Sauvegarder le fichier de config"
@@ -153,26 +147,13 @@ class MainWindow(QMainWindow):
         if folder:
             dlg = FileNameModal()
             if dlg.exec():
-                filepath = os.path.join(folder, dlg.filename)
-                with open(filepath, "w") as f:
-                    json.dump(config, f, indent=4, default=encode_value)
-                logger.info(f"Config saved to {filepath}")
+                save_config(dlg.filename, folder, config)
 
-    def load_config(self):
+    def _load_config(self):
         dialog = QFileDialog(self, "Choisir le fichier de config")
         filename, _ = dialog.getOpenFileName(self, filter="JSON files (*.json)")
         if filename:
-            with open(filename, "r") as f:
-                config = json.load(f)
-
-            for key in config["keys"]:
-                if modifier := key.get("modifier", {}):
-                    self.key_model.keys.append(
-                        Keystroke(**{**key, "modifier": ModifierKey(**modifier)})  # type: ignore
-                    )
-                else:
-                    self.key_model.keys.append(Keystroke(**key))
-
+            config = load_config(filename, self.key_model)
             self.key_model.layoutChanged.emit()
             self.interval.setText(config["interval"])
             self.limit.setText(config["limit"])
