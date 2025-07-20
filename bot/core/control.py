@@ -1,39 +1,14 @@
 import ctypes
-import time
-from typing import TypedDict
 import logging
 import random
+import time
+from contextlib import contextmanager
+from typing import Generator, TypedDict
 
+from bot.core.keystroke_adapter import ALT_TAB, Keystroke
 from bot.utils import logger
 
 SendInput = ctypes.windll.user32.SendInput
-
-# DirectX scan codes https://gist.github.com/tracend/912308
-KEYMAP = {
-    "ESPACE": 0x39,
-    "A": 0x1E,
-    "Z": 0x2C,
-    "E": 0x12,
-    "W": 0x11,
-    "Q": 0x10,
-    "R": 0x13,
-    "T": 0x14,
-    "Y": 0x15,
-    "U": 0x16,
-    "I": 0x17,
-    "O": 0x18,
-    "P": 0x19,
-    "ALT": 0x38,
-    "TAB": 0x0F,
-    "ECHAP": 0x01,
-    "3": 0x04,
-    "4": 0x05,
-    "5": 0x06,
-    "6": 0x07,
-    "7": 0x08,
-}
-
-INVERTED_KEYMAP = {v: k for k, v in KEYMAP.items()}
 
 
 # C struct redefinitions
@@ -95,25 +70,32 @@ def release_key(hex_key_code: int):
 
 
 def change_window():
-    logging.debug("Window change")
-    press_key(KEYMAP["ALT"])
-    press_key(KEYMAP["TAB"])
-    time.sleep(0.5)
-    release_key(KEYMAP["TAB"])
-    release_key(KEYMAP["ALT"])
+    keystroke(ALT_TAB)
 
 
-def keystroke(key: str) -> None:
-    key_code = KEYMAP[key.upper()]
-    logging.debug("Keystroke %s", key)
-    press_key(key_code)
-    time.sleep(0.5)
-    release_key(key_code)
+@contextmanager
+def modifier_key(stroke: Keystroke) -> Generator[Keystroke, None, None]:
+    if stroke.modifier:
+        press_key(stroke.modifier.scan_code)
+    try:
+        yield stroke
+    finally:
+        if stroke.modifier:
+            release_key(stroke.modifier.scan_code)
+
+
+def keystroke(stroke: Keystroke, hold_sec: float = 0.5) -> None:
+    logging.debug("Keystroke %s", stroke)
+
+    with modifier_key(stroke) as stroke:
+        press_key(stroke.scan_code)
+        time.sleep(hold_sec)
+        release_key(stroke.scan_code)
 
 
 class ParamsDict(TypedDict):
     limit: int
-    keys: list[tuple[int, str]]
+    keys: list[Keystroke]
     win_num: int
     interval: list[int]
 
@@ -124,8 +106,8 @@ def run(params: ParamsDict):
     logger.debug("run with params: %s", params)
     while time.time() < end:
         for _ in range(params["win_num"]):
-            for _, key in params["keys"]:
-                keystroke(key)
+            for stroke in params["keys"]:
+                keystroke(stroke)
                 sleep_time = random.choice(params["interval"])
                 logger.debug("Waiting for %s", sleep_time)
                 time.sleep(sleep_time)

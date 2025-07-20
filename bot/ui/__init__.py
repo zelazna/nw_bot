@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
 )
 
 from bot.core.control import run
+from bot.core.keystroke_adapter import match
 from bot.core.worker import Worker
 from bot.models.keys_model import KeysModel
 from bot.ui.mainwindow import Ui_MainWindow
@@ -81,9 +82,8 @@ class MainWindow(QMainWindow):
 
     def keyReleaseEvent(self, event: QKeyEvent) -> None:
         if self.is_recording:
-            key = event.text()
-            if key.isalpha():
-                self.key_model.keys.append((event.nativeScanCode(), key.upper()))
+            if stroke := match(event):
+                self.key_model.keys.append(stroke)
                 self.key_model.layoutChanged.emit()
 
     def bot_thread_complete(self):
