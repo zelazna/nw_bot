@@ -20,9 +20,10 @@ class Keystroke(BaseKey):
     modifier: Optional[ModifierKey] = None
 
     def __repr__(self) -> str:
+        key_repr = self.key.split("_")[1]
         if self.modifier:
-            return f"{self.modifier.key}+{self.key}"
-        return self.key
+            return f"{self.modifier.key}+{key_repr}"
+        return key_repr
 
 
 @dataclass
