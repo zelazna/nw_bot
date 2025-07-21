@@ -10,8 +10,7 @@ from bot.core.worker import Worker
 from bot.models import KeysModel, Params
 from bot.ui.mainwindow import Ui_MainWindow
 from bot.ui.modals import FileNameModal
-from bot.utils import logger
-from bot.utils.config import load_config, save_config
+from bot.utils import load_config, logger, save_config
 
 
 class MainWindow(QMainWindow):
@@ -131,9 +130,7 @@ class MainWindow(QMainWindow):
         if folder:
             dlg = FileNameModal()
             if dlg.exec():
-                save_config(
-                    dlg.filename, folder, self._dump_config()
-                )
+                save_config(dlg.filename, folder, self._dump_config())
 
     def _load_config(self):
         dialog = QFileDialog(self, "Choisir le fichier de config")
@@ -153,6 +150,7 @@ class MainWindow(QMainWindow):
             win_num=int(self.ui.winNum.currentText()),
         )
 
+    @functools.lru_cache
     def _format_time(self, milliseconds: int) -> str:
         secs = milliseconds / 1000
         secs = secs % (24 * 3600)

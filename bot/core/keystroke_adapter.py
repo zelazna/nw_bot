@@ -18,6 +18,37 @@ def match(event: QKeyEvent) -> Keystroke | None:
         # Ignore CTRL and ALT keys as they are modifiers
         return None
 
+    # Handle direction keys
+    maybe_directional = event.key()
+    match maybe_directional:
+        case Qt.Key.Key_Up.value:
+            return Keystroke(
+                key="KEY_UP",
+                scan_code=scan_code,
+            )
+        case Qt.Key.Key_Down.value:
+            return Keystroke(
+                key="KEY_DOWN",
+                scan_code=scan_code,
+            )
+        case Qt.Key.Key_Left.value:
+            return Keystroke(
+                key="KEY_LEFT",
+                scan_code=scan_code,
+            )
+        case Qt.Key.Key_Right.value:
+            return Keystroke(
+                key="KEY_RIGHT",
+                scan_code=scan_code,
+            )
+        case Qt.Key.Key_Down.value:
+            return Keystroke(
+                key="KEY_DOWN",
+                scan_code=scan_code,
+            )
+        case _:
+            pass
+
     if key is not None:
         if modifier is not Qt.KeyboardModifier.NoModifier:
             match modifier:

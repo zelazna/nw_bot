@@ -107,5 +107,5 @@ def run(params: Params):
                 sleep_time = random.choice(params.interval_range)
                 logger.debug("Waiting for %s", sleep_time)
                 time.sleep(sleep_time)
-            if params.win_num > 1:
-                change_window()
+                if params.win_num > 1:
+                    change_window()

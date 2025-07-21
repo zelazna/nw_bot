@@ -32,6 +32,10 @@ KEYMAP = {
     "NUMPAD7": 0x47,
     "NUMPAD8": 0x48,
     "NUMPAD9": 0x49,
+    "DIK_UP": 0xC8,
+    "DIK_LEFT": 0xCB,
+    "DIK_RIGHT": 0xCD,
+    "DIK_DOWN": 0xD0,
 }
 
 INVERTED_KEYMAP = {v: k for k, v in KEYMAP.items()}
