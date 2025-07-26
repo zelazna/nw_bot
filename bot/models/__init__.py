@@ -3,12 +3,17 @@ from dataclasses import dataclass
 from typing import Optional
 
 from bot.models.keys_model import KeysModel
+from pynput.keyboard import KeyCode
 
 
 @dataclass(frozen=True)
 class BaseKey(ABC):
     key: str
-    scan_code: int
+    vk: int
+
+    @property
+    def key_code(self) -> KeyCode:
+        return KeyCode.from_vk(self.vk)
 
 
 @dataclass(frozen=True)

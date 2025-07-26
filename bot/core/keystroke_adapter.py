@@ -1,45 +1,44 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeyEvent
 
-from bot.core.constants import ALT, CTRL, TAB
+from bot.core.constants import ALT_VK, CTRL_VK, TAB_VK
 from bot.models import Keystroke, ModifierKey
 from bot.utils import logger
 
-
-ALT_TAB = Keystroke(key="TAB", scan_code=TAB, modifier=ModifierKey("ALT", ALT))
+ALT_TAB = Keystroke(key="TAB", modifier=ModifierKey("ALT", ALT_VK), vk=TAB_VK)
 
 
 def match(event: QKeyEvent) -> Keystroke | None:
     modifier = event.modifiers()
-    scan_code = event.nativeScanCode()
+    vk = event.nativeVirtualKey()
 
-    if scan_code in (CTRL, ALT):
+    if vk in (CTRL_VK, ALT_VK):
         # Ignore CTRL and ALT keys as they are modifiers
         return None
 
     try:
         key = Qt.Key(event.key())
+        logger.info(
+            f"Matching key event: {event}, key: {key}, vk: {vk}, modifier: {modifier}"
+        )
         if modifier is not Qt.KeyboardModifier.NoModifier:
             match modifier:
                 case Qt.KeyboardModifier.ControlModifier:
                     return Keystroke(
                         key=key.name,
-                        scan_code=scan_code,
-                        modifier=ModifierKey("CTRL", CTRL),
+                        vk=vk,
+                        modifier=ModifierKey("CTRL", CTRL_VK),
                     )
 
                 case Qt.KeyboardModifier.AltModifier:
                     return Keystroke(
                         key=key.name,
-                        scan_code=scan_code,
-                        modifier=ModifierKey("ALT", ALT),
+                        vk=vk,
+                        modifier=ModifierKey("ALT", ALT_VK),
                     )
                 case _:
                     pass
-        return Keystroke(
-            key=key.name,
-            scan_code=scan_code,
-        )
+        return Keystroke(key.name, vk)
     except ValueError:
         logger.error(f"Invalid key event: {event}")
     except Exception as e:
