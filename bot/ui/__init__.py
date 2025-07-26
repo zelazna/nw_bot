@@ -4,12 +4,13 @@ from PySide6.QtCore import QTimer, Slot
 from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import QFileDialog, QMainWindow
 
+from bot.core.constants import VERSION
 from bot.core.control import run
 from bot.core.keystroke_adapter import match
 from bot.core.worker import Worker
 from bot.models import KeysModel, Params
 from bot.ui.mainwindow import Ui_MainWindow
-from bot.ui.modals import FileNameModal
+from bot.ui.modals import FileNameModal, LogViewerModal
 from bot.utils import load_config, logger, save_config
 
 
@@ -31,6 +32,8 @@ class MainWindow(QMainWindow):
 
         self.ui.actionSaveConfig.triggered.connect(self._save_config)
         self.ui.actionLoadConfig.triggered.connect(self._load_config)
+
+        self.ui.actionShowLogs.triggered.connect(self._show_logs)
 
         for i in range(1, 10):
             self.ui.winNum.addItem(str(i))
@@ -56,6 +59,8 @@ class MainWindow(QMainWindow):
         self.ui.stopButton.clicked.connect(self.stop_bot)
         self.ui.startButton.clicked.connect(self.start_bot)
 
+        self.ui.appVersion.setText(f"v{VERSION}")
+
     def switch_record_keystrokes(self, state: bool):
         self.ui.startRecordButton.setVisible(not state)
         self.ui.stopRecordButton.setVisible(state)
@@ -79,7 +84,7 @@ class MainWindow(QMainWindow):
                 self.key_model.layoutChanged.emit()
 
     def bot_thread_complete(self):
-        logger.info("done!")
+        logger.info("bot thread complete!")
         self.ui.startButton.setDisabled(False)
         self.ui.stopButton.setDisabled(True)
         self.ui.remainingTime.setVisible(False)
@@ -101,7 +106,7 @@ class MainWindow(QMainWindow):
             int(self.limit.text()) * 60 * 1000
         )  # Convert minutes to milliseconds
         format_time = self._format_time(self.time_left_int)
-        logger.debug(f"Starting timer with {format_time} minutes")
+        logger.info(f"Starting timer with {format_time} minutes")
         self.ui.remainingTime.setText(format_time)
         self.bot_timer.start(500)
 
@@ -115,7 +120,7 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def stop_bot(self):
-        logger.debug("Stopping")
+        logger.info("Stopping bot")
         if self.worker:
             self.worker.terminate()
             self.worker.wait()
@@ -139,7 +144,7 @@ class MainWindow(QMainWindow):
             config = load_config(filename, self.key_model)
             self.key_model.layoutChanged.emit()
             self.interval.setText(config["interval"])
-            self.limit.setText(config["limit"])
+            self.limit.setText(str(config["limit"]))
             self.ui.winNum.setCurrentText(str(config["win_num"]))
 
     def _dump_config(self) -> Params:
@@ -149,6 +154,12 @@ class MainWindow(QMainWindow):
             limit=int(self.limit.text()),
             win_num=int(self.ui.winNum.currentText()),
         )
+
+    def _show_logs(self):
+        with open("nw-bot.log", "r") as log_file:
+            logs = log_file.read()
+            log_viewer = LogViewerModal(logs=logs)
+            log_viewer.exec()
 
     @functools.lru_cache
     def _format_time(self, milliseconds: int) -> str:

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>796</width>
-    <height>634</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>30</y>
+      <y>10</y>
       <width>771</width>
       <height>561</height>
      </rect>
@@ -48,6 +48,25 @@
           <height>24</height>
          </rect>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>10</height>
+         </size>
+        </property>
+       </widget>
+       <widget class="QLabel" name="appVersion">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>530</y>
+          <width>231</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Version</string>
+        </property>
        </widget>
       </widget>
      </item>
@@ -61,6 +80,12 @@
           <width>211</width>
           <height>24</height>
          </rect>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>10</height>
+         </size>
         </property>
         <property name="text">
          <string>Demarrer l'enregistrement</string>
@@ -78,6 +103,12 @@
           <height>24</height>
          </rect>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>10</height>
+         </size>
+        </property>
         <property name="text">
          <string>Arreter l'enregistrement</string>
         </property>
@@ -91,6 +122,12 @@
           <height>361</height>
          </rect>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>175</height>
+         </size>
+        </property>
        </widget>
        <widget class="QPushButton" name="deleteKey">
         <property name="geometry">
@@ -100,6 +137,12 @@
           <width>211</width>
           <height>24</height>
          </rect>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>10</height>
+         </size>
         </property>
         <property name="text">
          <string>Supprimer</string>
@@ -172,10 +215,16 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>523</y>
+          <y>510</y>
           <width>121</width>
           <height>31</height>
          </rect>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>10</height>
+         </size>
         </property>
         <property name="text">
          <string>Depart</string>
@@ -185,10 +234,16 @@
         <property name="geometry">
          <rect>
           <x>140</x>
-          <y>523</y>
+          <y>510</y>
           <width>101</width>
           <height>31</height>
          </rect>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>10</height>
+         </size>
         </property>
         <property name="text">
          <string>Arret</string>
@@ -198,7 +253,7 @@
         <property name="geometry">
          <rect>
           <x>170</x>
-          <y>500</y>
+          <y>490</y>
           <width>49</width>
           <height>16</height>
          </rect>
@@ -217,7 +272,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>796</width>
+     <width>800</width>
      <height>21</height>
     </rect>
    </property>
@@ -227,17 +282,32 @@
     </property>
     <addaction name="actionSaveConfig"/>
     <addaction name="actionLoadConfig"/>
+    <addaction name="actionShowLogs"/>
    </widget>
    <addaction name="menuParametres"/>
   </widget>
   <action name="actionSaveConfig">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentSave"/>
+   </property>
    <property name="text">
     <string>Sauver la config</string>
    </property>
   </action>
   <action name="actionLoadConfig">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
+   </property>
    <property name="text">
     <string>Charger la config</string>
+   </property>
+  </action>
+  <action name="actionShowLogs">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::FormatJustifyLeft"/>
+   </property>
+   <property name="text">
+    <string>Afficher le journal</string>
    </property>
   </action>
  </widget>

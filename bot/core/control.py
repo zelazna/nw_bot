@@ -41,7 +41,7 @@ def keystroke(stroke: Keystroke, hold_sec: float = 0.2) -> None:
 def run(params: Params):
     time.sleep(5)  # Allow to switch window in time
     end = time.time() + params.limit * 60
-    logger.debug("run with params: %s", params)
+    logger.info("run with params: %s", params)
     while time.time() < end:
         for _ in range(params.win_num):
             for stroke in params.keys:

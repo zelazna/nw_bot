@@ -1,6 +1,12 @@
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QVBoxLayout
+from PySide6.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QLabel,
+    QLineEdit,
+    QTextEdit,
+    QVBoxLayout,
+)
 
-from bot.ui.mainwindow import QLineEdit
 from bot.utils import logger
 
 
@@ -30,3 +36,22 @@ class FileNameModal(QDialog):
             logger.error("Filename cannot be empty")
             return
         super().accept()
+
+
+class LogViewerModal(QDialog):
+    def __init__(self, logs: str = ""):
+        super().__init__()
+        self.setWindowTitle("Journal des logs")
+        layout = QVBoxLayout()
+        self.log_label = QLabel("Journal:")
+        layout.addWidget(self.log_label)
+        self.log_text = QTextEdit()
+        self.log_text.setReadOnly(True)
+        self.log_text.setText(logs)
+        layout.addWidget(self.log_text)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        self.buttonBox.rejected.connect(self.reject)
+        layout.addWidget(self.buttonBox)
+        self.setLayout(layout)
+        self.resize(800, 600)
+

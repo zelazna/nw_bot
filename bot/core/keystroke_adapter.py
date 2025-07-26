@@ -18,7 +18,7 @@ def match(event: QKeyEvent) -> Keystroke | None:
 
     try:
         key = Qt.Key(event.key())
-        logger.info(
+        logger.debug(
             f"Matching key event: {event}, key: {key}, vk: {vk}, modifier: {modifier}"
         )
         if modifier is not Qt.KeyboardModifier.NoModifier:

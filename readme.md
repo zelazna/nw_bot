@@ -1,7 +1,7 @@
 ## Install
 
 ```bash
-pip -r requirements.txt
+pip install .
 ```
 
 ## Launch It
