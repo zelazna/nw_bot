@@ -1,6 +1,6 @@
 [project]
 name = "nw-bot"
-readme = {file = "README.txt", content-type = "text/markdown"}
+readme = { file = "README.txt", content-type = "text/markdown" }
 requires-python = "==3.12.*"
 dynamic = ["version"]
 dependencies = [
@@ -26,10 +26,14 @@ requires = ["setuptools>=80.9.0", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project.optional-dependencies]
-test = ["pytest==8.4.1"]
+test = ["pytest==8.4.1", "pytest-cov==6.2.1"]
 
 [tool.setuptools_scm]
 
 [tool.pytest.ini_options]
 testpaths = "tests"
 pythonpath = "bot"
+
+
+[tool.coverage.run]
+omit = ["bot/ui/__init__.py", "bot/ui/mainwindow.py", "bot/ui/modals.py"]

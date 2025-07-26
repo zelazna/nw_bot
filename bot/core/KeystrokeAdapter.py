@@ -22,24 +22,19 @@ def match(event: QKeyEvent) -> Keystroke | None:
         # Ignore CTRL and ALT keys as they are modifiers
         return None
 
-    try:
-        key = Qt.Key(event.key())
-        logger.debug(
-            f"Matching key event: {event}, key: {key}, vk: {vk}, modifier: {modifier}"
-        )
-        mod = None
-        if modifier is not Qt.KeyboardModifier.NoModifier:
-            match modifier:
-                case Qt.KeyboardModifier.ControlModifier:
-                    mod = ModifierKey(key="Ctrl", vk=CTRL_VK)
-                case Qt.KeyboardModifier.AltModifier:
-                    mod = ModifierKey(key="Alt", vk=ALT_VK)
-                case Qt.KeyboardModifier.ShiftModifier:
-                    mod = ModifierKey(key="Shift", vk=SHIFT_VK)
-                case _:
-                    pass
-        return Keystroke(key=key.name, vk=vk, modifier=mod)
-    except ValueError:
-        logger.error(f"Invalid key event: {event}")
-    except Exception as e:
-        logger.error(f"Error matching key event: {e}")
+    key = Qt.Key(event.key())
+    logger.debug(
+        f"Matching key event: {event}, key: {key}, vk: {vk}, modifier: {modifier}"
+    )
+    mod = None
+    if modifier is not Qt.KeyboardModifier.NoModifier:
+        match modifier:
+            case Qt.KeyboardModifier.ControlModifier:
+                mod = ModifierKey(key="Ctrl", vk=CTRL_VK)
+            case Qt.KeyboardModifier.AltModifier:
+                mod = ModifierKey(key="Alt", vk=ALT_VK)
+            case Qt.KeyboardModifier.ShiftModifier:
+                mod = ModifierKey(key="Shift", vk=SHIFT_VK)
+            case _:
+                pass
+    return Keystroke(key=key.name, vk=vk, modifier=mod)

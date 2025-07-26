@@ -30,7 +30,7 @@ class Keystroke(BaseKey):
 
 
 class Params(BaseModel):
-    limit: int
+    limit: float | int
     commands: list["Keystroke | MouseClick"]
     winNum: int
     interval: str
