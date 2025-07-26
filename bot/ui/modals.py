@@ -24,14 +24,14 @@ class FileNameModal(QDialog):
         layout = QVBoxLayout()
         message = QLabel("Nom du fichier de configuration:")
         layout.addWidget(message)
-        self.file_name_edit = QLineEdit()
-        layout.addWidget(self.file_name_edit)
+        self.fileNameEdit = QLineEdit()
+        layout.addWidget(self.fileNameEdit)
         layout.addWidget(self.buttonBox)
-        self.file_name_edit.setText("nwbot_config.json")
+        self.fileNameEdit.setText("nwbot_config.json")
         self.setLayout(layout)
 
     def accept(self):
-        self.filename = self.file_name_edit.text()
+        self.filename = self.fileNameEdit.text()
         if not self.filename:
             logger.error("Filename cannot be empty")
             return
@@ -45,10 +45,10 @@ class LogViewerModal(QDialog):
         layout = QVBoxLayout()
         self.log_label = QLabel("Journal:")
         layout.addWidget(self.log_label)
-        self.log_text = QTextEdit()
-        self.log_text.setReadOnly(True)
-        self.log_text.setText(logs)
-        layout.addWidget(self.log_text)
+        self.logText = QTextEdit()
+        self.logText.setReadOnly(True)
+        self.logText.setText(logs)
+        layout.addWidget(self.logText)
         self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         self.buttonBox.rejected.connect(self.reject)
         layout.addWidget(self.buttonBox)

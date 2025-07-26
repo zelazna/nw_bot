@@ -11,13 +11,13 @@ logging.basicConfig(
     datefmt="%m/%d/%Y %H:%M:%S",
     filename=LOG_FILE,
 )
-old_factory = logging.getLogRecordFactory()
+oldFactory = logging.getLogRecordFactory()
 
 
-def record_factory(*args: Any, **kwargs: Any) -> logging.LogRecord:
-    record = old_factory(*args, **kwargs)
+def recordFactory(*args: Any, **kwargs: Any) -> logging.LogRecord:
+    record = oldFactory(*args, **kwargs)
     record.version = VERSION
     return record
 
 
-logging.setLogRecordFactory(record_factory)
+logging.setLogRecordFactory(recordFactory)

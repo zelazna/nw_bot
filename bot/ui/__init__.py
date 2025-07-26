@@ -7,12 +7,13 @@ from PySide6.QtWidgets import QFileDialog, QMainWindow
 
 from bot.core.constants import VERSION
 from bot.core.control import run
-from bot.core.keystroke_adapter import match
+from bot.core.KeystrokeAdapter import match
 from bot.core.worker import Worker
 from bot.models import CommandsModel, MouseClick, Params
 from bot.ui.mainwindow import Ui_MainWindow
 from bot.ui.modals import FileNameModal, LogViewerModal
-from bot.utils import load_config, logger, save_config
+from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
+from bot.utils import loadConfig, logger, saveConfig
 
 
 class MainWindow(QMainWindow):
@@ -20,171 +21,179 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.worker = None
-        self.is_recording = False
-        self.time_left_int = 0
-        self.bot_timer = QTimer(self)
-        self.bot_timer.timeout.connect(self.timer_tick)
+        self.isRecording = False
+        self.timeLeft = 0
+        self.botTimer = QTimer(self)
+        self.botTimer.timeout.connect(self.timerTick)
+        self.validator = ValidateRangeOrNumber()
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)  # type: ignore
 
-        self.key_model = CommandsModel()
-        self.ui.keyListView.setModel(self.key_model)
+        self.commandModel = CommandsModel()
+        self.ui.keyListView.setModel(self.commandModel)
         self.ui.keyListView.setDragEnabled(True)
         self.ui.keyListView.setAcceptDrops(True)
         self.ui.keyListView.setDropIndicatorShown(True)
 
-        self.ui.actionSaveConfig.triggered.connect(self._save_config)
-        self.ui.actionLoadConfig.triggered.connect(self._load_config)
+        self.ui.actionSaveConfig.triggered.connect(self.saveConfig)
+        self.ui.actionLoadConfig.triggered.connect(self.loadConfig)
 
-        self.ui.actionShowLogs.triggered.connect(self._show_logs)
+        self.ui.actionShowLogs.triggered.connect(self.showLogs)
 
         for i in range(1, 10):
             self.ui.winNum.addItem(str(i))
 
         self.ui.stopRecordButton.setVisible(False)
         self.ui.startRecordButton.clicked.connect(
-            functools.partial(self.switch_record_keystrokes, True)
+            functools.partial(self.switchRecordKeystrokes, True)
         )
         self.ui.stopRecordButton.clicked.connect(
-            functools.partial(self.switch_record_keystrokes, False)
+            functools.partial(self.switchRecordKeystrokes, False)
         )
-        self.ui.deleteKey.clicked.connect(self.delete_command)
-        self.ui.deleteAll.clicked.connect(self.delete_all_keys)
+        self.ui.deleteKey.clicked.connect(self.deleteCommand)
+        self.ui.deleteAll.clicked.connect(self.deleteAllKeys)
 
         self.interval = self.ui.interval
         self.interval.setClearButtonEnabled(True)
 
         self.limit = self.ui.limit
         self.limit.setClearButtonEnabled(True)
+        self.limit.setValidator(ValidateNumber())
 
         self.ui.remainingTime.setVisible(False)
 
         self.ui.stopButton.setDisabled(True)
-        self.ui.stopButton.clicked.connect(self.stop_bot)
-        self.ui.startButton.clicked.connect(self.start_bot)
+        self.ui.stopButton.clicked.connect(self.stopBot)
+        self.ui.startButton.clicked.connect(self.startBot)
 
         self.ui.appVersion.setText(f"v{VERSION}")
 
-    def switch_record_keystrokes(self, state: bool):
+    def switchRecordKeystrokes(self, state: bool):
         self.ui.startRecordButton.setVisible(not state)
         self.ui.stopRecordButton.setVisible(state)
-        self.is_recording = state
+        self.isRecording = state
 
-    def delete_all_keys(self):
-        self.key_model.commands.clear()
-        self.key_model.layoutChanged.emit()
+    def deleteAllKeys(self):
+        self.commandModel.commands.clear()
+        self.commandModel.layoutChanged.emit()
         self.ui.keyListView.clearSelection()
 
-    def delete_command(self):
+    def deleteCommand(self):
         indexes = self.ui.keyListView.selectedIndexes()
         if indexes:
             # Indexes is a list of a single item in single-select mode.
             index = indexes[0]
             # Remove the item and refresh.
-            del self.key_model.commands[index.row()]
-            self.key_model.layoutChanged.emit()
+            del self.commandModel.commands[index.row()]
+            self.commandModel.layoutChanged.emit()
             # Clear the selection (as it is no longer valid).
             self.ui.keyListView.clearSelection()
 
     def keyReleaseEvent(self, event: QKeyEvent) -> None:
-        if self.is_recording:
+        if self.isRecording:
             if stroke := match(event):
-                self.key_model.commands.append(stroke)
-                self.key_model.layoutChanged.emit()
+                self.commandModel.commands.append(stroke)
+                self.commandModel.layoutChanged.emit()
         if event.key() == Qt.Key.Key_Delete:
-            self.delete_command()
+            self.deleteCommand()
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        if self.is_recording:
+        if self.isRecording:
             button = event.button()
             kind = Button.right if button is Qt.MouseButton.RightButton else Button.left
-            self.key_model.commands.append(
+            self.commandModel.commands.append(
                 MouseClick(kind=kind, pos=(event.x(), event.y()))
             )
-            self.key_model.layoutChanged.emit()
+            self.commandModel.layoutChanged.emit()
 
-    def bot_thread_complete(self):
+    def botThreadComplete(self):
         logger.info("bot thread complete!")
         self.ui.startButton.setDisabled(False)
         self.ui.stopButton.setDisabled(True)
         self.ui.remainingTime.setVisible(False)
 
     @Slot()
-    def start_bot(self):
-        self.ui.remainingTime.setVisible(True)
-        self.ui.stopButton.setDisabled(False)
-        self.ui.startButton.setDisabled(True)
+    def startBot(self):
+        params = self.dumpConfig()
 
-        self.start_timer()
+        if ValidateRangeOrNumber.validate(params.interval):
+            self.ui.remainingTime.setVisible(True)
+            self.ui.stopButton.setDisabled(False)
+            self.ui.startButton.setDisabled(True)
 
-        self.worker = Worker(run, self._dump_config())
-        self.worker.signals.finished.connect(self.bot_thread_complete)
-        self.worker.start()
+            self.startTimer(500)
 
-    def start_timer(self):
-        self.time_left_int = (
+            self.worker = Worker(run, params)
+            self.worker.signals.finished.connect(self.botThreadComplete)
+            self.worker.start()
+
+    def startTimer(
+        self, interval: int, /, timerType: Qt.TimerType = Qt.TimerType.CoarseTimer
+    ) -> int:
+        self.timeLeft = (
             int(self.limit.text()) * 60 * 1000
         )  # Convert minutes to milliseconds
-        format_time = self._format_time(self.time_left_int)
-        logger.info(f"Starting timer with {format_time} minutes")
-        self.ui.remainingTime.setText(format_time)
-        self.bot_timer.start(500)
+        formatTime = self.formatTime(self.timeLeft)
+        logger.info(f"Starting timer with {formatTime} minutes")
+        self.ui.remainingTime.setText(formatTime)
+        self.botTimer.start(interval)
+        return 1
 
-    def timer_tick(self):
-        self.time_left_int -= 1000  # Decrease by 1 second
+    def timerTick(self):
+        self.timeLeft -= 1000  # Decrease by 1 second
 
-        if self.time_left_int <= 0:
-            self.stop_bot()
+        if self.timeLeft <= 0:
+            self.stopBot()
 
-        self.ui.remainingTime.setText(self._format_time(self.time_left_int))
+        self.ui.remainingTime.setText(self.formatTime(self.timeLeft))
 
     @Slot()
-    def stop_bot(self):
+    def stopBot(self):
         logger.info("Stopping bot")
         if self.worker:
             self.worker.terminate()
             self.worker.wait()
             self.worker.terminate()
-        self.bot_thread_complete()
-        self.bot_timer.stop()
+        self.botThreadComplete()
+        self.botTimer.stop()
 
-    def _save_config(self):
+    def saveConfig(self):
         folder = QFileDialog.getExistingDirectory(
             self, "Sauvegarder le fichier de config"
         )
         if folder:
             dlg = FileNameModal()
             if dlg.exec():
-                save_config(dlg.filename, folder, self._dump_config())
+                saveConfig(dlg.filename, folder, self.dumpConfig())
 
-    def _load_config(self):
+    def loadConfig(self):
         dialog = QFileDialog(self, "Choisir le fichier de config")
         filename, _ = dialog.getOpenFileName(self, filter="JSON files (*.json)")
         if filename:
-            params = load_config(filename)
-            self.key_model.commands = params.commands
+            params = loadConfig(filename)
+            self.commandModel.commands = params.commands
             self.interval.setText(params.interval)
             self.limit.setText(str(params.limit))
-            self.ui.winNum.setCurrentText(str(params.win_num))
-            self.key_model.layoutChanged.emit()
+            self.ui.winNum.setCurrentText(str(params.winNum))
+            self.commandModel.layoutChanged.emit()
 
-    def _dump_config(self) -> Params:
+    def dumpConfig(self) -> Params:
         return Params(
-            commands=self.key_model.commands,
+            commands=self.commandModel.commands,
             interval=self.interval.text(),
             limit=int(self.limit.text()),
-            win_num=int(self.ui.winNum.currentText()),
+            winNum=int(self.ui.winNum.currentText()),
         )
 
-    def _show_logs(self):
-        with open("nw-bot.log", "r") as log_file:
-            logs = log_file.read()
-            log_viewer = LogViewerModal(logs=logs)
-            log_viewer.exec()
+    def showLogs(self):
+        with open("nw-bot.log", "r") as logFile:
+            logs = logFile.read()
+            logViewer = LogViewerModal(logs=logs)
+            logViewer.exec()
 
     @functools.lru_cache
-    def _format_time(self, milliseconds: int) -> str:
+    def formatTime(self, milliseconds: int) -> str:
         secs = milliseconds / 1000
         secs = secs % (24 * 3600)
         hours = secs // 3600

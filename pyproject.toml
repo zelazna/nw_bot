@@ -1,9 +1,7 @@
-[build-system]
-requires = ["setuptools>=80.9.0", "setuptools_scm>=8"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "nw-bot"
+readme = {file = "README.txt", content-type = "text/markdown"}
+requires-python = "==3.12.*"
 dynamic = ["version"]
 dependencies = [
     "altgraph==0.17.4",
@@ -23,4 +21,15 @@ dependencies = [
     "pydantic==2.11.7",
 ]
 
+[build-system]
+requires = ["setuptools>=80.9.0", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+test = ["pytest==8.4.1"]
+
 [tool.setuptools_scm]
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+pythonpath = "bot"

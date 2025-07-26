@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from pynput.keyboard import KeyCode
 from pynput.mouse import Button
 
-from bot.models.commands_model import CommandsModel
+from bot.models.CommandsModel import CommandsModel
 
 
 class BaseKey(BaseModel):
@@ -32,7 +32,7 @@ class Keystroke(BaseKey):
 class Params(BaseModel):
     limit: int
     commands: list["Keystroke | MouseClick"]
-    win_num: int
+    winNum: int
     interval: str
 
     @property
