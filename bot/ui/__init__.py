@@ -2,7 +2,7 @@ import functools
 
 from PySide6.QtCore import QTimer, Slot, Qt
 from PySide6.QtGui import QKeyEvent
-from PySide6.QtWidgets import QFileDialog, QMainWindow, QAbstractItemView
+from PySide6.QtWidgets import QFileDialog, QMainWindow
 from bot.core.constants import VERSION
 from bot.core.control import run
 from bot.core.keystroke_adapter import match

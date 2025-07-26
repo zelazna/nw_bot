@@ -26,7 +26,8 @@ pyinstaller nwbot.spec
 [X] Drag and drop
 [] Right and left click
 [] Responsive layout
-[] Missing Keys
+[X] Missing Keys
 [X] Remove Keys with suppr
 [] Unbound by window record with pynput
 [X] Export logfile
+[] Insert time beetwen keys
