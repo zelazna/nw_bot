@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeyEvent
 
-from bot.core.constants import ALT_VK, CTRL_VK, TAB_VK
+from bot.core.constants import ALT_VK, CTRL_VK, TAB_VK, DEL_VK
 from bot.models import Keystroke, ModifierKey
 from bot.utils import logger
 
@@ -12,7 +12,7 @@ def match(event: QKeyEvent) -> Keystroke | None:
     modifier = event.modifiers()
     vk = event.nativeVirtualKey()
 
-    if vk in (CTRL_VK, ALT_VK):
+    if vk in (CTRL_VK, ALT_VK, DEL_VK):
         # Ignore CTRL and ALT keys as they are modifiers
         return None
 

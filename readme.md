@@ -23,10 +23,10 @@ pyinstaller nwbot.spec
 
 ## TODO
 
-[] Drag and drop
+[X] Drag and drop
 [] Right and left click
 [] Responsive layout
 [] Missing Keys
-[] Remove Keys with suppr
+[X] Remove Keys with suppr
 [] Unbound by window record with pynput
-[] Export logfile
+[X] Export logfile

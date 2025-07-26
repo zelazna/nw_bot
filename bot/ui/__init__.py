@@ -1,9 +1,8 @@
 import functools
 
-from PySide6.QtCore import QTimer, Slot
+from PySide6.QtCore import QTimer, Slot, Qt
 from PySide6.QtGui import QKeyEvent
-from PySide6.QtWidgets import QFileDialog, QMainWindow
-
+from PySide6.QtWidgets import QFileDialog, QMainWindow, QAbstractItemView
 from bot.core.constants import VERSION
 from bot.core.control import run
 from bot.core.keystroke_adapter import match
@@ -29,6 +28,10 @@ class MainWindow(QMainWindow):
 
         self.key_model = KeysModel()
         self.ui.keyListView.setModel(self.key_model)
+        self.ui.keyListView.keyReleaseEvent = self.key_release_event
+        self.ui.keyListView.setDragEnabled(True)
+        self.ui.keyListView.setAcceptDrops(True)
+        self.ui.keyListView.setDropIndicatorShown(True)
 
         self.ui.actionSaveConfig.triggered.connect(self._save_config)
         self.ui.actionLoadConfig.triggered.connect(self._load_config)
@@ -46,6 +49,7 @@ class MainWindow(QMainWindow):
             functools.partial(self.switch_record_keystrokes, False)
         )
         self.ui.deleteKey.clicked.connect(self.delete)
+        self.ui.deleteAll.clicked.connect(self.delete_all_keys)
 
         self.interval = self.ui.interval
         self.interval.setClearButtonEnabled(True)
@@ -66,6 +70,11 @@ class MainWindow(QMainWindow):
         self.ui.stopRecordButton.setVisible(state)
         self.is_recording = state
 
+    def delete_all_keys(self):
+        self.key_model.keys.clear()
+        self.key_model.layoutChanged.emit()
+        self.ui.keyListView.clearSelection()
+
     def delete(self):
         indexes = self.ui.keyListView.selectedIndexes()
         if indexes:
@@ -77,11 +86,13 @@ class MainWindow(QMainWindow):
             # Clear the selection (as it is no longer valid).
             self.ui.keyListView.clearSelection()
 
-    def keyReleaseEvent(self, event: QKeyEvent) -> None:
+    def key_release_event(self, event: QKeyEvent) -> None:
         if self.is_recording:
             if stroke := match(event):
                 self.key_model.keys.append(stroke)
                 self.key_model.layoutChanged.emit()
+        if event.key() == Qt.Key.Key_Delete:
+            self.delete()
 
     def bot_thread_complete(self):
         logger.info("bot thread complete!")

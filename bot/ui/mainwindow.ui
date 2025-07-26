@@ -117,7 +117,7 @@
         <property name="geometry">
          <rect>
           <x>20</x>
-          <y>40</y>
+          <y>110</y>
           <width>211</width>
           <height>361</height>
          </rect>
@@ -133,7 +133,7 @@
         <property name="geometry">
          <rect>
           <x>20</x>
-          <y>410</y>
+          <y>70</y>
           <width>211</width>
           <height>24</height>
          </rect>
@@ -148,10 +148,30 @@
          <string>Supprimer</string>
         </property>
        </widget>
+       <widget class="QPushButton" name="deleteAll">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>40</y>
+          <width>211</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>10</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Tout supprimer</string>
+        </property>
+       </widget>
        <zorder>stopRecordButton</zorder>
        <zorder>startRecordButton</zorder>
        <zorder>keyListView</zorder>
        <zorder>deleteKey</zorder>
+       <zorder>deleteAll</zorder>
       </widget>
      </item>
      <item>
