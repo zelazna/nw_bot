@@ -99,7 +99,9 @@ class MainWindow(QMainWindow):
         if self.is_recording:
             button = event.button()
             kind = Button.right if button is Qt.MouseButton.RightButton else Button.left
-            self.key_model.commands.append(MouseClick(kind, (event.x(), event.y())))
+            self.key_model.commands.append(
+                MouseClick(kind=kind, pos=(event.x(), event.y()))
+            )
             self.key_model.layoutChanged.emit()
 
     def bot_thread_complete(self):
@@ -160,11 +162,12 @@ class MainWindow(QMainWindow):
         dialog = QFileDialog(self, "Choisir le fichier de config")
         filename, _ = dialog.getOpenFileName(self, filter="JSON files (*.json)")
         if filename:
-            config = load_config(filename, self.key_model)
+            params = load_config(filename)
+            self.key_model.commands = params.commands
+            self.interval.setText(params.interval)
+            self.limit.setText(str(params.limit))
+            self.ui.winNum.setCurrentText(str(params.win_num))
             self.key_model.layoutChanged.emit()
-            self.interval.setText(config["interval"])
-            self.limit.setText(str(config["limit"]))
-            self.ui.winNum.setCurrentText(str(config["win_num"]))
 
     def _dump_config(self) -> Params:
         return Params(

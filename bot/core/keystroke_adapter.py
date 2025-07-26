@@ -12,7 +12,7 @@ TAB_VK = cast(int, Key.tab.value.vk)
 CTRL_VK = cast(int, Key.ctrl.value.vk)
 SHIFT_VK = cast(int, Key.shift.value.vk)
 DEL_VK = cast(int, Key.delete.value.vk)
-ALT_TAB = Keystroke(key="Tab", modifier=ModifierKey("Alt", ALT_VK), vk=TAB_VK)
+ALT_TAB = Keystroke(key="Tab", modifier=ModifierKey(key="Alt", vk=ALT_VK), vk=TAB_VK)
 
 
 def match(event: QKeyEvent) -> Keystroke | None:
@@ -31,14 +31,14 @@ def match(event: QKeyEvent) -> Keystroke | None:
         if modifier is not Qt.KeyboardModifier.NoModifier:
             match modifier:
                 case Qt.KeyboardModifier.ControlModifier:
-                    mod = ModifierKey("Ctrl", CTRL_VK)
+                    mod = ModifierKey(key="Ctrl", vk=CTRL_VK)
                 case Qt.KeyboardModifier.AltModifier:
-                    mod = ModifierKey("Alt", ALT_VK)
+                    mod = ModifierKey(key="Alt", vk=ALT_VK)
                 case Qt.KeyboardModifier.ShiftModifier:
-                    mod = ModifierKey("Shift", SHIFT_VK)
+                    mod = ModifierKey(key="Shift", vk=SHIFT_VK)
                 case _:
                     pass
-        return Keystroke(key.name, vk, mod)
+        return Keystroke(key=key.name, vk=vk, modifier=mod)
     except ValueError:
         logger.error(f"Invalid key event: {event}")
     except Exception as e:

@@ -1,14 +1,13 @@
-from abc import ABC
-from dataclasses import dataclass
 from typing import Optional
 
-from bot.models.commands_model import CommandsModel
+from pydantic import BaseModel
 from pynput.keyboard import KeyCode
 from pynput.mouse import Button
 
+from bot.models.commands_model import CommandsModel
 
-@dataclass(frozen=True)
-class BaseKey(ABC):
+
+class BaseKey(BaseModel):
     key: str
     vk: int
 
@@ -17,11 +16,9 @@ class BaseKey(ABC):
         return KeyCode.from_vk(self.vk)
 
 
-@dataclass(frozen=True)
 class ModifierKey(BaseKey): ...
 
 
-@dataclass(frozen=True)
 class Keystroke(BaseKey):
     modifier: Optional[ModifierKey] = None
 
@@ -32,8 +29,7 @@ class Keystroke(BaseKey):
         return key_repr
 
 
-@dataclass
-class Params:
+class Params(BaseModel):
     limit: int
     commands: list["Keystroke | MouseClick"]
     win_num: int
@@ -49,13 +45,11 @@ class Params:
         return interval_range
 
 
-@dataclass
-class MouseClick:
+class MouseClick(BaseModel):
     kind: Button
     pos: tuple[int, int]
 
     def __repr__(self) -> str:
         return f"{self.kind.name.capitalize()} Click: {self.pos}"
-
 
 __all__ = ["CommandsModel", "Params", "ModifierKey", "Keystroke", "MouseClick"]

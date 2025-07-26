@@ -19,7 +19,8 @@ dependencies = [
     "pywin32-ctypes==0.2.3",
     "shiboken6==6.9.1",
     "zstandard==0.23.0",
-    "pynput==1.8.1"
+    "pynput==1.8.1",
+    "pydantic==2.11.7",
 ]
 
 [tool.setuptools_scm]
