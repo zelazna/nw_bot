@@ -4,13 +4,15 @@ import time
 from contextlib import contextmanager
 from typing import Generator
 
-from pynput.keyboard import Controller
+from pynput.keyboard import Controller as KeyBoardController
+from pynput.mouse import Controller as MouseController
 
-from bot.core.keystroke_adapter import ALT_TAB, Keystroke
-from bot.models import Params
+from bot.core.keystroke_adapter import ALT_TAB
+from bot.models import Keystroke, MouseClick, Params
 from bot.utils import logger
 
-keyboard = Controller()
+mouse = MouseController()
+keyboard = KeyBoardController()
 
 
 def change_window():
@@ -38,14 +40,25 @@ def keystroke(stroke: Keystroke, hold_sec: float = 0.2) -> None:
         keyboard.release(stroke.key_code)
 
 
+def mouse_click(click: "MouseClick", hold_sec: float = 0.2):
+    mouse.press(click.kind)
+    time.sleep(hold_sec)
+    mouse.release(click.kind)
+
+
 def run(params: Params):
     time.sleep(5)  # Allow to switch window in time
     end = time.time() + params.limit * 60
     logger.info("run with params: %s", params)
     while time.time() < end:
         for _ in range(params.win_num):
-            for stroke in params.keys:
-                keystroke(stroke)
+            for command in params.commands:
+
+                if isinstance(command, Keystroke):
+                    keystroke(command)
+                else:
+                    mouse_click(command)
+
                 sleep_time = random.choice(params.interval_range)
                 logger.debug("Waiting for %s", sleep_time)
                 time.sleep(sleep_time)

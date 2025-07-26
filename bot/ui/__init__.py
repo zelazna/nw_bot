@@ -1,13 +1,15 @@
 import functools
 
-from PySide6.QtCore import QTimer, Slot, Qt
-from PySide6.QtGui import QKeyEvent
+from pynput.mouse import Button
+from PySide6.QtCore import Qt, QTimer, Slot
+from PySide6.QtGui import QKeyEvent, QMouseEvent
 from PySide6.QtWidgets import QFileDialog, QMainWindow
+
 from bot.core.constants import VERSION
 from bot.core.control import run
 from bot.core.keystroke_adapter import match
 from bot.core.worker import Worker
-from bot.models import KeysModel, Params
+from bot.models import CommandsModel, MouseClick, Params
 from bot.ui.mainwindow import Ui_MainWindow
 from bot.ui.modals import FileNameModal, LogViewerModal
 from bot.utils import load_config, logger, save_config
@@ -26,9 +28,8 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)  # type: ignore
 
-        self.key_model = KeysModel()
+        self.key_model = CommandsModel()
         self.ui.keyListView.setModel(self.key_model)
-        self.ui.keyListView.keyReleaseEvent = self.key_release_event
         self.ui.keyListView.setDragEnabled(True)
         self.ui.keyListView.setAcceptDrops(True)
         self.ui.keyListView.setDropIndicatorShown(True)
@@ -48,7 +49,7 @@ class MainWindow(QMainWindow):
         self.ui.stopRecordButton.clicked.connect(
             functools.partial(self.switch_record_keystrokes, False)
         )
-        self.ui.deleteKey.clicked.connect(self.delete)
+        self.ui.deleteKey.clicked.connect(self.delete_command)
         self.ui.deleteAll.clicked.connect(self.delete_all_keys)
 
         self.interval = self.ui.interval
@@ -71,28 +72,35 @@ class MainWindow(QMainWindow):
         self.is_recording = state
 
     def delete_all_keys(self):
-        self.key_model.keys.clear()
+        self.key_model.commands.clear()
         self.key_model.layoutChanged.emit()
         self.ui.keyListView.clearSelection()
 
-    def delete(self):
+    def delete_command(self):
         indexes = self.ui.keyListView.selectedIndexes()
         if indexes:
             # Indexes is a list of a single item in single-select mode.
             index = indexes[0]
             # Remove the item and refresh.
-            del self.key_model.keys[index.row()]
+            del self.key_model.commands[index.row()]
             self.key_model.layoutChanged.emit()
             # Clear the selection (as it is no longer valid).
             self.ui.keyListView.clearSelection()
 
-    def key_release_event(self, event: QKeyEvent) -> None:
+    def keyReleaseEvent(self, event: QKeyEvent) -> None:
         if self.is_recording:
             if stroke := match(event):
-                self.key_model.keys.append(stroke)
+                self.key_model.commands.append(stroke)
                 self.key_model.layoutChanged.emit()
         if event.key() == Qt.Key.Key_Delete:
-            self.delete()
+            self.delete_command()
+
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        if self.is_recording:
+            button = event.button()
+            kind = Button.right if button is Qt.MouseButton.RightButton else Button.left
+            self.key_model.commands.append(MouseClick(kind, (event.x(), event.y())))
+            self.key_model.layoutChanged.emit()
 
     def bot_thread_complete(self):
         logger.info("bot thread complete!")
@@ -160,7 +168,7 @@ class MainWindow(QMainWindow):
 
     def _dump_config(self) -> Params:
         return Params(
-            keys=self.key_model.keys,
+            commands=self.key_model.commands,
             interval=self.interval.text(),
             limit=int(self.limit.text()),
             win_num=int(self.ui.winNum.currentText()),

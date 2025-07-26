@@ -5,7 +5,7 @@ import json
 import os
 from typing import Any
 
-from bot.models import KeysModel, Keystroke, ModifierKey, Params
+from bot.models import CommandsModel, Keystroke, ModifierKey, Params
 
 
 @functools.singledispatch
@@ -17,17 +17,17 @@ def encode_value(x: Any) -> Any:
     return x
 
 
-def load_config(filename: str, model: KeysModel) -> dict[str, Any]:
+def load_config(filename: str, model: CommandsModel) -> dict[str, Any]:
     with open(filename, "r") as f:
         config = json.load(f)
 
         for key in config["keys"]:
             if modifier := key.get("modifier", {}):
-                model.keys.append(
+                model.commands.append(
                     Keystroke(**{**key, "modifier": ModifierKey(**modifier)})  # type: ignore
                 )
             else:
-                model.keys.append(Keystroke(**key))
+                model.commands.append(Keystroke(**key))
         return config
 
 

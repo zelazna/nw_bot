@@ -14,26 +14,29 @@ from PySide6.QtCore import (
 from bot.core.constants import MIME_TYPE
 
 if TYPE_CHECKING:
-    from bot.models import Keystroke
+    from bot.models import Keystroke, MouseClick
 
 
 Index = QModelIndex | QPersistentModelIndex
 
 
-class KeysModel(QAbstractListModel):
+class CommandsModel(QAbstractListModel):
     def __init__(
-        self, keys: list["Keystroke"] | None = None, *args: Any, **kwargs: Any
+        self,
+        commands: list["Keystroke | MouseClick"] | None = None,
+        *args: Any,
+        **kwargs: Any,
     ):
         super().__init__(*args, **kwargs)
-        self.keys: list["Keystroke"] = keys if keys else []
+        self.commands: list["Keystroke | MouseClick"] = commands if commands else []
 
     def data(self, index: Index, role: int = 0) -> str | None:
         if role == Qt.ItemDataRole.DisplayRole:
-            stroke = self.keys[index.row()]
-            return repr(stroke)
+            command = self.commands[index.row()]
+            return repr(command)
 
     def rowCount(self, parent: Index = QModelIndex()) -> int:
-        return len(self.keys)
+        return len(self.commands)
 
     def flags(self, index: Index) -> Qt.ItemFlag:
         flags = super().flags(index)
@@ -53,7 +56,7 @@ class KeysModel(QAbstractListModel):
         for idx in indexes:
             if idx.isValid():
                 idx = idx.row()
-                data.append(pickle.dumps((idx, self.keys[idx])))
+                data.append(pickle.dumps((idx, self.commands[idx])))
 
         mimeData.setData(MIME_TYPE, data)
         return mimeData
@@ -91,13 +94,13 @@ class KeysModel(QAbstractListModel):
             after_index = parent.row()
         else:
             after_index = self.rowCount(QModelIndex())
-        before_index, stroke = pickle.loads(data.data(MIME_TYPE).data())
+        before_index, command = pickle.loads(data.data(MIME_TYPE).data())
 
-        logging.debug(f"Item {stroke} from idx {before_index} to idx {after_index}")
+        logging.debug(f"Item {command} from idx {before_index} to idx {after_index}")
 
         self.beginResetModel()
-        item = self.keys.pop(before_index)
-        self.keys.insert(after_index + 1, item)
+        item = self.commands.pop(before_index)
+        self.commands.insert(after_index + 1, item)
         self.endResetModel()
 
         return True

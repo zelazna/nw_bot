@@ -2,8 +2,9 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import Optional
 
-from bot.models.keys_model import KeysModel
+from bot.models.commands_model import CommandsModel
 from pynput.keyboard import KeyCode
+from pynput.mouse import Button
 
 
 @dataclass(frozen=True)
@@ -34,7 +35,7 @@ class Keystroke(BaseKey):
 @dataclass
 class Params:
     limit: int
-    keys: list[Keystroke]
+    commands: list["Keystroke | MouseClick"]
     win_num: int
     interval: str
 
@@ -48,4 +49,13 @@ class Params:
         return interval_range
 
 
-__all__ = ["KeysModel", "Params", "ModifierKey", "Keystroke"]
+@dataclass
+class MouseClick:
+    kind: Button
+    pos: tuple[int, int]
+
+    def __repr__(self) -> str:
+        return f"{self.kind.name.capitalize()} Click: {self.pos}"
+
+
+__all__ = ["CommandsModel", "Params", "ModifierKey", "Keystroke", "MouseClick"]

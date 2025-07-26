@@ -24,7 +24,7 @@ pyinstaller nwbot.spec
 ## TODO
 
 [X] Drag and drop
-[] Right and left click
+[X] Right and left click
 [] Responsive layout
 [X] Missing Keys
 [X] Remove Keys with suppr
