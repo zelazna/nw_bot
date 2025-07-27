@@ -1,3 +1,8 @@
+## Get the latest release
+
+<https://github.com/zelazna/nw_bot/releases/latest>
+
+
 ## Install
 
 ```bash
@@ -30,11 +35,11 @@ pytest --cov=bot --cov-report=term --cov-report=xml
 
 ## TODO
 
-[X] Drag and drop
-[X] Right and left click
-[X] Missing Keys
-[X] Remove Keys with suppr
-[X] Export logfile
-[] Unbound by window record with pynput
-[] Responsive layout
-[] Insert time beetwen keys
+- [X] Drag and drop
+- [X] Right and left click
+- [X] Missing Keys
+- [X] Remove Keys with suppr
+- [X] Export logfile
+- [ ] Unbound by window record with pynput
+- [ ] Responsive layout
+- [ ] Insert time beetwen keys
