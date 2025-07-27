@@ -35,9 +35,9 @@ def modifierKey(stroke: Keystroke) -> Generator[Keystroke, None, None]:
 def keystroke(stroke: Keystroke, hold_sec: float = 0.2) -> None:
     logging.debug("Keystroke %s", stroke)
     with modifierKey(stroke) as stroke:
-        keyboard.press(stroke.key_code)
+        keyboard.press(stroke.override or stroke.key_code)
         time.sleep(hold_sec)
-        keyboard.release(stroke.key_code)
+        keyboard.release(stroke.override or stroke.key_code)
 
 
 def mouseClick(click: "MouseClick", hold_sec: float = 0.2):

@@ -1,9 +1,10 @@
+from typing import cast
 import pytest
-from bot.core.KeystrokeAdapter import match
-
+from pynput.keyboard import Key
+from PySide6.QtCore import QEvent, Qt
 from PySide6.QtGui import QKeyEvent
-from PySide6.QtCore import Qt, QEvent
 
+from bot.core.KeystrokeAdapter import CTRL_VK, match
 from bot.models import Keystroke, ModifierKey
 
 
@@ -48,6 +49,29 @@ def test_match_with_modifier(key: str, rep: str, vk: int, event: QKeyEvent):
     assert repr(result) == rep
 
 
-def match_nothing():
-    event = QKeyEvent(QEvent.Type.KeyRelease, 0x1000021, Qt.KeyboardModifier.NoModifier)
+def test_unhandled_modifier():
+    event = QKeyEvent(QEvent.Type.KeyRelease, 0x35, Qt.KeyboardModifier.MetaModifier)
+    result = match(event)
+    assert isinstance(result, Keystroke)
+    assert result.modifier is None
+
+
+def test_match_nothing():
+    event = QKeyEvent(
+        QEvent.Type.KeyRelease, 16777249, Qt.KeyboardModifier.NoModifier, 29, CTRL_VK, 0
+    )
     assert match(event) is None
+
+
+def test_with_directionnal():
+    event = QKeyEvent(
+        QEvent.Type.KeyRelease,
+        16777249,
+        Qt.KeyboardModifier.NoModifier,
+        29,
+        cast(int, Key.up.value.vk),
+        0,
+    )
+    result = match(event)
+    assert isinstance(result, Keystroke)
+    assert result.override == Key.up

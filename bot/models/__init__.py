@@ -1,7 +1,7 @@
 from typing import Optional
 
 from pydantic import BaseModel
-from pynput.keyboard import KeyCode
+from pynput.keyboard import KeyCode, Key
 from pynput.mouse import Button
 
 from bot.models.CommandsModel import CommandsModel
@@ -21,9 +21,13 @@ class ModifierKey(BaseKey): ...
 
 class Keystroke(BaseKey):
     modifier: Optional[ModifierKey] = None
+    override: Optional[Key] = None
 
     def __repr__(self) -> str:
-        key_repr = self.key.split("_")[1]
+        try:
+            key_repr = self.key.split("_")[1]
+        except IndexError:
+            key_repr = self.key
         if self.modifier:
             return f"{self.modifier.key}+{key_repr}"
         return key_repr
@@ -39,7 +43,7 @@ class Params(BaseModel):
     def interval_range(self) -> list[int]:
         if "-" in self.interval:
             min, max = self.interval.split("-")
-            interval_range = list(range(int(min), int(max)))
+            interval_range = list(range(int(min), int(max) + 1))
         else:
             interval_range = [int(self.interval)]
         return interval_range
@@ -51,5 +55,6 @@ class MouseClick(BaseModel):
 
     def __repr__(self) -> str:
         return f"{self.kind.name.capitalize()} Click: {self.pos}"
+
 
 __all__ = ["CommandsModel", "Params", "ModifierKey", "Keystroke", "MouseClick"]

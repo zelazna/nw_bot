@@ -18,16 +18,23 @@ pyside6-uic bot/ui/mainwindow.ui -o bot/ui/mainwindow.py
 
 ## Generate the exec
 
-````bash
+```bash
 pyinstaller nwbot.spec
+```
+
+## Run tests
+
+```bash
+pytest --cov=bot --cov-report=term --cov-report=xml
+```
 
 ## TODO
 
 [X] Drag and drop
 [X] Right and left click
-[] Responsive layout
 [X] Missing Keys
 [X] Remove Keys with suppr
-[] Unbound by window record with pynput
 [X] Export logfile
+[] Unbound by window record with pynput
+[] Responsive layout
 [] Insert time beetwen keys

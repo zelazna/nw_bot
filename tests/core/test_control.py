@@ -47,4 +47,4 @@ def test_run():
         run(params)
         assert k_press.call_args_list[0] == call(stroke)
         assert m_click.call_args_list[0] == call(click)
-        assert sleep.call_args_list[:2] == [call(5), call(1)]
+        assert sleep.call_args_list[0] == call(5)
