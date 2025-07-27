@@ -1,0 +1,137 @@
+{
+    "limit": 2,
+    "commands": [
+        {
+            "key": "Key_W",
+            "vk": 87,
+            "modifier": null,
+            "override": null
+        },
+        {
+            "key": "Key_D",
+            "vk": 68,
+            "modifier": null,
+            "override": null
+        },
+        {
+            "key": "Key_W",
+            "vk": 87,
+            "modifier": null,
+            "override": null
+        },
+        {
+            "key": "Key_Q",
+            "vk": 81,
+            "modifier": {
+                "key": "Shift",
+                "vk": 160
+            },
+            "override": null
+        },
+        {
+            "key": "Key_C",
+            "vk": 67,
+            "modifier": {
+                "key": "Shift",
+                "vk": 160
+            },
+            "override": null
+        },
+        {
+            "key": "Key_D",
+            "vk": 68,
+            "modifier": {
+                "key": "Shift",
+                "vk": 160
+            },
+            "override": null
+        },
+        {
+            "kind": [
+                4,
+                2,
+                0
+            ],
+            "pos": [
+                535,
+                268
+            ]
+        },
+        {
+            "kind": [
+                16,
+                8,
+                0
+            ],
+            "pos": [
+                535,
+                268
+            ]
+        },
+        {
+            "key": "Key_I",
+            "vk": 73,
+            "modifier": {
+                "key": "Ctrl",
+                "vk": 17
+            },
+            "override": null
+        },
+        {
+            "key": "Key_Q",
+            "vk": 81,
+            "modifier": {
+                "key": "Alt",
+                "vk": 18
+            },
+            "override": null
+        },
+        {
+            "key": "Key_1",
+            "vk": 49,
+            "modifier": null,
+            "override": null
+        },
+        {
+            "key": "Key_At",
+            "vk": 50,
+            "modifier": {
+                "key": "Shift",
+                "vk": 160
+            },
+            "override": null
+        },
+        {
+            "key": "Key_Shift",
+            "vk": 16,
+            "modifier": null,
+            "override": null
+        },
+        {
+            "key": "Key_3",
+            "vk": 51,
+            "modifier": null,
+            "override": null
+        },
+        {
+            "key": "Key_Dollar",
+            "vk": 52,
+            "modifier": {
+                "key": "Shift",
+                "vk": 160
+            },
+            "override": null
+        },
+        {
+            "key": "Key_Percent",
+            "vk": 53,
+            "modifier": {
+                "key": "Shift",
+                "vk": 160
+            },
+            "override": null
+        }
+    ],
+    "winNum": 1,
+    "interval": "1-5"
+}

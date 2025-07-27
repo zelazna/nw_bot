@@ -4,7 +4,7 @@ from PySide6.QtGui import QValidator
 
 class ValidateNumber(QValidator):
     def validate(self, num: str, index: int) -> tuple[QValidator.State, str, int]:
-        pattern = re.compile("[0-9]")
+        pattern = re.compile("[0-9]{1,3}")
 
         if pattern.fullmatch(num):
             return QValidator.State.Acceptable, num, index

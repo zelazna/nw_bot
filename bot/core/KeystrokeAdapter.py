@@ -5,7 +5,6 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeyEvent
 
 from bot.models import Keystroke, ModifierKey
-from bot.utils import logger
 
 ALT_VK = cast(int, Key.alt.value.vk)
 TAB_VK = cast(int, Key.tab.value.vk)
@@ -37,9 +36,7 @@ def match(event: QKeyEvent) -> Keystroke | None:
         override = directionalMapping[vk]
 
     key = Qt.Key(event.key())
-    logger.debug(
-        f"Matching key event: {event}, key: {key}, vk: {vk}, modifier: {modifier}"
-    )
+
     mod = None
     if modifier is not Qt.KeyboardModifier.NoModifier:
         match modifier:

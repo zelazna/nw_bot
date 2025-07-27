@@ -1,4 +1,5 @@
 import functools
+import os
 
 from pynput.mouse import Button
 from PySide6.QtCore import Qt, QTimer, Slot
@@ -165,7 +166,7 @@ class MainWindow(QMainWindow):
         if folder:
             dlg = FileNameModal()
             if dlg.exec():
-                saveConfig(dlg.filename, folder, self.dumpConfig())
+                saveConfig(os.path.join(folder, dlg.filename), self.dumpConfig())
 
     def loadConfig(self):
         dialog = QFileDialog(self, "Choisir le fichier de config")

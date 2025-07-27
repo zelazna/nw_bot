@@ -33,7 +33,7 @@ test = ["pytest==8.4.1", "pytest-cov==6.2.1"]
 [tool.pytest.ini_options]
 testpaths = "tests"
 pythonpath = "bot"
-
+addopts = "--cov=bot --cov-report=term --cov-report xml"
 
 [tool.coverage.run]
 omit = ["bot/ui/__init__.py", "bot/ui/mainwindow.py", "bot/ui/modals.py"]

@@ -22,7 +22,10 @@ def test_validate_range(expected: QValidator.State, input: str):
 
 test_cases = [
     (QValidator.State.Acceptable, "5"),
+    (QValidator.State.Acceptable, "50"),
+    (QValidator.State.Acceptable, "500"),
     (QValidator.State.Invalid, "abc"),
+    (QValidator.State.Invalid, "1234"),
     (QValidator.State.Invalid, "12-34-56"),
 ]
 
