@@ -1,12 +1,13 @@
 import functools
 import os
+import time
 
 from pynput.mouse import Button
 from PySide6.QtCore import Qt, QTimer, Slot
 from PySide6.QtGui import QKeyEvent, QMouseEvent
 from PySide6.QtWidgets import QFileDialog, QMainWindow
 
-from bot.core.constants import VERSION
+from bot.core.constants import PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
 from bot.core.control import run
 from bot.core.KeystrokeAdapter import match
 from bot.core.recorder import Recorder
@@ -143,7 +144,7 @@ class MainWindow(QMainWindow):
             self.ui.stopButton.setDisabled(False)
             self.ui.startButton.setDisabled(True)
 
-            self.startTimer(500)
+            self.startTimer(TIMER_TIMEOUT_MILLISEC)
 
             self.worker = Worker(run, params)
             self.worker.signals.finished.connect(self.botThreadComplete)
@@ -152,8 +153,8 @@ class MainWindow(QMainWindow):
     def startTimer(
         self, interval: int, /, timerType: Qt.TimerType = Qt.TimerType.CoarseTimer
     ) -> int:
-        self.timeLeft = (
-            int(self.limit.text()) * 60 * 1000
+        self.timeLeft = int(self.limit.text()) * 60 * 1000 + (
+            PADDING_IN_S * 1000
         )  # Convert minutes to milliseconds
         formatTime = self.formatTime(self.timeLeft)
         logger.info(f"Starting timer with {formatTime} minutes")
@@ -162,11 +163,7 @@ class MainWindow(QMainWindow):
         return 1
 
     def timerTick(self):
-        self.timeLeft -= 1000  # Decrease by 1 second
-
-        if self.timeLeft <= 0:
-            self.stopBot()
-
+        self.timeLeft -= TIMER_TIMEOUT_MILLISEC  # Decrease by 0.5 second
         self.ui.remainingTime.setText(self.formatTime(self.timeLeft))
 
     @Slot()
