@@ -1,6 +1,5 @@
 import functools
 import os
-import time
 
 from pynput.mouse import Button
 from PySide6.QtCore import Qt, QTimer, Slot
@@ -54,10 +53,10 @@ class MainWindow(QMainWindow):
 
         self.ui.stopRecordButton.setVisible(False)
         self.ui.startRecordButton.clicked.connect(
-            functools.partial(self.switchRecordKeystrokes, True)
+            functools.partial(self.toggleRecordKeystrokes, True)
         )
         self.ui.stopRecordButton.clicked.connect(
-            functools.partial(self.switchRecordKeystrokes, False)
+            functools.partial(self.toggleRecordKeystrokes, False)
         )
         self.ui.deleteKey.clicked.connect(self.deleteCommand)
         self.ui.deleteAll.clicked.connect(self.deleteAllKeys)
@@ -77,7 +76,7 @@ class MainWindow(QMainWindow):
 
         self.ui.appVersion.setText(f"v{VERSION}")
 
-    def switchRecordKeystrokes(self, state: bool):
+    def toggleRecordKeystrokes(self, state: bool):
         self.ui.startRecordButton.setVisible(not state)
         self.ui.stopRecordButton.setVisible(state)
         self.isRecording = state
@@ -106,6 +105,7 @@ class MainWindow(QMainWindow):
 
     def toggleOutsideRecord(self, checked: bool):
         self.isRecordingOutside = checked
+        self.toggleRecordKeystrokes(False)
 
     def keyReleaseEvent(self, event: QKeyEvent) -> None:
         if self.isRecording and not self.isRecordingOutside:
