@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/zelazna/nw_bot/badge.svg)](https://coveralls.io/github/zelazna/nw_bot)
+
 ## Get the latest release
 
 <https://github.com/zelazna/nw_bot/releases/latest>
