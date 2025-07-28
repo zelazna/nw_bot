@@ -8,11 +8,11 @@ from PySide6.QtWidgets import QFileDialog, QMainWindow
 
 from bot.core.constants import PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
 from bot.core.control import run
-from bot.core.KeystrokeAdapter import match
+from bot.core.keystroke_adapter import match
 from bot.core.recorder import Recorder
 from bot.core.worker import Worker
 from bot.models import CommandsModel, Keystroke, MouseClick, Params
-from bot.ui.mainwindow import Ui_MainWindow
+from bot.ui.main_window import Ui_MainWindow
 from bot.ui.modals import FileNameModal, LogViewerModal
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
 from bot.utils import loadConfig, logger, saveConfig

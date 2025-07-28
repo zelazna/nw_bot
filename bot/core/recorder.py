@@ -1,10 +1,9 @@
 from pydantic import ValidationError
-from bot.core.control import modifierKey
 from bot.core.worker import WorkerSignals
 from pynput import keyboard, mouse
 
 from bot.models import Keystroke, ModifierKey, MouseClick
-from bot.core.KeystrokeAdapter import directionalMapping
+from bot.core.keystroke_adapter import directionalMapping
 from bot.utils import logger
 
 MODIFIERS = [

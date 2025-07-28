@@ -36,4 +36,4 @@ pythonpath = "bot"
 addopts = "--cov=bot --cov-report=term --cov-report xml"
 
 [tool.coverage.run]
-omit = ["bot/ui/__init__.py", "bot/ui/mainwindow.py", "bot/ui/modals.py", "main.py", "tests"]
+omit = ["bot/ui/__init__.py", "bot/ui/main_window.py", "bot/ui/modals.py", "main.py", "tests"]

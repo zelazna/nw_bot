@@ -30,7 +30,7 @@ jobs:
           pip install .
 
       - name: Generate the python ui file
-        run: pyside6-uic bot/ui/mainwindow.ui -o bot/ui/mainwindow.py
+        run: pyside6-uic bot/ui/main_window.ui -o bot/ui/main_window.py
       - name: Build GUI executable
         run: |
           pyinstaller nwbot.spec

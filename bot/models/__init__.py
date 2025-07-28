@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from pynput.keyboard import KeyCode, Key
 from pynput.mouse import Button
 
-from bot.models.CommandsModel import CommandsModel
+from bot.models.commands import CommandsModel
 
 
 class BaseKey(BaseModel):

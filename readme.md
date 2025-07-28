@@ -17,7 +17,7 @@ python main.py
 ## Generate the UI python file
 
 ```bash
-pyside6-uic bot/ui/mainwindow.ui -o bot/ui/mainwindow.py
+pyside6-uic bot/ui/main_window.ui -o bot/ui/main_window.py
 ```
 
 ## Generate the exec

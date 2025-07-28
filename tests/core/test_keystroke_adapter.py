@@ -4,7 +4,7 @@ from pynput.keyboard import Key
 from PySide6.QtCore import QEvent, Qt
 from PySide6.QtGui import QKeyEvent
 
-from bot.core.KeystrokeAdapter import CTRL_VK, match
+from bot.core.keystroke_adapter import CTRL_VK, match
 from bot.models import Keystroke, ModifierKey
 
 

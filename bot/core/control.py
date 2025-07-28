@@ -7,7 +7,7 @@ from typing import Generator
 from pynput.keyboard import Controller as KeyBoardController
 from pynput.mouse import Controller as MouseController
 
-from bot.core.KeystrokeAdapter import ALT_TAB
+from bot.core.keystroke_adapter import ALT_TAB
 from bot.models import Keystroke, MouseClick, Params
 from bot.utils import logger
 
