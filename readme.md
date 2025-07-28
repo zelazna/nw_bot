@@ -2,7 +2,6 @@
 
 <https://github.com/zelazna/nw_bot/releases/latest>
 
-
 ## Install
 
 ```bash
@@ -40,6 +39,8 @@ pytest --cov=bot --cov-report=term --cov-report=xml
 - [X] Missing Keys
 - [X] Remove Keys with suppr
 - [X] Export logfile
-- [ ] Unbound by window record with pynput
-- [ ] Responsive layout
+- [X] Unbound by window record with pynput
+- [X] Responsive layout
 - [ ] Insert time beetwen keys
+- [ ] Command pattern
+- [ ] Copy and paste Keys

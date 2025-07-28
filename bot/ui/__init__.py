@@ -9,8 +9,9 @@ from PySide6.QtWidgets import QFileDialog, QMainWindow
 from bot.core.constants import VERSION
 from bot.core.control import run
 from bot.core.KeystrokeAdapter import match
+from bot.core.recorder import Recorder
 from bot.core.worker import Worker
-from bot.models import CommandsModel, MouseClick, Params
+from bot.models import CommandsModel, Keystroke, MouseClick, Params
 from bot.ui.mainwindow import Ui_MainWindow
 from bot.ui.modals import FileNameModal, LogViewerModal
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
@@ -23,10 +24,14 @@ class MainWindow(QMainWindow):
 
         self.worker = None
         self.isRecording = False
+        self.isRecordingOutside = False
         self.timeLeft = 0
         self.botTimer = QTimer(self)
         self.botTimer.timeout.connect(self.timerTick)
         self.validator = ValidateRangeOrNumber()
+
+        self.recorder = Recorder()
+        self.recorder.signals.interaction.connect(self.recordOutside)
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)  # type: ignore
@@ -39,6 +44,7 @@ class MainWindow(QMainWindow):
 
         self.ui.actionSaveConfig.triggered.connect(self.saveConfig)
         self.ui.actionLoadConfig.triggered.connect(self.loadConfig)
+        self.ui.actionUnboundRecordToggle.triggered.connect(self.toggleOutsideRecord)
 
         self.ui.actionShowLogs.triggered.connect(self.showLogs)
 
@@ -75,6 +81,12 @@ class MainWindow(QMainWindow):
         self.ui.stopRecordButton.setVisible(state)
         self.isRecording = state
 
+        if self.isRecordingOutside:
+            if state:
+                self.recorder.start()
+            else:
+                self.recorder.stop()
+
     def deleteAllKeys(self):
         self.commandModel.commands.clear()
         self.commandModel.layoutChanged.emit()
@@ -91,16 +103,24 @@ class MainWindow(QMainWindow):
             # Clear the selection (as it is no longer valid).
             self.ui.keyListView.clearSelection()
 
+    def toggleOutsideRecord(self, checked: bool):
+        self.isRecordingOutside = checked
+
     def keyReleaseEvent(self, event: QKeyEvent) -> None:
-        if self.isRecording:
+        if self.isRecording and not self.isRecordingOutside:
             if stroke := match(event):
                 self.commandModel.commands.append(stroke)
                 self.commandModel.layoutChanged.emit()
         if event.key() == Qt.Key.Key_Delete:
             self.deleteCommand()
 
+    def recordOutside(self, interaction: Keystroke | MouseClick):
+        self.commandModel.commands.append(interaction)
+        self.commandModel.layoutChanged.emit()
+
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        if self.isRecording:
+        if self.isRecording and not self.isRecordingOutside:
+            print(event)
             button = event.button()
             kind = Button.right if button is Qt.MouseButton.RightButton else Button.left
             self.commandModel.commands.append(

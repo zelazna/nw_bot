@@ -12,13 +12,7 @@ CTRL_VK = cast(int, Key.ctrl.value.vk)
 SHIFT_VK = cast(int, Key.shift.value.vk)
 DEL_VK = cast(int, Key.delete.value.vk)
 
-
-directionalMapping = {
-    Key.up.value.vk: Key.up,
-    Key.down.value.vk: Key.down,
-    Key.left.value.vk: Key.left,
-    Key.right.value.vk: Key.right,
-}
+directionalMapping = {k.value.vk: k for k in (Key.up, Key.down, Key.left, Key.right)}
 
 ALT_TAB = Keystroke(key="Tab", modifier=ModifierKey(key="Alt", vk=ALT_VK), vk=TAB_VK)
 

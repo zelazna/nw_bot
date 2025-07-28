@@ -14,278 +14,224 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="horizontalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>771</width>
-      <height>561</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QWidget" name="left" native="true">
-       <widget class="QLabel" name="label">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>10</y>
-          <width>171</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Nombre de fenetres</string>
-        </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QWidget" name="left" native="true">
+        <widget class="QLabel" name="label">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>171</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Nombre de fenetres</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="winNum">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>30</y>
+           <width>201</width>
+           <height>24</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="appVersion">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>530</y>
+           <width>231</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Version</string>
+         </property>
+        </widget>
        </widget>
-       <widget class="QComboBox" name="winNum">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>30</y>
-          <width>201</width>
-          <height>24</height>
-         </rect>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>100</width>
-          <height>10</height>
-         </size>
-        </property>
+      </item>
+      <item>
+       <widget class="QWidget" name="middle" native="true">
+        <widget class="QPushButton" name="startRecordButton">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>10</y>
+           <width>211</width>
+           <height>24</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Demarrer l'enregistrement</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="stopRecordButton">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>10</y>
+           <width>211</width>
+           <height>24</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Arreter l'enregistrement</string>
+         </property>
+        </widget>
+        <widget class="QListView" name="keyListView">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>110</y>
+           <width>211</width>
+           <height>361</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="deleteKey">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>70</y>
+           <width>211</width>
+           <height>24</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Supprimer</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="deleteAll">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>40</y>
+           <width>211</width>
+           <height>24</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Tout supprimer</string>
+         </property>
+        </widget>
+        <zorder>stopRecordButton</zorder>
+        <zorder>startRecordButton</zorder>
+        <zorder>keyListView</zorder>
+        <zorder>deleteKey</zorder>
+        <zorder>deleteAll</zorder>
        </widget>
-       <widget class="QLabel" name="appVersion">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>530</y>
-          <width>231</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Version</string>
-        </property>
+      </item>
+      <item>
+       <widget class="QWidget" name="right" native="true">
+        <widget class="QLabel" name="label_2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>0</y>
+           <width>141</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Intervale entre les touches</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="interval">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>30</y>
+           <width>231</width>
+           <height>24</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="placeholderText">
+          <string>1 ou 1-5 pour aleatoire entre deux valeurs</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_3">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>60</y>
+           <width>131</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Limite de temps (en m)</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="limit">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>80</y>
+           <width>231</width>
+           <height>24</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>2</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="startButton">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>510</y>
+           <width>121</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Depart</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="stopButton">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>510</y>
+           <width>101</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Arret</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="remainingTime">
+         <property name="geometry">
+          <rect>
+           <x>170</x>
+           <y>490</y>
+           <width>49</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>00:00:00</string>
+         </property>
+        </widget>
        </widget>
-      </widget>
-     </item>
-     <item>
-      <widget class="QWidget" name="middle" native="true">
-       <widget class="QPushButton" name="startRecordButton">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>10</y>
-          <width>211</width>
-          <height>24</height>
-         </rect>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>100</width>
-          <height>10</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Demarrer l'enregistrement</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="stopRecordButton">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>10</y>
-          <width>211</width>
-          <height>24</height>
-         </rect>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>100</width>
-          <height>10</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Arreter l'enregistrement</string>
-        </property>
-       </widget>
-       <widget class="QListView" name="keyListView">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>110</y>
-          <width>211</width>
-          <height>361</height>
-         </rect>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>100</width>
-          <height>175</height>
-         </size>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="deleteKey">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>70</y>
-          <width>211</width>
-          <height>24</height>
-         </rect>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>100</width>
-          <height>10</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Supprimer</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="deleteAll">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>40</y>
-          <width>211</width>
-          <height>24</height>
-         </rect>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>100</width>
-          <height>10</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Tout supprimer</string>
-        </property>
-       </widget>
-       <zorder>stopRecordButton</zorder>
-       <zorder>startRecordButton</zorder>
-       <zorder>keyListView</zorder>
-       <zorder>deleteKey</zorder>
-       <zorder>deleteAll</zorder>
-      </widget>
-     </item>
-     <item>
-      <widget class="QWidget" name="right" native="true">
-       <widget class="QLabel" name="label_2">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>0</y>
-          <width>141</width>
-          <height>31</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Intervale entre les touches</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="interval">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>30</y>
-          <width>231</width>
-          <height>24</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="placeholderText">
-         <string>1 ou 1-5 pour aleatoire entre deux valeurs</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_3">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>60</y>
-          <width>131</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Limite de temps (en m)</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="limit">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>80</y>
-          <width>231</width>
-          <height>24</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>2</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="startButton">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>510</y>
-          <width>121</width>
-          <height>31</height>
-         </rect>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>100</width>
-          <height>10</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Depart</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="stopButton">
-        <property name="geometry">
-         <rect>
-          <x>140</x>
-          <y>510</y>
-          <width>101</width>
-          <height>31</height>
-         </rect>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>100</width>
-          <height>10</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Arret</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="remainingTime">
-        <property name="geometry">
-         <rect>
-          <x>170</x>
-          <y>490</y>
-          <width>49</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>00:00:00</string>
-        </property>
-       </widget>
-      </widget>
-     </item>
-    </layout>
-   </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -304,7 +250,14 @@
     <addaction name="actionLoadConfig"/>
     <addaction name="actionShowLogs"/>
    </widget>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <addaction name="actionUnboundRecordToggle"/>
+   </widget>
    <addaction name="menuParametres"/>
+   <addaction name="menuOptions"/>
   </widget>
   <action name="actionSaveConfig">
    <property name="icon">
@@ -328,6 +281,17 @@
    </property>
    <property name="text">
     <string>Afficher le journal</string>
+   </property>
+  </action>
+  <action name="actionUnboundRecordToggle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::MediaRecord"/>
+   </property>
+   <property name="text">
+    <string>Enregistrer en dehors</string>
    </property>
   </action>
  </widget>

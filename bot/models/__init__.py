@@ -29,8 +29,8 @@ class Keystroke(BaseKey):
         except IndexError:
             key_repr = self.key
         if self.modifier:
-            return f"{self.modifier.key}+{key_repr}"
-        return key_repr
+            return f"{self.modifier.key.capitalize()}+{key_repr}"
+        return key_repr.capitalize()
 
 
 class Params(BaseModel):
