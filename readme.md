@@ -43,6 +43,6 @@ pytest --cov=bot --cov-report=term --cov-report=xml
 - [X] Export logfile
 - [X] Unbound by window record with pynput
 - [X] Responsive layout
+- [X] Command pattern
 - [ ] Insert time beetwen keys
-- [ ] Command pattern
 - [ ] Copy and paste Keys

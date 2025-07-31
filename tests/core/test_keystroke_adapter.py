@@ -74,4 +74,3 @@ def test_with_directionnal():
     )
     result = match(event)
     assert isinstance(result, Keystroke)
-    assert result.override == Key.up

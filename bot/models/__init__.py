@@ -1,13 +1,25 @@
-from typing import Optional
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
-from pynput.keyboard import KeyCode, Key
+from pynput.keyboard import KeyCode
 from pynput.mouse import Button
 
 from bot.models.commands import CommandsModel
 
 
-class BaseKey(BaseModel):
+if TYPE_CHECKING:
+    from pynput.keyboard import Controller as KeyBoardController
+    from pynput.mouse import Controller as MouseController
+
+
+class BaseCommand(ABC):
+    @abstractmethod
+    def execute(self): ...
+
+
+@dataclass
+class BaseKey:
     key: str
     vk: int
 
@@ -19,9 +31,10 @@ class BaseKey(BaseModel):
 class ModifierKey(BaseKey): ...
 
 
-class Keystroke(BaseKey):
-    modifier: Optional[ModifierKey] = None
-    override: Optional[Key] = None
+@dataclass
+class Keystroke(BaseKey, BaseCommand):
+    controller: "KeyBoardController"
+    modifier: ModifierKey | None = None
 
     def __repr__(self) -> str:
         try:
@@ -32,10 +45,33 @@ class Keystroke(BaseKey):
             return f"{self.modifier.key.capitalize()}+{key_repr}"
         return key_repr.capitalize()
 
+    def execute(self):
+        if self.modifier:
+            self.controller.press(self.modifier.key_code)
+        try:
+            self.controller.tap(self.key_code)
+        finally:
+            if self.modifier:
+                self.controller.release(self.modifier.key_code)
 
-class Params(BaseModel):
+
+@dataclass
+class MouseClick(BaseCommand):
+    kind: Button
+    pos: tuple[int, int]
+    controller: "MouseController"
+
+    def __repr__(self) -> str:
+        return f"{self.kind.name.capitalize()} Click: {self.pos}"
+
+    def execute(self):
+        self.controller.click(self.kind)
+
+
+@dataclass
+class Params:
     limit: float | int
-    commands: list["Keystroke | MouseClick"]
+    commands: list[BaseCommand]
     winNum: int
     interval: str
 
@@ -49,12 +85,11 @@ class Params(BaseModel):
         return interval_range
 
 
-class MouseClick(BaseModel):
-    kind: Button
-    pos: tuple[int, int]
-
-    def __repr__(self) -> str:
-        return f"{self.kind.name.capitalize()} Click: {self.pos}"
-
-
-__all__ = ["CommandsModel", "Params", "ModifierKey", "Keystroke", "MouseClick"]
+__all__ = [
+    "CommandsModel",
+    "Params",
+    "ModifierKey",
+    "Keystroke",
+    "MouseClick",
+    "BaseCommand",
+]

@@ -1,66 +1,38 @@
-import logging
 import random
 import time
-from contextlib import contextmanager
-from typing import Generator
+from dataclasses import dataclass
 
 from pynput.keyboard import Controller as KeyBoardController
 from pynput.mouse import Controller as MouseController
 
-from bot.core.keystroke_adapter import ALT_TAB
-from bot.models import Keystroke, MouseClick, Params
+from bot.core.constants import ALT_VK, TAB_VK
+from bot.models import Keystroke, ModifierKey, Params
 from bot.utils import logger
 
 mouse = MouseController()
 keyboard = KeyBoardController()
+alt_tab = Keystroke("Tab", TAB_VK, keyboard, ModifierKey(key="Alt", vk=ALT_VK))
 
 
-def changeWindow():
-    # TODO: Use win32gui.SetForegroundWindow instead of ALT_TAB
-    # https://github.com/learncodebygaming/multiple-minimized-windows
-    keystroke(ALT_TAB)
+@dataclass
+class Runner:
+    params: Params
 
-
-@contextmanager
-def modifierKey(stroke: Keystroke) -> Generator[Keystroke, None, None]:
-    if stroke.modifier:
-        keyboard.press(stroke.modifier.key_code)
-    try:
-        yield stroke
-    finally:
-        if stroke.modifier:
-            keyboard.release(stroke.modifier.key_code)
-
-
-def keystroke(stroke: Keystroke, hold_sec: float = 0.2) -> None:
-    logging.debug("Keystroke %s", stroke)
-    with modifierKey(stroke) as stroke:
-        keyboard.press(stroke.override or stroke.key_code)
-        time.sleep(hold_sec)
-        keyboard.release(stroke.override or stroke.key_code)
-
-
-def mouseClick(click: "MouseClick", hold_sec: float = 0.2):
-    mouse.press(click.kind)
-    time.sleep(hold_sec)
-    mouse.release(click.kind)
+    def run(self):
+        for _ in range(self.params.winNum):
+            for command in self.params.commands:
+                command.execute()
+                sleep_time = random.choice(self.params.interval_range)
+                logger.debug("Waiting for %s", sleep_time)
+                time.sleep(sleep_time)
+                if self.params.winNum > 1:
+                    alt_tab.execute()
 
 
 def run(params: Params):
     time.sleep(5)  # Allow to switch window in time
     end = time.time() + params.limit * 60
     logger.info("run with params: %s", params)
+    runner = Runner(params)
     while time.time() < end:
-        for _ in range(params.winNum):
-            for command in params.commands:
-
-                if isinstance(command, Keystroke):
-                    keystroke(command)
-                else:
-                    mouseClick(command)
-
-                sleep_time = random.choice(params.interval_range)
-                logger.debug("Waiting for %s", sleep_time)
-                time.sleep(sleep_time)
-                if params.winNum > 1:
-                    changeWindow()
+        runner.run()

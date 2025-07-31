@@ -3,7 +3,11 @@ from bot.core.worker import WorkerSignals
 from pynput import keyboard, mouse
 
 from bot.models import Keystroke, ModifierKey, MouseClick
-from bot.core.keystroke_adapter import directionalMapping
+from bot.core.keystroke_adapter import (
+    directionalMapping,
+    keyboard as k_ctrl,
+    mouse as m_ctrl,
+)
 from bot.utils import logger
 
 MODIFIERS = [
@@ -62,7 +66,7 @@ class Recorder:
                     override = directionalMapping[vk]
                     rep = override.name
 
-                stroke = Keystroke(key=rep, vk=vk, override=override)
+                stroke = Keystroke(rep, vk, k_ctrl)
                 self.signals.interaction.emit(stroke)
             else:
                 logger.debug(
@@ -74,9 +78,7 @@ class Recorder:
                 cannonical_key = self.keyBoardListener.canonical(key)
 
                 stroke = Keystroke(
-                    key=cannonical_key.char.upper(),
-                    vk=key.vk,
-                    modifier=modifier,
+                    cannonical_key.char.upper(), key.vk, k_ctrl, modifier
                 )
                 self.signals.interaction.emit(stroke)
 
@@ -90,7 +92,7 @@ class Recorder:
 
     def onClick(self, x: int, y: int, button: mouse.Button, pressed: bool):
         if pressed:
-            self.signals.interaction.emit(MouseClick(kind=button, pos=(x, y)))
+            self.signals.interaction.emit(MouseClick(button, (x, y), m_ctrl))
 
     def start(self):
         self.keyBoardListener = keyboard.Listener(

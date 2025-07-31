@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QFileDialog, QMainWindow
 
 from bot.core.constants import PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
 from bot.core.control import run
-from bot.core.keystroke_adapter import match
+from bot.core.keystroke_adapter import match, mouse
 from bot.core.recorder import Recorder
 from bot.core.worker import Worker
 from bot.models import CommandsModel, Keystroke, MouseClick, Params
@@ -125,7 +125,7 @@ class MainWindow(QMainWindow):
             button = event.button()
             kind = Button.right if button is Qt.MouseButton.RightButton else Button.left
             self.commandModel.commands.append(
-                MouseClick(kind=kind, pos=(event.x(), event.y()))
+                MouseClick(kind, (event.x(), event.y()), mouse)
             )
             self.commandModel.layoutChanged.emit()
 
