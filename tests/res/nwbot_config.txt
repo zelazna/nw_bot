@@ -1,0 +1,4 @@
+Shift+5
+A
+Left Click: (0, 0)
+Up

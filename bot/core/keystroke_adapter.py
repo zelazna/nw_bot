@@ -34,4 +34,4 @@ def match(event: QKeyEvent) -> Keystroke | None:
                 mod = ModifierKey(key="Shift", vk=SHIFT_VK)
             case _:
                 pass
-    return Keystroke(key.name, vk, keyboard, mod)
+    return Keystroke(key.name, vk, mod)

@@ -18,7 +18,7 @@ def res_folder():
 
 @pytest.fixture
 def config_file_path(res_folder):
-    return res_folder / "nwbot_config.json"
+    return res_folder / "nwbot_config.txt"
 
 
 @pytest.fixture
@@ -35,10 +35,10 @@ def stroke_factory():
         vk=0,
         modifier=ModifierKey(key="Shift", vk=160),
     ):
+        Keystroke.controller = Mock(spec=KeyController)
         return Keystroke(
             key,
             vk,
-            Mock(spec=KeyController),
             modifier,
         )
 
@@ -48,7 +48,8 @@ def stroke_factory():
 @pytest.fixture
 def click_factory():
     def create(*, kind=Button.left, pos=(0, 0)):
-        return MouseClick(kind, pos, Mock(spec=MouseController))
+        MouseClick.controller = Mock(spec=MouseController)
+        return MouseClick(kind, pos)
 
     return create
 

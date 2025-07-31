@@ -11,7 +11,7 @@ from bot.utils import logger
 
 mouse = MouseController()
 keyboard = KeyBoardController()
-alt_tab = Keystroke("Tab", TAB_VK, keyboard, ModifierKey(key="Alt", vk=ALT_VK))
+alt_tab = Keystroke("Tab", TAB_VK, ModifierKey(key="Alt", vk=ALT_VK))
 
 
 @dataclass

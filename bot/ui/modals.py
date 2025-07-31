@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from bot.core.constants import DEFAULT_CONFIG_FILE
 from bot.utils import logger
 
 
@@ -27,7 +28,7 @@ class FileNameModal(QDialog):
         self.fileNameEdit = QLineEdit()
         layout.addWidget(self.fileNameEdit)
         layout.addWidget(self.buttonBox)
-        self.fileNameEdit.setText("nwbot_config.json")
+        self.fileNameEdit.setText(DEFAULT_CONFIG_FILE)
         self.setLayout(layout)
 
     def accept(self):

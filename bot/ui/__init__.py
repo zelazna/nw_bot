@@ -125,7 +125,7 @@ class MainWindow(QMainWindow):
             button = event.button()
             kind = Button.right if button is Qt.MouseButton.RightButton else Button.left
             self.commandModel.commands.append(
-                MouseClick(kind, (event.x(), event.y()), mouse)
+                MouseClick(kind, (event.x(), event.y()))
             )
             self.commandModel.layoutChanged.emit()
 
@@ -187,7 +187,7 @@ class MainWindow(QMainWindow):
 
     def loadConfig(self):
         dialog = QFileDialog(self, "Choisir le fichier de config")
-        filename, _ = dialog.getOpenFileName(self, filter="JSON files (*.json)")
+        filename, _ = dialog.getOpenFileName(self, filter="TXT files (*.txt)")
         if filename:
             params = loadConfig(filename)
             self.commandModel.commands = params.commands

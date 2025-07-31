@@ -1,16 +1,13 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, ClassVar
 
 from pynput.keyboard import KeyCode
 from pynput.mouse import Button
+from pynput.keyboard import Controller as KeyBoardController
+from pynput.mouse import Controller as MouseController
 
 from bot.models.commands import CommandsModel
-
-
-if TYPE_CHECKING:
-    from pynput.keyboard import Controller as KeyBoardController
-    from pynput.mouse import Controller as MouseController
 
 
 class BaseCommand(ABC):
@@ -33,8 +30,8 @@ class ModifierKey(BaseKey): ...
 
 @dataclass
 class Keystroke(BaseKey, BaseCommand):
-    controller: "KeyBoardController"
     modifier: ModifierKey | None = None
+    controller: ClassVar[KeyBoardController] = KeyBoardController()
 
     def __repr__(self) -> str:
         try:
@@ -59,7 +56,7 @@ class Keystroke(BaseKey, BaseCommand):
 class MouseClick(BaseCommand):
     kind: Button
     pos: tuple[int, int]
-    controller: "MouseController"
+    controller: ClassVar[MouseController] = MouseController()
 
     def __repr__(self) -> str:
         return f"{self.kind.name.capitalize()} Click: {self.pos}"
@@ -70,10 +67,10 @@ class MouseClick(BaseCommand):
 
 @dataclass
 class Params:
-    limit: float | int
-    commands: list[BaseCommand]
-    winNum: int
-    interval: str
+    commands: list[BaseCommand] = field(default_factory=list)
+    winNum: int = 1
+    limit: float | int = 5
+    interval: str = "1"
 
     @property
     def interval_range(self) -> list[int]:

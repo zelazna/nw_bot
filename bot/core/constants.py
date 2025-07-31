@@ -8,6 +8,7 @@ LOG_FILE = "nw-bot.log"
 MIME_TYPE = "application/vnd.text.list"
 PADDING_IN_S = 5
 TIMER_TIMEOUT_MILLISEC = 500
+DEFAULT_CONFIG_FILE = "nwbot_config.txt"
 
 ALT_VK = cast(int, Key.alt.value.vk)
 TAB_VK = cast(int, Key.tab.value.vk)

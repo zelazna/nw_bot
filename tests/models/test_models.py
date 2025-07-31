@@ -13,7 +13,8 @@ def test_keystroke(stroke_factory):
     model.controller.press.assert_called_once_with(model.modifier.key_code)
     model.controller.tap.assert_called_once_with(model.key_code)
     model.controller.release.assert_called_once_with(model.modifier.key_code)
-    assert repr(Keystroke("truc", 125, ...)) == "Truc"
+    assert repr(Keystroke("truc", 125)) == "Truc"
+
 
 def test_params():
     model = Params(limit=5, commands=[], winNum=1, interval="1-5")
