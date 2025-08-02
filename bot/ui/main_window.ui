@@ -124,6 +124,42 @@
           <string>Tout supprimer</string>
          </property>
         </widget>
+        <widget class="QPushButton" name="startRecordOutsideButton">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>10</y>
+           <width>211</width>
+           <height>24</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Demarrer l'enregistrement</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="stopRecordOutsideButton">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>10</y>
+           <width>211</width>
+           <height>24</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Arreter l'enregistrement</string>
+         </property>
+        </widget>
+        <zorder>stopRecordOutsideButton</zorder>
+        <zorder>startRecordOutsideButton</zorder>
         <zorder>stopRecordButton</zorder>
         <zorder>startRecordButton</zorder>
         <zorder>keyListView</zorder>
