@@ -1,13 +1,16 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, ClassVar
+from enum import IntEnum, auto
+from typing import ClassVar
 
-from pynput.keyboard import KeyCode
-from pynput.mouse import Button
+from pynput.keyboard import KeyCode, Key
+from pynput.mouse import Button as PynoutButton
 from pynput.keyboard import Controller as KeyBoardController
 from pynput.mouse import Controller as MouseController
 
 from bot.models.commands import CommandsModel
+
+directionalMapping = {k.value.vk: k for k in (Key.up, Key.down, Key.left, Key.right)}
 
 
 class BaseCommand(ABC):
@@ -21,11 +24,17 @@ class BaseKey:
     vk: int
 
     @property
-    def key_code(self) -> KeyCode:
+    def key_code(self) -> KeyCode | Key:
         return KeyCode.from_vk(self.vk)
 
 
-class ModifierKey(BaseKey): ...
+class ModifierKey(BaseKey):
+    def __repr__(self) -> str:
+        try:
+            key_repr = self.key.split("_")[0]
+        except IndexError:
+            key_repr = self.key
+        return key_repr.capitalize()
 
 
 @dataclass
@@ -39,7 +48,7 @@ class Keystroke(BaseKey, BaseCommand):
         except IndexError:
             key_repr = self.key
         if self.modifier:
-            return f"{self.modifier.key.capitalize()}+{key_repr}"
+            return f"{self.modifier!r}+{key_repr.upper()}"
         return key_repr.capitalize()
 
     def execute(self):
@@ -53,6 +62,22 @@ class Keystroke(BaseKey, BaseCommand):
 
 
 @dataclass
+class DirectionalKeystroke(Keystroke):
+    vk: int = 0
+
+    def __repr__(self) -> str:
+        return self.key.capitalize()
+
+    def execute(self):
+        self.controller.tap(getattr(Key, self.key))
+
+
+class Button(IntEnum):
+    left = auto()
+    right = auto()
+
+
+@dataclass
 class MouseClick(BaseCommand):
     kind: Button
     pos: tuple[int, int]
@@ -62,7 +87,7 @@ class MouseClick(BaseCommand):
         return f"{self.kind.name.capitalize()} Click: {self.pos}"
 
     def execute(self):
-        self.controller.click(self.kind)
+        self.controller.click(getattr(PynoutButton, self.kind.name))
 
 
 @dataclass

@@ -2,10 +2,17 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
-from pynput.mouse import Button, Controller as MouseController
 from pynput.keyboard import Controller as KeyController
+from pynput.mouse import Controller as MouseController
 
-from bot.models import ModifierKey, MouseClick, Params, Keystroke
+from bot.models import (
+    Button,
+    DirectionalKeystroke,
+    Keystroke,
+    ModifierKey,
+    MouseClick,
+    Params,
+)
 
 CURRENT_FOLDER = Path(__file__).parent
 RES_FOLDER = CURRENT_FOLDER / "res"
@@ -55,7 +62,16 @@ def click_factory():
 
 
 @pytest.fixture
-def params_factory(stroke_factory, click_factory):
+def directional_key_factory():
+    def create(*, key="Up"):
+        DirectionalKeystroke.controller = Mock(spec=KeyController)
+        return DirectionalKeystroke(key)
+
+    return create
+
+
+@pytest.fixture
+def params_factory(stroke_factory, click_factory, directional_key_factory):
     def _create(
         limit: float = 0.01,
         winNum: int = 1,
@@ -68,6 +84,8 @@ def params_factory(stroke_factory, click_factory):
             commands.append(stroke_factory())
         for _ in range(1, num_mouse_click + 1):
             commands.append(click_factory())
+
+        commands.append(directional_key_factory())
 
         return Params(
             limit=limit,
