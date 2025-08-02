@@ -193,7 +193,6 @@ class MainWindow(QMainWindow):
         filename, _ = dialog.getOpenFileName(self, filter="TXT files (*.txt)")
         if filename:
             result = loadConfig(filename)
-            print(result)
             if isinstance(result, Params):
                 self.commandModel.commands = result.commands
                 self.interval.setText(result.interval)

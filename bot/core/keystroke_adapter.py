@@ -42,6 +42,7 @@ class KeyStrokeAdapter(ABC):
     def on_key_release(self, event: Any): ...
 
 
+@dataclass
 class QTKeystrokeAdapter(KeyStrokeAdapter):
     def on_key_press(self, event: Any): ...
     def on_key_release(self, event: QKeyEvent):
