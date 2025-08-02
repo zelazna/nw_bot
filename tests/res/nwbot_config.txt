@@ -1,4 +1,15 @@
 Shift+5
 A
-Left Click: (0, 0)
+Left Click: (156, 251)
 Up
+Down
+Left
+Up
+Right Click: (157, 251)
+Ctrl+A
+Q
+Return
+Escape
+L
+L
+D

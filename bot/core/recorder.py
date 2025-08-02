@@ -1,11 +1,15 @@
 from pynput import keyboard, mouse
 
 from bot.core.keystroke_adapter import (
-    directionalMapping,
+    PynputKeystrokeAdapter,
 )
 from bot.core.worker import WorkerSignals
-from bot.models import Button, DirectionalKeystroke, Keystroke, ModifierKey, MouseClick
-from bot.utils import logger
+from bot.models import (
+    Button,
+    CommandsModel,
+    MouseClick,
+)
+from bot.utils.logger import logger
 
 MODIFIERS = [
     keyboard.Key.shift,
@@ -21,67 +25,10 @@ IGNORED = [keyboard.Key.caps_lock, keyboard.Key.tab, keyboard.Key.esc]
 
 class Recorder:
     signals = WorkerSignals()
-    modifier: keyboard.Key | None = None
 
     def __init__(self) -> None:
         self.keyBoardListener: keyboard.Listener = None  # type: ignore
         self.mouseListener: mouse.Listener = None  # type: ignore
-
-    @staticmethod
-    def _get_vk_and_rep(
-        key: keyboard.Key | keyboard.KeyCode,
-    ) -> tuple[int | None, str | None]:
-        if isinstance(key, keyboard.Key):
-            vk = key.value.vk
-            rep = key.value.char
-        else:
-            vk = key.vk
-            rep = key.char
-        return vk, rep
-
-    def on_press(self, key: keyboard.Key | keyboard.KeyCode | None):
-        if not key:
-            return
-
-        if key in MODIFIERS:
-            logger.debug(f"got modifier key: {key!r} ignoring it for know")
-            self.modifier = key
-            return
-
-        try:
-            if not self.modifier:
-                logger.debug(f"Get single key: {key!r}")
-                if isinstance(key, keyboard.Key):
-                    vk = key.value.vk
-                    rep = key.value.char
-                else:
-                    vk = key.vk
-                    rep = key.char
-
-                if vk in directionalMapping:
-                    stroke = DirectionalKeystroke(key=rep, vk=vk)
-                else:
-                    stroke = Keystroke(key=rep, vk=vk)
-                self.signals.interaction.emit(stroke)
-            else:
-                logger.debug(
-                    f"Modifier detected along key mod: {self.modifier!r}, key: {key!r}"
-                )
-                modifier = ModifierKey(
-                    key=self.modifier.name, vk=self.modifier.value.vk
-                )
-                cannonical_key = self.keyBoardListener.canonical(key)
-
-                stroke = Keystroke(cannonical_key.char.upper(), key.vk, modifier)
-                self.signals.interaction.emit(stroke)
-
-        except AttributeError:
-            logger.error(f"Unhandled key: {key!r}", exc_info=True)
-            return
-
-    def on_release(self, key: keyboard.Key | keyboard.KeyCode | None):
-        if key in MODIFIERS:
-            self.modifier = None
 
     def onClick(self, x: int, y: int, button: mouse.Button, pressed: bool):
         if pressed:
@@ -89,12 +36,13 @@ class Recorder:
                 self.signals.interaction.emit(
                     MouseClick(kind=Button[button.name], pos=(x, y))
                 )
-            except ValueError:
+            except KeyError:
                 logger.error(f"Unknow button {button}")
 
-    def start(self):
+    def start(self, model: CommandsModel):
+        adapter = PynputKeystrokeAdapter(model)
         self.keyBoardListener = keyboard.Listener(
-            on_release=self.on_release, on_press=self.on_press
+            on_release=adapter.on_key_release, on_press=adapter.on_key_press
         )
         self.keyBoardListener.start()
         self.mouseListener = mouse.Listener(on_click=self.onClick)

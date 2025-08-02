@@ -7,7 +7,7 @@ from pynput.mouse import Controller as MouseController
 
 from bot.core.constants import ALT_VK, TAB_VK
 from bot.models import Keystroke, ModifierKey, Params
-from bot.utils import logger
+from bot.utils.logger import logger
 
 mouse = MouseController()
 keyboard = KeyBoardController()

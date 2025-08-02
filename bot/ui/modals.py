@@ -8,7 +8,6 @@ from PySide6.QtWidgets import (
 )
 
 from bot.core.constants import DEFAULT_CONFIG_FILE
-from bot.utils import logger
 
 
 class FileNameModal(QDialog):
@@ -34,7 +33,6 @@ class FileNameModal(QDialog):
     def accept(self):
         self.filename = self.fileNameEdit.text()
         if not self.filename:
-            logger.error("Filename cannot be empty")
             return
         super().accept()
 
@@ -55,4 +53,3 @@ class LogViewerModal(QDialog):
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
         self.resize(800, 600)
-

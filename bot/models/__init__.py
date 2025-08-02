@@ -28,7 +28,13 @@ class BaseKey:
         return KeyCode.from_vk(self.vk)
 
 
-class ModifierKey(BaseKey): ...
+class ModifierKey(BaseKey):
+    def __repr__(self) -> str:
+        try:
+            key_repr = self.key.split("_")[0]
+        except IndexError:
+            key_repr = self.key
+        return key_repr.capitalize()
 
 
 @dataclass
@@ -42,7 +48,7 @@ class Keystroke(BaseKey, BaseCommand):
         except IndexError:
             key_repr = self.key
         if self.modifier:
-            return f"{self.modifier.key.capitalize()}+{key_repr}"
+            return f"{self.modifier!r}+{key_repr.upper()}"
         return key_repr.capitalize()
 
     def execute(self):
@@ -53,6 +59,17 @@ class Keystroke(BaseKey, BaseCommand):
         finally:
             if self.modifier:
                 self.controller.release(self.modifier.key_code)
+
+
+@dataclass
+class DirectionalKeystroke(Keystroke):
+    vk: int = 0
+
+    def __repr__(self) -> str:
+        return self.key.capitalize()
+
+    def execute(self):
+        self.controller.tap(getattr(Key, self.key))
 
 
 class Button(IntEnum):
@@ -88,25 +105,6 @@ class Params:
         else:
             interval_range = [int(self.interval)]
         return interval_range
-
-
-class DirectionalKeystroke(BaseKey):
-    @property
-    def key_code(self) -> Key:
-        return directionalMapping[self.vk]
-
-    def __repr__(self) -> str:
-        match self.key:
-            case "up":
-                return "↑"
-            case "down":
-                return "↓"
-            case "left":
-                return "←"
-            case "right":
-                return "→"
-            case _:
-                return "Unknow"
 
 
 __all__ = [

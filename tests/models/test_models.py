@@ -1,4 +1,5 @@
 from pynput.keyboard import KeyCode
+from pynput.mouse import Button
 
 from bot.models import Keystroke, Params
 
@@ -26,4 +27,4 @@ def test_mouse_click(click_factory):
     model = click_factory()
     assert repr(model) == "Left Click: (0, 0)"
     model.execute()
-    model.controller.click.assert_called_once_with(model.kind)
+    model.controller.click.assert_called_once_with(getattr(Button, model.kind.name))

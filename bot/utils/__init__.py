@@ -1,4 +1,3 @@
 from .config import loadConfig, saveConfig
-from .logger import logger
 
-__all__ = ["logger", "loadConfig", "saveConfig"]
+__all__ = ["loadConfig", "saveConfig"]
