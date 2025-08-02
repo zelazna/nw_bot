@@ -9,7 +9,7 @@ from PySide6.QtGui import QKeyEvent
 from bot.core.keystroke_adapter import (
     CTRL_VK,
     PynputKeystrokeAdapter,
-    QTKeystrokeAdapter,
+    QtKeystrokeAdapter,
 )
 from bot.models import (
     CommandsModel,
@@ -24,7 +24,7 @@ from bot.models import (
 def qt_adapter():
     model = CommandsModel()
     model.layoutChanged = Mock()  # type: ignore
-    adapter = QTKeystrokeAdapter(model)
+    adapter = QtKeystrokeAdapter(model)
     return adapter
 
 
