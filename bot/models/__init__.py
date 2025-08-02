@@ -1,13 +1,16 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, ClassVar
+from enum import IntEnum, auto
+from typing import ClassVar
 
-from pynput.keyboard import KeyCode
-from pynput.mouse import Button
+from pynput.keyboard import KeyCode, Key
+from pynput.mouse import Button as PynoutButton
 from pynput.keyboard import Controller as KeyBoardController
 from pynput.mouse import Controller as MouseController
 
 from bot.models.commands import CommandsModel
+
+directionalMapping = {k.value.vk: k for k in (Key.up, Key.down, Key.left, Key.right)}
 
 
 class BaseCommand(ABC):
@@ -21,7 +24,7 @@ class BaseKey:
     vk: int
 
     @property
-    def key_code(self) -> KeyCode:
+    def key_code(self) -> KeyCode | Key:
         return KeyCode.from_vk(self.vk)
 
 
@@ -52,6 +55,11 @@ class Keystroke(BaseKey, BaseCommand):
                 self.controller.release(self.modifier.key_code)
 
 
+class Button(IntEnum):
+    left = auto()
+    right = auto()
+
+
 @dataclass
 class MouseClick(BaseCommand):
     kind: Button
@@ -62,7 +70,7 @@ class MouseClick(BaseCommand):
         return f"{self.kind.name.capitalize()} Click: {self.pos}"
 
     def execute(self):
-        self.controller.click(self.kind)
+        self.controller.click(getattr(PynoutButton, self.kind.name))
 
 
 @dataclass
@@ -80,6 +88,25 @@ class Params:
         else:
             interval_range = [int(self.interval)]
         return interval_range
+
+
+class DirectionalKeystroke(BaseKey):
+    @property
+    def key_code(self) -> Key:
+        return directionalMapping[self.vk]
+
+    def __repr__(self) -> str:
+        match self.key:
+            case "up":
+                return "↑"
+            case "down":
+                return "↓"
+            case "left":
+                return "←"
+            case "right":
+                return "→"
+            case _:
+                return "Unknow"
 
 
 __all__ = [

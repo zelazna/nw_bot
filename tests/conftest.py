@@ -2,10 +2,10 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
-from pynput.mouse import Button, Controller as MouseController
 from pynput.keyboard import Controller as KeyController
+from pynput.mouse import Controller as MouseController
 
-from bot.models import ModifierKey, MouseClick, Params, Keystroke
+from bot.models import Button, Keystroke, ModifierKey, MouseClick, Params
 
 CURRENT_FOLDER = Path(__file__).parent
 RES_FOLDER = CURRENT_FOLDER / "res"

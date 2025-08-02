@@ -1,7 +1,6 @@
-from bot.models import Params
 from pynput.keyboard import KeyCode
 
-from bot.ui import Keystroke
+from bot.models import Keystroke, Params
 
 
 def test_keystroke(stroke_factory):

@@ -4,7 +4,7 @@ from bot.core.keystroke_adapter import (
     directionalMapping,
 )
 from bot.core.worker import WorkerSignals
-from bot.models import Keystroke, ModifierKey, MouseClick
+from bot.models import Button, DirectionalKeystroke, Keystroke, ModifierKey, MouseClick
 from bot.utils import logger
 
 MODIFIERS = [
@@ -40,7 +40,6 @@ class Recorder:
         return vk, rep
 
     def on_press(self, key: keyboard.Key | keyboard.KeyCode | None):
-        override = None
         if not key:
             return
 
@@ -60,10 +59,9 @@ class Recorder:
                     rep = key.char
 
                 if vk in directionalMapping:
-                    override = directionalMapping[vk]
-                    rep = override.name
-
-                stroke = Keystroke(rep, vk)
+                    stroke = DirectionalKeystroke(key=rep, vk=vk)
+                else:
+                    stroke = Keystroke(key=rep, vk=vk)
                 self.signals.interaction.emit(stroke)
             else:
                 logger.debug(
@@ -74,12 +72,10 @@ class Recorder:
                 )
                 cannonical_key = self.keyBoardListener.canonical(key)
 
-                stroke = Keystroke(
-                    cannonical_key.char.upper(), key.vk, modifier
-                )
+                stroke = Keystroke(cannonical_key.char.upper(), key.vk, modifier)
                 self.signals.interaction.emit(stroke)
 
-        except (AttributeError):
+        except AttributeError:
             logger.error(f"Unhandled key: {key!r}", exc_info=True)
             return
 
@@ -89,7 +85,12 @@ class Recorder:
 
     def onClick(self, x: int, y: int, button: mouse.Button, pressed: bool):
         if pressed:
-            self.signals.interaction.emit(MouseClick(button, (x, y)))
+            try:
+                self.signals.interaction.emit(
+                    MouseClick(kind=Button[button.name], pos=(x, y))
+                )
+            except ValueError:
+                logger.error(f"Unknow button {button}")
 
     def start(self):
         self.keyBoardListener = keyboard.Listener(

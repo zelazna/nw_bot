@@ -1,17 +1,16 @@
 import functools
 import os
 
-from pynput.mouse import Button
 from PySide6.QtCore import Qt, QTimer, Slot
 from PySide6.QtGui import QKeyEvent, QMouseEvent
-from PySide6.QtWidgets import QFileDialog, QMainWindow
+from PySide6.QtWidgets import QFileDialog, QMainWindow, QErrorMessage
 
 from bot.core.constants import PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
 from bot.core.control import run
 from bot.core.keystroke_adapter import match, mouse
 from bot.core.recorder import Recorder
 from bot.core.worker import Worker
-from bot.models import CommandsModel, Keystroke, MouseClick, Params
+from bot.models import Button, Command, CommandsModel, MouseClick, Params
 from bot.ui.main_window import Ui_MainWindow
 from bot.ui.modals import FileNameModal, LogViewerModal
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
@@ -115,13 +114,12 @@ class MainWindow(QMainWindow):
         if event.key() == Qt.Key.Key_Delete:
             self.deleteCommand()
 
-    def recordOutside(self, interaction: Keystroke | MouseClick):
-        self.commandModel.commands.append(interaction)
+    def recordOutside(self, command: Command):
+        self.commandModel.commands.append(command)
         self.commandModel.layoutChanged.emit()
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         if self.isRecording and not self.isRecordingOutside:
-            print(event)
             button = event.button()
             kind = Button.right if button is Qt.MouseButton.RightButton else Button.left
             self.commandModel.commands.append(
@@ -177,24 +175,39 @@ class MainWindow(QMainWindow):
         self.botTimer.stop()
 
     def saveConfig(self):
+        cfg = self.dumpConfig()
         folder = QFileDialog.getExistingDirectory(
             self, "Sauvegarder le fichier de config"
         )
         if folder:
             dlg = FileNameModal()
             if dlg.exec():
-                saveConfig(os.path.join(folder, dlg.filename), self.dumpConfig())
+                if exc := saveConfig(os.path.join(folder, dlg.filename), cfg):
+                    error_dialog = QErrorMessage()
+                    error_dialog.showMessage(
+                        f"Une erreur c'est produite lors la sauvegarde de la config: {exc}"
+                    )
+                    error_dialog.exec_()
 
     def loadConfig(self):
         dialog = QFileDialog(self, "Choisir le fichier de config")
         filename, _ = dialog.getOpenFileName(self, filter="TXT files (*.txt)")
         if filename:
-            params = loadConfig(filename)
-            self.commandModel.commands = params.commands
-            self.interval.setText(params.interval)
-            self.limit.setText(str(params.limit))
-            self.ui.winNum.setCurrentText(str(params.winNum))
-            self.commandModel.layoutChanged.emit()
+            result = loadConfig(filename)
+            breakpoint()
+            print(result)
+            if isinstance(result, Params):
+                self.commandModel.commands = result.commands
+                self.interval.setText(result.interval)
+                self.limit.setText(str(result.limit))
+                self.ui.winNum.setCurrentText(str(result.winNum))
+                self.commandModel.layoutChanged.emit()
+            else:
+                error_dialog = QErrorMessage()
+                error_dialog.showMessage(
+                    f"Une erreur c'est produite lors du chargement de la config: {result}"
+                )
+                error_dialog.exec_()
 
     def dumpConfig(self) -> Params:
         return Params(
