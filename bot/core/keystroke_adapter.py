@@ -32,7 +32,7 @@ MODIFIERS = [
 
 
 @dataclass
-class KeyStrokeAdapter(ABC):
+class BaseKeyStrokeAdapter(ABC):
     model: CommandsModel
 
     @abstractmethod
@@ -42,8 +42,7 @@ class KeyStrokeAdapter(ABC):
     def on_key_release(self, event: Any): ...
 
 
-@dataclass
-class QTKeystrokeAdapter(KeyStrokeAdapter):
+class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
     def on_key_press(self, event: Any): ...
     def on_key_release(self, event: QKeyEvent):
         modifier = event.modifiers()
@@ -77,8 +76,7 @@ class QTKeystrokeAdapter(KeyStrokeAdapter):
         self.model.layoutChanged.emit()
 
 
-@dataclass
-class PynputKeystrokeAdapter(KeyStrokeAdapter):
+class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
     modifier: Key | None = None
     signals = WorkerSignals()
 

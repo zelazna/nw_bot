@@ -7,10 +7,11 @@ from PySide6.QtWidgets import QErrorMessage, QFileDialog, QMainWindow
 
 from bot.core.constants import PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
 from bot.core.control import run
-from bot.core.keystroke_adapter import QTKeystrokeAdapter
+from bot.core.keystroke_adapter import QtKeystrokeAdapter
+from bot.core.mouse_adapter import QtMouseAdapter
 from bot.core.recorder import Recorder
 from bot.core.worker import Worker
-from bot.models import BaseCommand, Button, CommandsModel, MouseClick, Params
+from bot.models import BaseCommand, CommandsModel, Params
 from bot.ui.main_window import Ui_MainWindow
 from bot.ui.modals import FileNameModal, LogViewerModal
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
@@ -30,8 +31,6 @@ class MainWindow(QMainWindow):
         self.botTimer.timeout.connect(self.timerTick)
         self.validator = ValidateRangeOrNumber()
 
-        self.recorder = Recorder()
-        self.recorder.signals.interaction.connect(self.recordOutside)
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)  # type: ignore
@@ -42,7 +41,10 @@ class MainWindow(QMainWindow):
         self.ui.keyListView.setAcceptDrops(True)
         self.ui.keyListView.setDropIndicatorShown(True)
 
-        self.key_stroke_adapter = QTKeystrokeAdapter(self.commandModel)
+        self.recorder = Recorder(self.commandModel)
+        self.recorder.signals.interaction.connect(self.recordOutside)
+        self.key_stroke_adapter = QtKeystrokeAdapter(self.commandModel)
+        self.mouse_adapter = QtMouseAdapter(self.commandModel)
 
         self.ui.actionSaveConfig.triggered.connect(self.saveConfig)
         self.ui.actionLoadConfig.triggered.connect(self.loadConfig)
@@ -85,7 +87,7 @@ class MainWindow(QMainWindow):
 
         if self.isRecordingOutside:
             if state:
-                self.recorder.start(self.commandModel)
+                self.recorder.start()
             else:
                 self.recorder.stop()
 
@@ -121,10 +123,7 @@ class MainWindow(QMainWindow):
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         if self.isRecording and not self.isRecordingOutside:
-            button = event.button()
-            kind = Button.right if button is Qt.MouseButton.RightButton else Button.left
-            self.commandModel.commands.append(MouseClick(kind, (event.x(), event.y())))
-            self.commandModel.layoutChanged.emit()
+            self.mouse_adapter.on_click(event.x(), event.y(), event.button(), True)
 
     def botThreadComplete(self):
         logger.info("bot thread complete!")
