@@ -1,33 +1,25 @@
-from typing import cast
 
+from pynput.keyboard import Controller as KeyBoardController
 from pynput.keyboard import Key
+from pynput.mouse import Controller as MouseController
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeyEvent
 
+from bot.core.constants import ALT_VK, CTRL_VK, DEL_VK, SHIFT_VK
 from bot.models import Keystroke, ModifierKey
 
-ALT_VK = cast(int, Key.alt.value.vk)
-TAB_VK = cast(int, Key.tab.value.vk)
-CTRL_VK = cast(int, Key.ctrl.value.vk)
-SHIFT_VK = cast(int, Key.shift.value.vk)
-DEL_VK = cast(int, Key.delete.value.vk)
-
 directionalMapping = {k.value.vk: k for k in (Key.up, Key.down, Key.left, Key.right)}
-
-ALT_TAB = Keystroke(key="Tab", modifier=ModifierKey(key="Alt", vk=ALT_VK), vk=TAB_VK)
+mouse = MouseController()
+keyboard = KeyBoardController()
 
 
 def match(event: QKeyEvent) -> Keystroke | None:
     modifier = event.modifiers()
     vk = event.nativeVirtualKey()
-    override = None
 
     if vk in (CTRL_VK, ALT_VK, DEL_VK):
         # Ignore CTRL and ALT keys as they are modifiers
         return None
-
-    if vk in directionalMapping:
-        override = directionalMapping[vk]
 
     key = Qt.Key(event.key())
 
@@ -42,4 +34,4 @@ def match(event: QKeyEvent) -> Keystroke | None:
                 mod = ModifierKey(key="Shift", vk=SHIFT_VK)
             case _:
                 pass
-    return Keystroke(key=key.name, vk=vk, modifier=mod, override=override)
+    return Keystroke(key.name, vk, mod)

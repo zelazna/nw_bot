@@ -14,7 +14,7 @@ from PySide6.QtCore import (
 from bot.core.constants import MIME_TYPE
 
 if TYPE_CHECKING:
-    from bot.models import Keystroke, MouseClick
+    from bot.models import BaseCommand
 
 
 Index = QModelIndex | QPersistentModelIndex
@@ -23,12 +23,12 @@ Index = QModelIndex | QPersistentModelIndex
 class CommandsModel(QAbstractListModel):
     def __init__(
         self,
-        commands: list["Keystroke | MouseClick"] | None = None,
+        commands: list["BaseCommand"] | None = None,
         *args: Any,
         **kwargs: Any,
     ):
         super().__init__(*args, **kwargs)
-        self.commands: list["Keystroke | MouseClick"] = commands if commands else []
+        self.commands = commands if commands else []
 
     def data(self, index: Index, role: int = 0) -> str | None:
         if role == Qt.ItemDataRole.DisplayRole:

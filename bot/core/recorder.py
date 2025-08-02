@@ -1,9 +1,10 @@
-from pydantic import ValidationError
-from bot.core.worker import WorkerSignals
 from pynput import keyboard, mouse
 
+from bot.core.keystroke_adapter import (
+    directionalMapping,
+)
+from bot.core.worker import WorkerSignals
 from bot.models import Keystroke, ModifierKey, MouseClick
-from bot.core.keystroke_adapter import directionalMapping
 from bot.utils import logger
 
 MODIFIERS = [
@@ -62,7 +63,7 @@ class Recorder:
                     override = directionalMapping[vk]
                     rep = override.name
 
-                stroke = Keystroke(key=rep, vk=vk, override=override)
+                stroke = Keystroke(rep, vk)
                 self.signals.interaction.emit(stroke)
             else:
                 logger.debug(
@@ -74,13 +75,11 @@ class Recorder:
                 cannonical_key = self.keyBoardListener.canonical(key)
 
                 stroke = Keystroke(
-                    key=cannonical_key.char.upper(),
-                    vk=key.vk,
-                    modifier=modifier,
+                    cannonical_key.char.upper(), key.vk, modifier
                 )
                 self.signals.interaction.emit(stroke)
 
-        except (AttributeError, ValidationError):
+        except (AttributeError):
             logger.error(f"Unhandled key: {key!r}", exc_info=True)
             return
 
@@ -90,7 +89,7 @@ class Recorder:
 
     def onClick(self, x: int, y: int, button: mouse.Button, pressed: bool):
         if pressed:
-            self.signals.interaction.emit(MouseClick(kind=button, pos=(x, y)))
+            self.signals.interaction.emit(MouseClick(button, (x, y)))
 
     def start(self):
         self.keyBoardListener = keyboard.Listener(

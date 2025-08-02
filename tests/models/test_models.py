@@ -1,11 +1,19 @@
-from bot.models import Keystroke, MouseClick, Params
-from pynput.mouse import Button
+from bot.models import Params
+from pynput.keyboard import KeyCode
+
+from bot.ui import Keystroke
 
 
-def test_keystroke():
-    model = Keystroke(key="123", vk=123)
-    assert repr(model) == "123"
-    assert model.key_code.vk == 123
+def test_keystroke(stroke_factory):
+    model = stroke_factory()
+    assert repr(model) == "Shift+5"
+    assert model.key_code.vk == 0
+    assert model.modifier.key_code == KeyCode(model.modifier.vk)
+    model.execute()
+    model.controller.press.assert_called_once_with(model.modifier.key_code)
+    model.controller.tap.assert_called_once_with(model.key_code)
+    model.controller.release.assert_called_once_with(model.modifier.key_code)
+    assert repr(Keystroke("truc", 125)) == "Truc"
 
 
 def test_params():
@@ -15,6 +23,8 @@ def test_params():
     assert model.interval_range == [1]
 
 
-def test_mouse_click():
-    model = MouseClick(kind=Button.left, pos=(0, 0))
+def test_mouse_click(click_factory):
+    model = click_factory()
     assert repr(model) == "Left Click: (0, 0)"
+    model.execute()
+    model.controller.click.assert_called_once_with(model.kind)

@@ -18,7 +18,6 @@ dependencies = [
     "shiboken6==6.9.1",
     "zstandard==0.23.0",
     "pynput==1.8.1",
-    "pydantic==2.11.7",
 ]
 
 [build-system]
@@ -36,4 +35,14 @@ pythonpath = "bot"
 addopts = "--cov=bot --cov-report=term --cov-report xml"
 
 [tool.coverage.run]
-omit = ["bot/ui/__init__.py", "bot/ui/main_window.py", "bot/ui/modals.py", "main.py", "tests"]
+omit = [
+    "bot/ui/__init__.py",
+    "bot/ui/main_window.py",
+    "bot/ui/modals.py",
+    "main.py",
+    "tests",
+    "bot/utils/logger.py",
+]
+
+[tool.pyright]
+exclude = ["**/tests/**", ".venv", "build"]

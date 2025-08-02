@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QFileDialog, QMainWindow
 
 from bot.core.constants import PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
 from bot.core.control import run
-from bot.core.keystroke_adapter import match
+from bot.core.keystroke_adapter import match, mouse
 from bot.core.recorder import Recorder
 from bot.core.worker import Worker
 from bot.models import CommandsModel, Keystroke, MouseClick, Params
@@ -125,7 +125,7 @@ class MainWindow(QMainWindow):
             button = event.button()
             kind = Button.right if button is Qt.MouseButton.RightButton else Button.left
             self.commandModel.commands.append(
-                MouseClick(kind=kind, pos=(event.x(), event.y()))
+                MouseClick(kind, (event.x(), event.y()))
             )
             self.commandModel.layoutChanged.emit()
 
@@ -187,7 +187,7 @@ class MainWindow(QMainWindow):
 
     def loadConfig(self):
         dialog = QFileDialog(self, "Choisir le fichier de config")
-        filename, _ = dialog.getOpenFileName(self, filter="JSON files (*.json)")
+        filename, _ = dialog.getOpenFileName(self, filter="TXT files (*.txt)")
         if filename:
             params = loadConfig(filename)
             self.commandModel.commands = params.commands
