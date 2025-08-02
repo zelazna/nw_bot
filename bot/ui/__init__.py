@@ -11,7 +11,8 @@ from bot.core.keystroke_adapter import QtKeystrokeAdapter
 from bot.core.mouse_adapter import QtMouseAdapter
 from bot.core.recorder import Recorder
 from bot.core.worker import Worker
-from bot.models import BaseCommand, CommandsModel, Params
+from bot.models import CommandListModel, Params
+from bot.models.base_command import BaseCommand
 from bot.ui.main_window import Ui_MainWindow
 from bot.ui.modals import FileNameModal, LogViewerModal
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
@@ -31,11 +32,10 @@ class MainWindow(QMainWindow):
         self.botTimer.timeout.connect(self.timerTick)
         self.validator = ValidateRangeOrNumber()
 
-
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)  # type: ignore
 
-        self.commandModel = CommandsModel()
+        self.commandModel = CommandListModel()
         self.ui.keyListView.setModel(self.commandModel)
         self.ui.keyListView.setDragEnabled(True)
         self.ui.keyListView.setAcceptDrops(True)

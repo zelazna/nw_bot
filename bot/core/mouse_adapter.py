@@ -1,15 +1,16 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any
 
 from PySide6.QtCore import Qt
 from pynput.mouse import Button as PynputButton
-from bot.models import Button, CommandsModel, MouseClick, dataclass
+from bot.models import Button, CommandListModel, MouseClick
 from bot.utils.logger import logger
 
 
 @dataclass
 class BaseMouseAdapter(ABC):
-    model: CommandsModel
+    model: CommandListModel
 
     @abstractmethod
     def on_click(self, x: int, y: int, button: Any, pressed: bool): ...

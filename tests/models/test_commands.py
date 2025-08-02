@@ -1,11 +1,11 @@
 from unittest.mock import Mock
-from bot.models import CommandsModel
+from bot.models import CommandListModel
 from PySide6.QtCore import Qt, QModelIndex
 
 
 # TODO: https://pytest-qt.readthedocs.io/en/4.5.0/index.html
 def test_command_model(stroke_factory):
-    cmd_model = CommandsModel([stroke_factory()])
+    cmd_model = CommandListModel([stroke_factory()])
     index = Mock(spec=QModelIndex)
     index.row.return_value = 0
     assert cmd_model.data(index, Qt.ItemDataRole.DisplayRole) == "Shift+5"
