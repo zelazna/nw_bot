@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -26,6 +27,7 @@ class ModifierKey(BaseKey):
 class Keystroke(BaseKey, BaseCommand):
     modifier: ModifierKey | None = None
     controller: ClassVar[Controller] = Controller()
+    hold_sec: float = 0.2
 
     def __repr__(self) -> str:
         try:
@@ -40,7 +42,9 @@ class Keystroke(BaseKey, BaseCommand):
         if self.modifier:
             self.controller.press(self.modifier.key_code)
         try:
-            self.controller.tap(self.key_code)
+            self.controller.press(self.key_code)
+            time.sleep(self.hold_sec)
+            self.controller.release(self.key_code)
         finally:
             if self.modifier:
                 self.controller.release(self.modifier.key_code)
@@ -54,4 +58,7 @@ class DirectionalKeystroke(Keystroke):
         return self.key.capitalize()
 
     def execute(self):
-        self.controller.tap(getattr(Key, self.key))
+        key = getattr(Key, self.key)
+        self.controller.press(key)
+        time.sleep(self.hold_sec)
+        self.controller.release(key)

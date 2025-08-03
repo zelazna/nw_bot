@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from enum import IntEnum, auto
 from typing import ClassVar
@@ -18,9 +19,13 @@ class MouseClick(BaseCommand):
     kind: Button
     pos: tuple[int, int]
     controller: ClassVar[Controller] = Controller()
+    hold_sec: float = 0.2
 
     def __repr__(self) -> str:
         return f"{self.kind.name.capitalize()} Click: {self.pos}"
 
     def execute(self):
-        self.controller.click(getattr(PynoutButton, self.kind.name))
+        button = getattr(PynoutButton, self.kind.name)
+        self.controller.press(button)
+        time.sleep(self.hold_sec)
+        self.controller.release(button)
