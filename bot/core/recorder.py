@@ -4,7 +4,6 @@ from bot.core.keystroke_adapter import (
     PynputKeystrokeAdapter,
 )
 from bot.core.mouse_adapter import PynputMouseAdapter
-from bot.core.worker import WorkerSignals
 from bot.models import CommandListModel
 
 MODIFIERS = [
@@ -20,8 +19,6 @@ IGNORED = [keyboard.Key.caps_lock, keyboard.Key.tab, keyboard.Key.esc]
 
 
 class Recorder:
-    signals = WorkerSignals()
-
     def __init__(self, model: CommandListModel) -> None:
         self.model = model
         self.keyBoardListener: keyboard.Listener = None  # type: ignore

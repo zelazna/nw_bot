@@ -1,7 +1,7 @@
-Shift+5
-A
+Shift+5 5000
+A 200
 Left Click: (156, 251)
-Up
+Up 5000
 Down
 Left
 Up

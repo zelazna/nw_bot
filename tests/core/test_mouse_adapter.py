@@ -19,6 +19,6 @@ def test_adapter(adapter, button, kind):
     model = CommandListModel()
     adapter = adapter(model)
     adapter.on_click(1, 2, button, True)
-    assert len(model.commands) == 1
+    assert model.rowCount() == 1
     assert isinstance(model.commands[0], MouseClick)
     assert model.commands[0].kind == kind
