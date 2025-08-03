@@ -2,8 +2,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
-from PySide6.QtCore import Qt
 from pynput.mouse import Button as PynputButton
+from PySide6.QtCore import Qt
+
 from bot.models import Button, CommandListModel, MouseClick
 from bot.utils.logger import logger
 

@@ -9,7 +9,6 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeyEvent
 
 from bot.core.constants import ALT_VK, CTRL_VK, DEL_VK, SHIFT_VK
-from bot.core.worker import WorkerSignals
 from bot.models import (
     CommandListModel,
     DirectionalKeystroke,
@@ -78,7 +77,6 @@ class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
 
 class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
     modifier: Key | None = None
-    signals = WorkerSignals()
 
     def on_key_press(self, event: Key | KeyCode | None):
         if not event:
