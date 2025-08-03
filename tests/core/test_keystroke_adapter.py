@@ -72,7 +72,7 @@ events = [
 @pytest.mark.parametrize(("key", "rep", "vk", "event"), events)
 def test_on_key_release_with_modifier(key, rep, vk, event, qt_adapter):
     qt_adapter.on_key_release(event)
-    assert len(qt_adapter.model.commands) == 1
+    assert qt_adapter.model.rowCount() == 1
     result = qt_adapter.model.commands[0]
     assert isinstance(result, Keystroke)
     assert isinstance(result.modifier, ModifierKey)
@@ -85,7 +85,7 @@ def test_unhandled_modifier(qt_adapter):
     event = QKeyEvent(QEvent.Type.KeyRelease, 0x35, Qt.KeyboardModifier.MetaModifier)
     qt_adapter.on_key_release(event)
     result = qt_adapter.model.commands[0]
-    assert len(qt_adapter.model.commands) == 1
+    assert qt_adapter.model.rowCount() == 1
     assert isinstance(result, Keystroke)
     assert result.modifier is None
 
@@ -95,7 +95,7 @@ def test_match_nothing(qt_adapter):
         QEvent.Type.KeyRelease, 16777249, Qt.KeyboardModifier.NoModifier, 29, CTRL_VK, 0
     )
     qt_adapter.on_key_release(event)
-    assert len(qt_adapter.model.commands) == 0
+    assert qt_adapter.model.rowCount() == 0
 
 
 def test_with_directionnal(qt_adapter):
@@ -109,7 +109,7 @@ def test_with_directionnal(qt_adapter):
     )
     qt_adapter.on_key_release(event)
     result = qt_adapter.model.commands[0]
-    assert len(qt_adapter.model.commands) == 1
+    assert qt_adapter.model.rowCount() == 1
     assert isinstance(result, DirectionalKeystroke)
     qt_adapter.model.layoutChanged.emit.assert_called_once()
 
@@ -126,7 +126,8 @@ def test_with_directionnal(qt_adapter):
 def test_pynput_adapter_with_modifiers(pynput_adapter, rep, key, mod):
     pynput_adapter.modifier = mod
     pynput_adapter.on_key_press(KeyCode.from_char(key))
-    assert len(pynput_adapter.model.commands) == 1
+    pynput_adapter.on_key_release(KeyCode.from_char(key))
+    assert pynput_adapter.model.rowCount() == 1
     result = pynput_adapter.model.commands[0]
     assert repr(result) == rep
     assert isinstance(result, Keystroke)
@@ -145,7 +146,8 @@ def test_pynput_adapter_with_modifiers(pynput_adapter, rep, key, mod):
 )
 def test_pynput_adapter_without_modifier(pynput_adapter, rep, key, model):
     pynput_adapter.on_key_press(key)
-    assert len(pynput_adapter.model.commands) == 1
+    pynput_adapter.on_key_release(key)
+    assert pynput_adapter.model.rowCount() == 1
     result = pynput_adapter.model.commands[0]
     assert repr(result) == rep
     assert isinstance(result, model)
@@ -154,7 +156,7 @@ def test_pynput_adapter_without_modifier(pynput_adapter, rep, key, model):
 
 def test_pynput_adapter_errors(pynput_adapter, caplog):
     pynput_adapter.modifier = Key.alt
-    pynput_adapter.on_key_press(Key.tab)
+    pynput_adapter.on_key_release(Key.tab)
     assert caplog.record_tuples == [
         (
             "bot.utils.logger",
