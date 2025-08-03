@@ -1,8 +1,9 @@
 import logging
 from typing import cast
 from unittest.mock import Mock
+
 import pytest
-from pynput.keyboard import Key
+from pynput.keyboard import Key, KeyCode
 from PySide6.QtCore import QEvent, Qt
 from PySide6.QtGui import QKeyEvent
 
@@ -12,9 +13,8 @@ from bot.core.keystroke_adapter import (
     QtKeystrokeAdapter,
 )
 from bot.models import (
-    CommandsModel,
+    CommandListModel,
     DirectionalKeystroke,
-    KeyCode,
     Keystroke,
     ModifierKey,
 )
@@ -22,7 +22,7 @@ from bot.models import (
 
 @pytest.fixture
 def qt_adapter():
-    model = CommandsModel()
+    model = CommandListModel()
     model.layoutChanged = Mock()  # type: ignore
     adapter = QtKeystrokeAdapter(model)
     return adapter
@@ -30,7 +30,7 @@ def qt_adapter():
 
 @pytest.fixture
 def pynput_adapter():
-    model = CommandsModel()
+    model = CommandListModel()
     model.layoutChanged = Mock()  # type: ignore
     adapter = PynputKeystrokeAdapter(model)
     return adapter

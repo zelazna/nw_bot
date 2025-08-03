@@ -11,12 +11,15 @@ from bot.core.keystroke_adapter import QtKeystrokeAdapter
 from bot.core.mouse_adapter import QtMouseAdapter
 from bot.core.recorder import Recorder
 from bot.core.worker import Worker
-from bot.models import BaseCommand, CommandsModel, Params
+from bot.models import CommandListModel, Params
 from bot.ui.main_window import Ui_MainWindow
 from bot.ui.modals import FileNameModal, LogViewerModal
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
 from bot.utils import loadConfig, saveConfig
 from bot.utils.logger import logger
+
+
+STYLE = "background-color: #0067c0; color:white;"
 
 
 class MainWindow(QMainWindow):
@@ -25,24 +28,21 @@ class MainWindow(QMainWindow):
 
         self.worker = None
         self.isRecording = False
-        self.isRecordingOutside = False
         self.timeLeft = 0
         self.botTimer = QTimer(self)
         self.botTimer.timeout.connect(self.timerTick)
         self.validator = ValidateRangeOrNumber()
 
-
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)  # type: ignore
 
-        self.commandModel = CommandsModel()
+        self.commandModel = CommandListModel()
         self.ui.keyListView.setModel(self.commandModel)
         self.ui.keyListView.setDragEnabled(True)
         self.ui.keyListView.setAcceptDrops(True)
         self.ui.keyListView.setDropIndicatorShown(True)
 
         self.recorder = Recorder(self.commandModel)
-        self.recorder.signals.interaction.connect(self.recordOutside)
         self.key_stroke_adapter = QtKeystrokeAdapter(self.commandModel)
         self.mouse_adapter = QtMouseAdapter(self.commandModel)
 
@@ -62,6 +62,14 @@ class MainWindow(QMainWindow):
         self.ui.stopRecordButton.clicked.connect(
             functools.partial(self.toggleRecordKeystrokes, False)
         )
+
+        self.ui.startRecordOutsideButton.clicked.connect(self.startRecordOutside)
+        self.ui.stopRecordOutsideButton.clicked.connect(self.stopRecordOutside)
+        self.ui.startRecordOutsideButton.setStyleSheet(STYLE)
+        self.ui.stopRecordOutsideButton.setStyleSheet(STYLE)
+        self.ui.startRecordOutsideButton.setVisible(False)
+        self.ui.stopRecordOutsideButton.setVisible(False)
+
         self.ui.deleteKey.clicked.connect(self.deleteCommand)
         self.ui.deleteAll.clicked.connect(self.deleteAllKeys)
 
@@ -85,11 +93,22 @@ class MainWindow(QMainWindow):
         self.ui.stopRecordButton.setVisible(state)
         self.isRecording = state
 
-        if self.isRecordingOutside:
-            if state:
-                self.recorder.start()
-            else:
-                self.recorder.stop()
+    def startRecordOutside(self):
+        self.recorder.start()
+        self.isRecording = False
+        self.ui.startRecordOutsideButton.setVisible(False)
+        self.ui.stopRecordOutsideButton.setVisible(True)
+
+    def stopRecordOutside(self):
+        self.ui.startRecordOutsideButton.setVisible(True)
+        self.ui.stopRecordOutsideButton.setVisible(False)
+        self.recorder.stop()
+
+    def toggleOutsideRecord(self, checked: bool):
+        if self.isRecording:
+            self.toggleRecordKeystrokes(False)
+        self.ui.startRecordButton.setVisible(not checked)
+        self.ui.startRecordOutsideButton.setVisible(checked)
 
     def deleteAllKeys(self):
         self.commandModel.commands.clear()
@@ -107,22 +126,14 @@ class MainWindow(QMainWindow):
             # Clear the selection (as it is no longer valid).
             self.ui.keyListView.clearSelection()
 
-    def toggleOutsideRecord(self, checked: bool):
-        self.isRecordingOutside = checked
-        self.toggleRecordKeystrokes(False)
-
     def keyReleaseEvent(self, event: QKeyEvent) -> None:
-        if self.isRecording and not self.isRecordingOutside:
+        if self.isRecording:
             self.key_stroke_adapter.on_key_release(event)
         if event.key() == Qt.Key.Key_Delete:
             self.deleteCommand()
 
-    def recordOutside(self, command: BaseCommand):
-        self.commandModel.commands.append(command)
-        self.commandModel.layoutChanged.emit()
-
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        if self.isRecording and not self.isRecordingOutside:
+        if self.isRecording:
             self.mouse_adapter.on_click(event.x(), event.y(), event.button(), True)
 
     def botThreadComplete(self):
@@ -139,7 +150,7 @@ class MainWindow(QMainWindow):
             self.ui.remainingTime.setVisible(True)
             self.ui.stopButton.setDisabled(False)
             self.ui.startButton.setDisabled(True)
-
+            
             self.startTimer(TIMER_TIMEOUT_MILLISEC)
 
             self.worker = Worker(run, params)

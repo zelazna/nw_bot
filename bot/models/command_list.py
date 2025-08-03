@@ -1,6 +1,6 @@
 import logging
 import pickle
-from typing import TYPE_CHECKING, Any, List, Sequence
+from typing import Any, List, Sequence
 
 from PySide6.QtCore import (
     QAbstractListModel,
@@ -12,18 +12,15 @@ from PySide6.QtCore import (
 )
 
 from bot.core.constants import MIME_TYPE
-
-if TYPE_CHECKING:
-    from bot.models import BaseCommand
-
+from bot.models.base_command import BaseCommand
 
 Index = QModelIndex | QPersistentModelIndex
 
 
-class CommandsModel(QAbstractListModel):
+class CommandListModel(QAbstractListModel):
     def __init__(
         self,
-        commands: list["BaseCommand"] | None = None,
+        commands: list[BaseCommand] | None = None,
         *args: Any,
         **kwargs: Any,
     ):

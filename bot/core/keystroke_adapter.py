@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any
 
 from pynput.keyboard import Controller as KeyBoardController
@@ -10,11 +11,10 @@ from PySide6.QtGui import QKeyEvent
 from bot.core.constants import ALT_VK, CTRL_VK, DEL_VK, SHIFT_VK
 from bot.core.worker import WorkerSignals
 from bot.models import (
-    CommandsModel,
+    CommandListModel,
     DirectionalKeystroke,
     Keystroke,
     ModifierKey,
-    dataclass,
 )
 from bot.utils.logger import logger
 
@@ -33,7 +33,7 @@ MODIFIERS = [
 
 @dataclass
 class BaseKeyStrokeAdapter(ABC):
-    model: CommandsModel
+    model: CommandListModel
 
     @abstractmethod
     def on_key_press(self, event: Any): ...
@@ -96,21 +96,22 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
                 if isinstance(event, Key) and event.value.vk in directionalMapping:
                     self.model.commands.append(DirectionalKeystroke(event.name))
                 elif isinstance(event, KeyCode):
-                    self.model.commands.append(Keystroke(event.char, event.vk))
+                    self.model.commands.append(Keystroke(event.char, event.vk))  # type: ignore
             else:
                 logger.debug(
                     f"Modifier detected along key mod: {self.modifier!r}, key: {event!r}"
                 )
                 modifier = ModifierKey(
-                    key=self.modifier.name, vk=self.modifier.value.vk
+                    key=self.modifier.name,
+                    vk=self.modifier.value.vk,  # type: ignore
                 )
 
                 if self.modifier in (Key.ctrl, Key.ctrl_l):
-                    key = self._decode_ctrl_char(event.char)
+                    key = self._decode_ctrl_char(event.char)  # type: ignore
                 else:
                     key = event.value.char if isinstance(event, Key) else event.char
 
-                self.model.commands.append(Keystroke(key, event.vk, modifier))
+                self.model.commands.append(Keystroke(key, event.vk, modifier))  # type: ignore
             self.model.layoutChanged.emit()
 
         except AttributeError:
