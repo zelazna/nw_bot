@@ -50,19 +50,19 @@ def test_key_release(qt_adapter):
 events = [
     (
         "Alt",
-        "Alt+5 00:00",
+        "Alt+5 200",
         18,
         QKeyEvent(QEvent.Type.KeyRelease, 0x35, Qt.KeyboardModifier.AltModifier),
     ),
     (
         "Ctrl",
-        "Ctrl+5 00:00",
+        "Ctrl+5 200",
         17,
         QKeyEvent(QEvent.Type.KeyRelease, 0x35, Qt.KeyboardModifier.ControlModifier),
     ),
     (
         "Shift",
-        "Shift+5 00:00",
+        "Shift+5 200",
         160,
         QKeyEvent(QEvent.Type.KeyRelease, 0x35, Qt.KeyboardModifier.ShiftModifier),
     ),
@@ -117,10 +117,10 @@ def test_with_directionnal(qt_adapter):
 @pytest.mark.parametrize(
     ("rep", "key", "mod"),
     [
-        ("Ctrl+A 00:00", "\x01", Key.ctrl),
-        ("Ctrl+A 00:00", "a", Key.ctrl),
-        ("Shift+Z 00:00", "z", Key.shift),
-        ("Alt+L 00:00", "l", Key.alt),
+        ("Ctrl+A 0", "\x01", Key.ctrl),
+        ("Ctrl+A 0", "a", Key.ctrl),
+        ("Shift+Z 0", "z", Key.shift),
+        ("Alt+L 0", "l", Key.alt),
     ],
 )
 def test_pynput_adapter_with_modifiers(pynput_adapter, rep, key, mod):
@@ -140,8 +140,8 @@ def test_pynput_adapter_with_modifiers(pynput_adapter, rep, key, mod):
 @pytest.mark.parametrize(
     ("rep", "key", "model"),
     [
-        ("A 00:00", KeyCode.from_char("a"), Keystroke),
-        ("Up 00:00", Key.up, DirectionalKeystroke),
+        ("A 0", KeyCode.from_char("a"), Keystroke),
+        ("Up 0", Key.up, DirectionalKeystroke),
     ],
 )
 def test_pynput_adapter_without_modifier(pynput_adapter, rep, key, model):

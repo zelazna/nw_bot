@@ -12,7 +12,7 @@ def test_command_model(stroke_factory):
     cmd_model = CommandListModel([first_record, last_record])
     index = Mock(spec=QModelIndex)
     index.row.return_value = 0
-    assert cmd_model.data(index, Qt.ItemDataRole.DisplayRole) == "Shift+5 00:00"
+    assert cmd_model.data(index, Qt.ItemDataRole.DisplayRole) == "Shift+5 200"
     assert cmd_model.rowCount() == 2
     assert cmd_model.flags(QModelIndex()) == Qt.ItemFlag.NoItemFlags
     assert cmd_model.mimeTypes() == [

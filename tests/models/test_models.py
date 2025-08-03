@@ -8,7 +8,7 @@ from bot.models import Keystroke, Params
 
 def test_keystroke(stroke_factory):
     model = stroke_factory()
-    assert repr(model) == "Shift+5 00:00"
+    assert repr(model) == "Shift+5 200"
     assert model.key_code.vk == 0
     assert model.modifier.key_code == KeyCode(model.modifier.vk)
     with patch("bot.models.timer.time.sleep") as sleep:
@@ -22,7 +22,7 @@ def test_keystroke(stroke_factory):
             call(model.modifier.key_code),
         ]
         sleep.assert_called_once_with(model.hold.seconds)
-        assert repr(Keystroke("truc", 125)) == "Truc 00:00"
+        assert repr(Keystroke("truc", 125)) == "Truc 200"
 
 
 def test_directional(directional_key_factory):

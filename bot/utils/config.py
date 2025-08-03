@@ -36,21 +36,23 @@ def loadConfig(filename: str | Path) -> Params:
                     x, y = int(match.group(1)), int(match.group(2))
                 commands.append(MouseClick(button, (x, y)))
             else:
-                timer = _getTimer(k)
-                key = k.split(" ")[0]
+                splited = k.split(" ")
+                if len(splited) == 1:
+                    key = splited[0]
+                    timer = Timer(200)
+                else:
+                    key, time = splited
+                    timer = Timer(int(time))
+
                 if "+" in key:
                     modifier, key = key.split("+")
                     code = KeyCode.from_char(key)
                     if modifier_key := getattr(Key, modifier.lower()):
                         mod = ModifierKey(modifier, modifier_key.value.vk)
-                        commands.append(
-                            Keystroke(key, code.vk or 0, mod, hold=timer)
-                        )
+                        commands.append(Keystroke(key, code.vk or 0, mod, hold=timer))
                     logger.warning(f"couldn't parse {k}")
                 elif key.lower() in directional:
-                    commands.append(
-                        DirectionalKeystroke(key.lower(), hold=timer)
-                    )
+                    commands.append(DirectionalKeystroke(key.lower(), hold=timer))
                 else:
                     code = KeyCode.from_char(key)
                     if not code.vk:
@@ -58,15 +60,6 @@ def loadConfig(filename: str | Path) -> Params:
                     commands.append(Keystroke(key, code.vk or 0, hold=timer))
 
     return Params(commands)
-
-
-@lru_cache
-def _getTimer(k: str) -> Timer:
-    if match := re.search(time_pattern, k):
-        mins, secs = [int(g) for g in match.groups()]
-        total_ms = (mins * 60 + secs) * 1000
-        return Timer(total_ms)
-    return Timer(200)
 
 
 def saveConfig(filePath: str | Path, params: Params):

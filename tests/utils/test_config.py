@@ -20,10 +20,10 @@ def test_load_config(config_file_path):
     assert mouseclick.pos == (156, 251)
 
     assert isinstance(keystroke, Keystroke)
-    assert repr(keystroke) == "Shift+5 00:05"
+    assert repr(keystroke) == "Shift+5 5000"
     assert keystroke.hold.seconds == 5
 
-    assert repr(a) == "A 00:05"
+    assert repr(a) == "A 200"
 
     assert isinstance(directional, DirectionalKeystroke)
     assert directional.key == "up"
@@ -36,4 +36,4 @@ def test_save_config(params_factory):
         assert Path(filePath).exists()
         with open(filePath) as f:
             data = f.read()
-        assert data == "Shift+5 00:00\nLeft Click: (0, 0)\nUp 00:00\n"
+        assert data == "Shift+5 200\nLeft Click: (0, 0)\nUp 200\n"
