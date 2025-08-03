@@ -1,7 +1,7 @@
-Shift+5
-A
+Shift+5 00:05
+A 00:05
 Left Click: (156, 251)
-Up
+Up 00:05
 Down
 Left
 Up

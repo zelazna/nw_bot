@@ -4,8 +4,8 @@ from pathlib import Path
 
 from pynput.mouse import Button
 
-from bot.models import DirectionalKeystroke, MouseClick, Params, Keystroke
-from bot.utils import loadConfig, saveConfig
+from bot.models import DirectionalKeystroke, Keystroke, MouseClick, Params
+from bot.utils.config import loadConfig, saveConfig
 
 
 def test_load_config(config_file_path):
@@ -20,9 +20,10 @@ def test_load_config(config_file_path):
     assert mouseclick.pos == (156, 251)
 
     assert isinstance(keystroke, Keystroke)
-    assert repr(keystroke) == "Shift+5"
+    assert repr(keystroke) == "Shift+5 00:05"
+    assert keystroke.hold.seconds == 5
 
-    assert repr(a) == "A"
+    assert repr(a) == "A 00:05"
 
     assert isinstance(directional, DirectionalKeystroke)
     assert directional.key == "up"
@@ -35,4 +36,4 @@ def test_save_config(params_factory):
         assert Path(filePath).exists()
         with open(filePath) as f:
             data = f.read()
-        assert data == "Shift+5\nLeft Click: (0, 0)\nUp\n"
+        assert data == "Shift+5 00:00\nLeft Click: (0, 0)\nUp 00:00\n"

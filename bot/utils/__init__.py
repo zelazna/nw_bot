@@ -1,3 +1,3 @@
-from .config import loadConfig, saveConfig
+from .format_time import format_time
 
-__all__ = ["loadConfig", "saveConfig"]
+__all__ = ["format_time"]

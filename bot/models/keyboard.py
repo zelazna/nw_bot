@@ -1,10 +1,10 @@
-import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import ClassVar
 
 from pynput.keyboard import Controller, Key, KeyCode
 
 from bot.models.base_command import BaseCommand
+from bot.models.timer import Timer
 
 
 @dataclass
@@ -27,7 +27,7 @@ class ModifierKey(BaseKey):
 class Keystroke(BaseKey, BaseCommand):
     modifier: ModifierKey | None = None
     controller: ClassVar[Controller] = Controller()
-    hold_sec: float = 0.2
+    hold: Timer = field(default_factory=Timer)
 
     def __repr__(self) -> str:
         try:
@@ -35,15 +35,15 @@ class Keystroke(BaseKey, BaseCommand):
         except IndexError:
             key_repr = self.key
         if self.modifier:
-            return f"{self.modifier!r}+{key_repr.upper()}"
-        return key_repr.capitalize()
+            return f"{self.modifier!r}+{key_repr.upper()} {self.hold!r}"
+        return f"{key_repr.capitalize()} {self.hold!r}"
 
     def execute(self):
         if self.modifier:
             self.controller.press(self.modifier.key_code)
         try:
             self.controller.press(self.key_code)
-            time.sleep(self.hold_sec)
+            self.hold.execute()
             self.controller.release(self.key_code)
         finally:
             if self.modifier:
@@ -55,10 +55,10 @@ class DirectionalKeystroke(Keystroke):
     vk: int = 0
 
     def __repr__(self) -> str:
-        return self.key.capitalize()
+        return f"{self.key.capitalize()} {self.hold!r}"
 
     def execute(self):
-        key = getattr(Key, self.key)
+        key = getattr(Key, self.key.lower())
         self.controller.press(key)
-        time.sleep(self.hold_sec)
+        self.hold.execute()
         self.controller.release(key)

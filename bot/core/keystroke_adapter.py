@@ -2,10 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
-from pynput.keyboard import Controller as KeyBoardController
 from pynput.keyboard import Key, KeyCode
-from pynput.mouse import Controller as MouseController
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QElapsedTimer, Qt
 from PySide6.QtGui import QKeyEvent
 
 from bot.core.constants import ALT_VK, CTRL_VK, DEL_VK, SHIFT_VK
@@ -14,12 +12,12 @@ from bot.models import (
     DirectionalKeystroke,
     Keystroke,
     ModifierKey,
+    Timer,
 )
 from bot.utils.logger import logger
 
 directionalMapping = {k.value.vk: k for k in (Key.up, Key.down, Key.left, Key.right)}
-mouse = MouseController()
-keyboard = KeyBoardController()
+
 MODIFIERS = [
     Key.shift,
     Key.alt,
@@ -28,6 +26,8 @@ MODIFIERS = [
     Key.ctrl_l,
     Key.cmd,
 ]
+
+PynputEvent = Key | KeyCode | None
 
 
 @dataclass
@@ -76,48 +76,62 @@ class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
 
 
 class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
-    modifier: Key | None = None
+    timer = QElapsedTimer()
+    modifier: PynputEvent = None
+    current_key: PynputEvent = None
 
-    def on_key_press(self, event: Key | KeyCode | None):
-        if not event:
+    def on_key_press(self, event: PynputEvent):
+        if not event or event == self.current_key:
             return
+
+        self.current_key = event
+        self.timer.start()
 
         if event in MODIFIERS:
             logger.debug(f"got modifier key: {event!r} ignoring it for know")
             self.modifier = event
             return
 
+    def on_key_release(self, event: PynputEvent):
+        if event in MODIFIERS:
+            self.modifier = None
+            return
+
         try:
+            timer = Timer(self.timer.elapsed())
             if not self.modifier:
                 logger.debug(f"Get single key: {event!r}")
 
                 if isinstance(event, Key) and event.value.vk in directionalMapping:
-                    self.model.commands.append(DirectionalKeystroke(event.name))
+                    self.model.commands.append(
+                        DirectionalKeystroke(event.name, hold=timer)
+                    )
                 elif isinstance(event, KeyCode):
-                    self.model.commands.append(Keystroke(event.char, event.vk))  # type: ignore
+                    self.model.commands.append(
+                        Keystroke(event.char, event.vk, hold=timer)  # type: ignore
+                    )
             else:
                 logger.debug(
                     f"Modifier detected along key mod: {self.modifier!r}, key: {event!r}"
                 )
                 modifier = ModifierKey(
-                    key=self.modifier.name,
+                    key=self.modifier.name,  # type: ignore
                     vk=self.modifier.value.vk,  # type: ignore
                 )
 
                 if self.modifier in (Key.ctrl, Key.ctrl_l):
                     key = self._decode_ctrl_char(event.char)  # type: ignore
                 else:
-                    key = event.value.char if isinstance(event, Key) else event.char
+                    key = event.value.char if isinstance(event, Key) else event.char  # type: ignore
 
-                self.model.commands.append(Keystroke(key, event.vk, modifier))  # type: ignore
+                self.model.commands.append(
+                    Keystroke(key, event.vk, modifier, timer)  # type: ignore
+                )
+            self.current_key = None
             self.model.layoutChanged.emit()
 
         except AttributeError:
             logger.error(f"Unhandled key: {event!r}", exc_info=True)
-
-    def on_key_release(self, event: Key | KeyCode | None):
-        if event in MODIFIERS:
-            self.modifier = None
 
     def _decode_ctrl_char(self, char: str) -> str:
         val = ord(char)

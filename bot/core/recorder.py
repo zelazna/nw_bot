@@ -1,4 +1,3 @@
-from typing import Callable
 from pynput import keyboard, mouse
 
 from bot.core.keystroke_adapter import (

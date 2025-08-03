@@ -1,7 +1,7 @@
 import functools
 import os
 
-from PySide6.QtCore import Qt, QTimer, Slot
+from PySide6.QtCore import Qt, QTimerEvent, Slot
 from PySide6.QtGui import QKeyEvent, QMouseEvent
 from PySide6.QtWidgets import QErrorMessage, QFileDialog, QMainWindow
 
@@ -15,11 +15,11 @@ from bot.models import CommandListModel, Params
 from bot.ui.main_window import Ui_MainWindow
 from bot.ui.modals import FileNameModal, LogViewerModal
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
-from bot.utils import loadConfig, saveConfig
+from bot.utils import format_time
+from bot.utils.config import loadConfig, saveConfig
 from bot.utils.logger import logger
 
-
-STYLE = "background-color: #0067c0; color:white;"
+OUTSIDE_BUTTON_STYLE = "background-color: #0067c0; color:white;"
 
 
 class MainWindow(QMainWindow):
@@ -29,8 +29,7 @@ class MainWindow(QMainWindow):
         self.worker = None
         self.isRecording = False
         self.timeLeft = 0
-        self.botTimer = QTimer(self)
-        self.botTimer.timeout.connect(self.timerTick)
+        self.timer_id = 0
         self.validator = ValidateRangeOrNumber()
 
         self.ui = Ui_MainWindow()
@@ -65,8 +64,8 @@ class MainWindow(QMainWindow):
 
         self.ui.startRecordOutsideButton.clicked.connect(self.startRecordOutside)
         self.ui.stopRecordOutsideButton.clicked.connect(self.stopRecordOutside)
-        self.ui.startRecordOutsideButton.setStyleSheet(STYLE)
-        self.ui.stopRecordOutsideButton.setStyleSheet(STYLE)
+        self.ui.startRecordOutsideButton.setStyleSheet(OUTSIDE_BUTTON_STYLE)
+        self.ui.stopRecordOutsideButton.setStyleSheet(OUTSIDE_BUTTON_STYLE)
         self.ui.startRecordOutsideButton.setVisible(False)
         self.ui.stopRecordOutsideButton.setVisible(False)
 
@@ -150,28 +149,20 @@ class MainWindow(QMainWindow):
             self.ui.remainingTime.setVisible(True)
             self.ui.stopButton.setDisabled(False)
             self.ui.startButton.setDisabled(True)
-            
-            self.startTimer(TIMER_TIMEOUT_MILLISEC)
+
+            self.timeLeft = int(self.limit.text()) * 60 * 1000 + (
+                PADDING_IN_S * 1000
+            )  # Convert minutes to milliseconds
+            self.timer_id = self.startTimer(TIMER_TIMEOUT_MILLISEC)
+            logger.info(f"Starting timer with {format_time(self.timeLeft)} minutes")
 
             self.worker = Worker(run, params)
             self.worker.signals.finished.connect(self.botThreadComplete)
             self.worker.start()
 
-    def startTimer(
-        self, interval: int, /, timerType: Qt.TimerType = Qt.TimerType.CoarseTimer
-    ) -> int:
-        self.timeLeft = int(self.limit.text()) * 60 * 1000 + (
-            PADDING_IN_S * 1000
-        )  # Convert minutes to milliseconds
-        formatTime = self.formatTime(self.timeLeft)
-        logger.info(f"Starting timer with {formatTime} minutes")
-        self.ui.remainingTime.setText(formatTime)
-        self.botTimer.start(interval)
-        return 1
-
-    def timerTick(self):
+    def timerEvent(self, event: QTimerEvent) -> None:
         self.timeLeft -= TIMER_TIMEOUT_MILLISEC  # Decrease by 0.5 second
-        self.ui.remainingTime.setText(self.formatTime(self.timeLeft))
+        self.ui.remainingTime.setText(format_time(self.timeLeft))
 
     @Slot()
     def stopBot(self):
@@ -181,7 +172,7 @@ class MainWindow(QMainWindow):
             self.worker.wait()
             self.worker.terminate()
         self.botThreadComplete()
-        self.botTimer.stop()
+        self.killTimer(self.timer_id)
 
     def saveConfig(self):
         cfg = self.dumpConfig()
@@ -229,13 +220,3 @@ class MainWindow(QMainWindow):
             logs = logFile.read()
             logViewer = LogViewerModal(logs=logs)
             logViewer.exec()
-
-    @functools.lru_cache
-    def formatTime(self, milliseconds: int) -> str:
-        secs = milliseconds / 1000
-        secs = secs % (24 * 3600)
-        hours = secs // 3600
-        secs %= 3600
-        mins = secs // 60
-        secs %= 60
-        return f"{int(hours):02d}:{int(mins):02d}:{int(secs):02d}"
