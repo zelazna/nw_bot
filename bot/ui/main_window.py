@@ -43,6 +43,10 @@ class Ui_MainWindow(object):
         self.actionUnboundRecordToggle.setCheckable(True)
         icon3 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.MediaRecord))
         self.actionUnboundRecordToggle.setIcon(icon3)
+        self.actionSaveAs = QAction(MainWindow)
+        self.actionSaveAs.setObjectName(u"actionSaveAs")
+        icon4 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentSaveAs))
+        self.actionSaveAs.setIcon(icon4)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout = QGridLayout(self.centralwidget)
@@ -136,15 +140,19 @@ class Ui_MainWindow(object):
         self.menubar.setGeometry(QRect(0, 0, 800, 21))
         self.menuParametres = QMenu(self.menubar)
         self.menuParametres.setObjectName(u"menuParametres")
+        self.menuRecent = QMenu(self.menuParametres)
+        self.menuRecent.setObjectName(u"menuRecent")
         self.menuOptions = QMenu(self.menubar)
         self.menuOptions.setObjectName(u"menuOptions")
         MainWindow.setMenuBar(self.menubar)
 
         self.menubar.addAction(self.menuParametres.menuAction())
         self.menubar.addAction(self.menuOptions.menuAction())
-        self.menuParametres.addAction(self.actionSaveConfig)
         self.menuParametres.addAction(self.actionLoadConfig)
+        self.menuParametres.addAction(self.actionSaveConfig)
+        self.menuParametres.addAction(self.actionSaveAs)
         self.menuParametres.addAction(self.actionShowLogs)
+        self.menuParametres.addAction(self.menuRecent.menuAction())
         self.menuOptions.addAction(self.actionUnboundRecordToggle)
 
         self.retranslateUi(MainWindow)
@@ -154,10 +162,11 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.actionSaveConfig.setText(QCoreApplication.translate("MainWindow", u"Sauver la config", None))
+        self.actionSaveConfig.setText(QCoreApplication.translate("MainWindow", u"Enregistrer la config", None))
         self.actionLoadConfig.setText(QCoreApplication.translate("MainWindow", u"Charger la config", None))
         self.actionShowLogs.setText(QCoreApplication.translate("MainWindow", u"Afficher le journal", None))
         self.actionUnboundRecordToggle.setText(QCoreApplication.translate("MainWindow", u"Enregistrer en dehors", None))
+        self.actionSaveAs.setText(QCoreApplication.translate("MainWindow", u"Enregister sous", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Nombre de fenetres", None))
         self.appVersion.setText(QCoreApplication.translate("MainWindow", u"Version", None))
         self.startRecordButton.setText(QCoreApplication.translate("MainWindow", u"Demarrer l'enregistrement", None))
@@ -175,6 +184,7 @@ class Ui_MainWindow(object):
         self.stopButton.setText(QCoreApplication.translate("MainWindow", u"Arret", None))
         self.remainingTime.setText(QCoreApplication.translate("MainWindow", u"00:00:00", None))
         self.menuParametres.setTitle(QCoreApplication.translate("MainWindow", u"Fichier", None))
+        self.menuRecent.setTitle(QCoreApplication.translate("MainWindow", u"R\u00e9cents", None))
         self.menuOptions.setTitle(QCoreApplication.translate("MainWindow", u"Options", None))
     # retranslateUi
 

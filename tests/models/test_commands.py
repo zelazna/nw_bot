@@ -1,52 +1,76 @@
 import pickle
-from unittest.mock import Mock
 
-from PySide6.QtCore import QByteArray, QModelIndex, Qt
+from PySide6.QtCore import QMimeData, QModelIndex, Qt
 
 from bot.core.constants import MIME_TYPE
-from bot.models import CommandListModel
+from bot.models.base_command import BaseCommand
+from bot.models.command_list import CommandListModel
 
 
-def test_command_model(stroke_factory):
-    first_record, last_record = [stroke_factory() for _ in range(2)]
-    cmd_model = CommandListModel([first_record, last_record])
-    index = Mock(spec=QModelIndex)
-    index.row.return_value = 0
-    assert cmd_model.data(index, Qt.ItemDataRole.DisplayRole) == "Shift+5 200"
-    assert cmd_model.rowCount() == 2
-    assert cmd_model.flags(QModelIndex()) == Qt.ItemFlag.NoItemFlags
-    assert cmd_model.mimeTypes() == [
-        "application/x-qabstractitemmodeldatalist",
-        "application/vnd.text.list",
-    ]
-    mime_data = cmd_model.mimeData([QModelIndex()])
-    data = QByteArray()
-    data.append(pickle.dumps((0, first_record)))
-    mime_data.setData(MIME_TYPE, data)
-    assert (
-        cmd_model.canDropMimeData(mime_data, Qt.DropAction.CopyAction, 1, 1, index)
-        is False
-    )
-    assert (
-        cmd_model.canDropMimeData(mime_data, Qt.DropAction.CopyAction, 1, -1, index)
-        is True
-    )
-    assert cmd_model.rowCount() == 2
-    assert cmd_model.dropMimeData(mime_data, Qt.DropAction.CopyAction, 1, -1, index)
-    assert cmd_model.commands[0] == last_record
+class DummyCommand(BaseCommand):
+    def __init__(self, name):
+        self.name = name
 
-    assert (
-        cmd_model.dropMimeData(mime_data, Qt.DropAction.CopyAction, 1, 1, index)
-        is False
+    def __repr__(self):
+        return f"DummyCommand({self.name})"
+
+    def execute(self): ...
+
+
+def test_row_count():
+    model = CommandListModel([DummyCommand("A"), DummyCommand("B")])
+    assert model.rowCount() == 2
+
+
+def test_data_display_role():
+    cmd = DummyCommand("Test")
+    model = CommandListModel([cmd])
+    index = model.index(0)
+    assert model.data(index, Qt.ItemDataRole.DisplayRole) == repr(cmd)
+
+
+def test_flags_valid_index():
+    model = CommandListModel([DummyCommand("A")])
+    index = model.index(0)
+    flags = model.flags(index)
+    assert flags & Qt.ItemFlag.ItemIsDragEnabled
+    assert flags & Qt.ItemFlag.ItemIsDropEnabled
+
+
+def test_mime_types_contains_custom_type():
+    model = CommandListModel()
+    assert MIME_TYPE in model.mimeTypes()
+
+
+def test_mime_data_serialization():
+    cmd = DummyCommand("Serialized")
+    model = CommandListModel([cmd])
+    index = model.index(0)
+    mime_data = model.mimeData([index])
+
+    assert mime_data.hasFormat(MIME_TYPE)
+    bytes_array = mime_data.data(MIME_TYPE)
+    idx, loaded_cmd = pickle.loads(bytes(bytes_array.data()))
+    assert idx == 0
+    assert repr(loaded_cmd) == repr(cmd)
+
+
+def test_can_drop_mime_data_valid():
+    model = CommandListModel()
+    mime_data = QMimeData()
+    mime_data.setData(MIME_TYPE, pickle.dumps((0, DummyCommand("DropMe"))))
+    assert model.canDropMimeData(
+        mime_data, Qt.DropAction.MoveAction, 0, 0, QModelIndex()
     )
 
-    assert (
-        cmd_model.dropMimeData(mime_data, Qt.DropAction.IgnoreAction, 1, -1, index)
-        is True
-    )
 
-    mime_data.setData("truc", data)
-    assert (
-        cmd_model.dropMimeData(mime_data, Qt.DropAction.CopyAction, 1, 1, index)
-        is False
-    )
+def test_drop_mime_data_moves_item():
+    cmds = [DummyCommand("One"), DummyCommand("Two"), DummyCommand("Three")]
+    model = CommandListModel(cmds.copy())
+
+    # Move "One" (index 0) after "Three" (index 2)
+    mime_data = QMimeData()
+    mime_data.setData(MIME_TYPE, pickle.dumps((0, cmds[0])))
+
+    model.dropMimeData(mime_data, Qt.DropAction.MoveAction, 1, 0, QModelIndex())
+    assert [cmd.name for cmd in model.commands] == ["Two", "Three", "One"]

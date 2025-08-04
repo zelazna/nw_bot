@@ -1,5 +1,4 @@
 import re
-from functools import lru_cache
 from pathlib import Path
 
 from pynput.keyboard import Key, KeyCode
@@ -26,7 +25,7 @@ def loadConfig(filename: str | Path) -> Params:
     commands = []
     with open(filename, "r", encoding="utf-8") as fp:
         for k in fp:
-            k = k[:-1]  # remove line break
+            k = k[:-1].strip()  # remove line break ans spaces
             if "Click" in k:
                 x, y = 0, 0
                 kind, _, pos = k.split(" ", 2)

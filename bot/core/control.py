@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pynput.keyboard import Controller as KeyBoardController
 from pynput.mouse import Controller as MouseController
 
-from bot.core.constants import ALT_VK, TAB_VK
+from bot.core.constants import ALT_VK, PADDING_IN_S, TAB_VK
 from bot.models import Keystroke, ModifierKey, Params
 from bot.utils.logger import logger
 
@@ -30,7 +30,7 @@ class Runner:
 
 
 def run(params: Params):
-    time.sleep(5)  # Allow to switch window in time
+    time.sleep(PADDING_IN_S)  # Allow to switch window in time
     end = time.time() + params.limit * 60
     logger.info("run with params: %s", params)
     runner = Runner(params)
