@@ -282,9 +282,16 @@
     <property name="title">
      <string>Fichier</string>
     </property>
-    <addaction name="actionSaveConfig"/>
+    <widget class="QMenu" name="menuRecent">
+     <property name="title">
+      <string>Récents</string>
+     </property>
+    </widget>
     <addaction name="actionLoadConfig"/>
+    <addaction name="actionSaveConfig"/>
+    <addaction name="actionSaveAs"/>
     <addaction name="actionShowLogs"/>
+    <addaction name="menuRecent"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
@@ -300,7 +307,7 @@
     <iconset theme="QIcon::ThemeIcon::DocumentSave"/>
    </property>
    <property name="text">
-    <string>Sauver la config</string>
+    <string>Enregistrer la config</string>
    </property>
   </action>
   <action name="actionLoadConfig">
@@ -328,6 +335,14 @@
    </property>
    <property name="text">
     <string>Enregistrer en dehors</string>
+   </property>
+  </action>
+  <action name="actionSaveAs">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentSaveAs"/>
+   </property>
+   <property name="text">
+    <string>Enregister sous</string>
    </property>
   </action>
  </widget>

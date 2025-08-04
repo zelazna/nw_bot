@@ -1,8 +1,7 @@
 import functools
-import os
 
 from PySide6.QtCore import Qt, QTimerEvent, Slot
-from PySide6.QtGui import QKeyEvent, QMouseEvent
+from PySide6.QtGui import QAction, QKeyEvent, QMouseEvent
 from PySide6.QtWidgets import QErrorMessage, QFileDialog, QMainWindow
 
 from bot.core.constants import PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
@@ -15,7 +14,7 @@ from bot.models import CommandListModel, Params
 from bot.ui.main_window import Ui_MainWindow
 from bot.ui.modals import FileNameModal, LogViewerModal
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
-from bot.utils import format_time
+from bot.utils import format_time, recentFileManager, saveFolderManager
 from bot.utils.config import loadConfig, saveConfig
 from bot.utils.logger import logger
 
@@ -46,8 +45,14 @@ class MainWindow(QMainWindow):
         self.mouse_adapter = QtMouseAdapter(self.commandModel)
 
         self.ui.actionSaveConfig.triggered.connect(self.saveConfig)
+        self.ui.actionSaveAs.triggered.connect(self.saveConfigAs)
         self.ui.actionLoadConfig.triggered.connect(self.loadConfig)
         self.ui.actionUnboundRecordToggle.triggered.connect(self.toggleOutsideRecord)
+
+        for r in recentFileManager.load():
+            action = QAction(r["path"], self)
+            action.triggered.connect(lambda: self.loadConfigFile(r["path"]))
+            self.ui.menuRecent.addAction(action)
 
         self.ui.actionShowLogs.triggered.connect(self.showLogs)
 
@@ -174,38 +179,58 @@ class MainWindow(QMainWindow):
         self.botThreadComplete()
         self.killTimer(self.timer_id)
 
-    def saveConfig(self):
-        cfg = self.dumpConfig()
-        folder = QFileDialog.getExistingDirectory(
-            self, "Sauvegarder le fichier de config"
-        )
-        if folder:
-            dlg = FileNameModal()
-            if dlg.exec():
-                if exc := saveConfig(os.path.join(folder, dlg.filename), cfg):
-                    error_dialog = QErrorMessage()
-                    error_dialog.showMessage(
-                        f"Une erreur c'est produite lors la sauvegarde de la config: {exc}"
-                    )
-                    error_dialog.exec_()
+    def addRecentMenuItem(self, path: str):
+        action = QAction(path, self)
+        action.triggered.connect(lambda: self.loadConfigFile(path))
+        self.ui.menuRecent.addAction(action)
 
-    def loadConfig(self):
-        dialog = QFileDialog(self, "Choisir le fichier de config")
-        filename, _ = dialog.getOpenFileName(self, filter="TXT files (*.txt)")
-        if filename:
-            result = loadConfig(filename)
+    def loadConfigFile(self, filepath: str):
+        logger.info(f"Loading config from {filepath}")
+        try:
+            result = loadConfig(filepath)
             if isinstance(result, Params):
                 self.commandModel.commands = result.commands
                 self.interval.setText(result.interval)
                 self.limit.setText(str(result.limit))
                 self.ui.winNum.setCurrentText(str(result.winNum))
                 self.commandModel.layoutChanged.emit()
-            else:
-                error_dialog = QErrorMessage()
-                error_dialog.showMessage(
-                    f"Une erreur c'est produite lors du chargement de la config: {result}"
-                )
-                error_dialog.exec_()
+        except FileNotFoundError:
+            error_dialog = QErrorMessage()
+            error_dialog.showMessage(
+                "Une erreur c'est produite lors du chargement de la config: "
+                f"le fichier {filepath} n'a pas ete trouve"
+            )
+            error_dialog.exec_()
+
+    def saveConfig(self):
+        cfg = self.dumpConfig()
+        folder_name = saveFolderManager.get()
+
+        if not folder_name:
+            folder_name = QFileDialog.getExistingDirectory(
+                self, "Sauvegarder le fichier de config"
+            )
+            logger.info(f"{folder_name} is chosen for saving files")
+            saveFolderManager.save(folder_name)
+        if folder_name:
+            dlg = FileNameModal()
+            if dlg.exec():
+                recent = f"{folder_name}/{dlg.filename}"
+                logger.info(f"Saving config to {recent}")
+                saveConfig(recent, cfg)
+                recentFileManager.add(recent)
+                self.addRecentMenuItem(recent)
+
+    def saveConfigAs(self):
+        saveFolderManager.clear()
+        self.saveConfig()
+
+    def loadConfig(self):
+        dialog = QFileDialog(self, "Choisir le fichier de config")
+        filepath, _ = dialog.getOpenFileName(self, filter="TXT files (*.txt)")
+        if filepath:
+            self.loadConfigFile(filepath)
+            self.addRecentMenuItem(filepath)
 
     def dumpConfig(self) -> Params:
         return Params(

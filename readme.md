@@ -32,18 +32,5 @@ pyinstaller nwbot.spec
 ## Run tests
 
 ```bash
-pytest --cov=bot --cov-report=term --cov-report=xml
+python -m pytest --cov=bot --cov-report=term --cov-report=xml
 ```
-
-## TODO
-
-- [X] Drag and drop
-- [X] Right and left click
-- [X] Missing Keys
-- [X] Remove Keys with suppr
-- [X] Export logfile
-- [X] Unbound by window record with pynput
-- [X] Responsive layout
-- [X] Command pattern
-- [ ] Insert time beetwen keys
-- [ ] Copy and paste Keys
