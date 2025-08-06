@@ -101,11 +101,15 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
             timer = Timer(self.timer.elapsed())
             if not self.modifier:
                 logger.debug(f"Get single key: {event!r}")
-
-                if isinstance(event, Key) and event.value.vk in directionalMapping:
-                    self.model.commands.append(
-                        DirectionalKeystroke(event.name, hold=timer)
-                    )
+                if isinstance(event, Key):
+                    if event.value.vk in directionalMapping:
+                        self.model.commands.append(
+                            DirectionalKeystroke(event.name, hold=timer)
+                        )
+                    elif event.value.vk:
+                        self.model.commands.append(
+                            Keystroke(event.name, vk=event.value.vk, hold=timer)
+                        )
                 elif isinstance(event, KeyCode):
                     self.model.commands.append(
                         Keystroke(event.char, event.vk, hold=timer)  # type: ignore

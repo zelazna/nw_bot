@@ -2,17 +2,16 @@ import os
 import tempfile
 from pathlib import Path
 
-from pynput.mouse import Button
-
-from bot.models import DirectionalKeystroke, Keystroke, MouseClick, Params
+from bot.models import DirectionalKeystroke, Keystroke, MouseClick, Params, Button
 from bot.utils.config import loadConfig, saveConfig
 
 
 def test_load_config(config_file_path):
     result = loadConfig(config_file_path)
     assert isinstance(result, Params)
-    assert result.limit == 5
-    assert result.interval == "1"
+    assert result.winNum == 2
+    assert result.limit == 4.0
+    assert result.interval == "1-3"
     keystroke, a, mouseclick, directional, *_ = result.commands
 
     assert isinstance(mouseclick, MouseClick)
@@ -36,4 +35,14 @@ def test_save_config(params_factory):
         assert Path(filePath).exists()
         with open(filePath) as f:
             data = f.read()
-        assert data == "Shift+5 200\nLeft Click: (0, 0)\nUp 200\n"
+        assert data == (
+            """winNum 1
+limit 0.01
+interval 1-2
+
+Shift+5 200
+Left Click: (0, 0)
+Up 200
+
+"""
+        )
