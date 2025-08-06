@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, QTimerEvent, Slot
 from PySide6.QtGui import QAction, QKeyEvent, QMouseEvent
 from PySide6.QtWidgets import QErrorMessage, QFileDialog, QMainWindow
 
-from bot.core.constants import PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
+from bot.core.constants import APP_NAME, PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
 from bot.core.control import run
 from bot.core.keystroke_adapter import QtKeystrokeAdapter
 from bot.core.mouse_adapter import QtMouseAdapter
@@ -30,6 +30,7 @@ class MainWindow(QMainWindow):
         self.timeLeft = 0
         self.timer_id = 0
         self.validator = ValidateRangeOrNumber()
+        self.currentFile = None
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)  # type: ignore
@@ -194,6 +195,9 @@ class MainWindow(QMainWindow):
                 self.limit.setText(str(result.limit))
                 self.ui.winNum.setCurrentText(str(result.winNum))
                 self.commandModel.layoutChanged.emit()
+                self.setWindowTitle(f"{APP_NAME} {filepath}")
+                recentFileManager.add(filepath)
+                self.currentFile = filepath
         except FileNotFoundError:
             error_dialog = QErrorMessage()
             error_dialog.showMessage(
@@ -204,6 +208,9 @@ class MainWindow(QMainWindow):
 
     def saveConfig(self):
         cfg = self.dumpConfig()
+        if self.currentFile:
+            saveConfig(self.currentFile, cfg)
+            return
         folder_name = saveFolderManager.get()
 
         if not folder_name:
@@ -218,11 +225,14 @@ class MainWindow(QMainWindow):
                 recent = f"{folder_name}/{dlg.filename}"
                 logger.info(f"Saving config to {recent}")
                 saveConfig(recent, cfg)
-                recentFileManager.add(recent)
                 self.addRecentMenuItem(recent)
+                self.setWindowTitle(f"{APP_NAME} {recent}")
+                recentFileManager.add(recent)
+                self.currentFile = recent
 
     def saveConfigAs(self):
         saveFolderManager.clear()
+        self.currentFile = None
         self.saveConfig()
 
     def loadConfig(self):
@@ -236,7 +246,7 @@ class MainWindow(QMainWindow):
         return Params(
             commands=self.commandModel.commands,
             interval=self.interval.text(),
-            limit=int(self.limit.text()),
+            limit=float(self.limit.text()),
             winNum=int(self.ui.winNum.currentText()),
         )
 

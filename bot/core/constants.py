@@ -3,6 +3,7 @@ from typing import cast
 
 from pynput.keyboard import Key
 
+APP_NAME = "NW Bot"
 VERSION = importlib.metadata.version("nw-bot")
 LOG_FILE = "nw-bot.log"
 MIME_TYPE = "application/vnd.text.list"

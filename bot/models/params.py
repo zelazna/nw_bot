@@ -19,3 +19,12 @@ class Params:
             interval_range = [int(self.interval)]
         return interval_range
 
+    def __repr__(self) -> str:
+        cmds = [f"{cmd!r}\n" for cmd in self.commands]
+
+        return f"""winNum {self.winNum}
+limit {self.limit}
+interval {self.interval}
+
+{"".join(cmds)}
+"""
