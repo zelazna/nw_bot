@@ -59,10 +59,10 @@ class SaveFolderManager(BaseSetting):
     key = "bot/saveFolder"
 
     def get(self) -> str | None:
-        return settings.value(self.key)
+        return self.settings.value(self.key)
 
     def save(self, folder_name: str):
-        settings.setValue(self.key, folder_name)
+        self.settings.setValue(self.key, folder_name)
 
     def clear(self):
         self.settings.remove(self.key)

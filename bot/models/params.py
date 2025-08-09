@@ -7,7 +7,7 @@ from bot.models.base_command import BaseCommand
 class Params:
     commands: list[BaseCommand] = field(default_factory=list)
     winNum: int = 1
-    limit: float | int = 5
+    limit: int = 5
     interval: str = "1"
 
     @property

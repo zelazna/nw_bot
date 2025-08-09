@@ -14,7 +14,7 @@ pip install .
 ## Launch It
 
 ```bash
-python main.py
+bot-gui
 ```
 
 ## Generate the UI python file

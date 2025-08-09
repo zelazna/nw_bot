@@ -10,11 +10,11 @@ from bot.models.timer import Timer
 @dataclass
 class BaseKey:
     key: str
-    vk: int
+    vk: int | None = None
 
     @property
-    def key_code(self) -> KeyCode | Key:
-        return KeyCode.from_vk(self.vk)
+    def key_code(self) -> KeyCode:
+        return KeyCode.from_vk(self.vk) if self.vk else KeyCode.from_char(self.key)
 
 
 class ModifierKey(BaseKey):
@@ -52,8 +52,6 @@ class Keystroke(BaseKey, BaseCommand):
 
 @dataclass
 class DirectionalKeystroke(Keystroke):
-    vk: int = 0
-
     def __repr__(self) -> str:
         return f"{self.key.capitalize()} {self.hold!r}"
 

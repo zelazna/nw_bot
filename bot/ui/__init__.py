@@ -246,7 +246,7 @@ class MainWindow(QMainWindow):
         return Params(
             commands=self.commandModel.commands,
             interval=self.interval.text(),
-            limit=float(self.limit.text()),
+            limit=int(self.limit.text()),
             winNum=int(self.ui.winNum.currentText()),
         )
 

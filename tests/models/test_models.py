@@ -9,7 +9,6 @@ from bot.models import Keystroke, Params
 def test_keystroke(stroke_factory):
     model = stroke_factory()
     assert repr(model) == "Shift+5 200"
-    assert model.key_code.vk == 0
     assert model.modifier.key_code == KeyCode(model.modifier.vk)
     with patch("bot.models.timer.time.sleep") as sleep:
         model.execute()

@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['main.py'],
+    ['bot/main.py'],
     pathex=[],
     binaries=[],
     datas=[('nwbot.ico', '.')],
