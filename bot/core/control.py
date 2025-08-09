@@ -21,9 +21,10 @@ class Runner:
     def run(self):
         for _ in range(self.params.winNum):
             for command in self.params.commands:
+                logger.debug(f"Executing for {command}")
                 command.execute()
                 sleep_time = random.choice(self.params.interval_range)
-                logger.debug("Waiting for %s", sleep_time)
+                logger.debug(f"Waiting for {sleep_time}")
                 time.sleep(sleep_time)
                 if self.params.winNum > 1:
                     alt_tab.execute()
@@ -32,7 +33,7 @@ class Runner:
 def run(params: Params):
     time.sleep(PADDING_IN_S)  # Allow to switch window in time
     end = time.time() + params.limit * 60
-    logger.info("run with params: %s", params)
+    logger.info(f"Running with params:\n{params}")
     runner = Runner(params)
     while time.time() < end:
         runner.run()

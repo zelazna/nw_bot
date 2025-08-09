@@ -1,10 +1,21 @@
 import pytest
 from bot.utils.settings_manager import RecentFileManager, SaveFolderManager
+from PySide6.QtCore import QSettings
 
 
 @pytest.fixture
-def recent_manager():
+def clean_qsettings():
+    """Fixture to use isolated settings and clean them before and after."""
+    test_settings = QSettings("TestOrg", "TestApp")
+    test_settings.clear()
+    yield test_settings
+    test_settings.clear()
+
+
+@pytest.fixture
+def recent_manager(clean_qsettings):
     manager = RecentFileManager()
+    manager.settings = clean_qsettings
     manager.max_items = 3
     yield manager
     manager.clear()
@@ -12,8 +23,9 @@ def recent_manager():
 
 
 @pytest.fixture
-def save_folder_manager():
+def save_folder_manager(clean_qsettings):
     manager = SaveFolderManager()
+    manager.settings = clean_qsettings
     yield manager
     manager.clear()
     return manager
