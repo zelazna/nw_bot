@@ -1,18 +1,19 @@
+import logging
 import os
 import tempfile
 from pathlib import Path
 
-from bot.models import DirectionalKeystroke, Keystroke, MouseClick, Params, Button
+from bot.models import Button, DirectionalKeystroke, Keystroke, MouseClick, Params
 from bot.utils.config import loadConfig, saveConfig
 
 
-def test_load_config(config_file_path):
+def test_load_config(config_file_path, caplog):
     result = loadConfig(config_file_path)
     assert isinstance(result, Params)
     assert result.winNum == 2
     assert result.limit == 4.0
     assert result.interval == "1-3"
-    keystroke, a, mouseclick, directional, *_ = result.commands
+    keystroke, a, mouseclick, directional, special, *_ = result.commands
 
     assert isinstance(mouseclick, MouseClick)
     assert mouseclick.kind == Button.left
@@ -26,6 +27,12 @@ def test_load_config(config_file_path):
 
     assert isinstance(directional, DirectionalKeystroke)
     assert directional.key == "up"
+    assert len(result.commands) == 15
+
+    assert repr(special) == "Esc 200"
+    assert caplog.record_tuples == [
+        ("bot.utils.logger", logging.WARNING, "Unhandled Key Oopsie")
+    ]
 
 
 def test_save_config(params_factory):

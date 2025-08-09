@@ -88,7 +88,7 @@ def params_factory(stroke_factory, click_factory, directional_key_factory):
         commands.append(directional_key_factory())
 
         return Params(
-            limit=limit,
+            limit=limit, # type: ignore
             commands=commands,
             winNum=winNum,
             interval=interval,

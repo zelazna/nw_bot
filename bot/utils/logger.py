@@ -19,5 +19,4 @@ def recordFactory(*args: Any, **kwargs: Any) -> logging.LogRecord:
     record.version = VERSION
     return record
 
-
 logging.setLogRecordFactory(recordFactory)
