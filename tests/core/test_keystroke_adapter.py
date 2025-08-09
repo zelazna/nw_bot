@@ -154,6 +154,15 @@ def test_pynput_adapter_without_modifier(pynput_adapter, rep, key, model):
     pynput_adapter.model.layoutChanged.emit.assert_called_once()
 
 
+def test_pynput_adapter_with_special_key(pynput_adapter):
+    pynput_adapter.on_key_press(Key.esc)
+    pynput_adapter.on_key_release(Key.esc)
+    assert pynput_adapter.model.rowCount() == 1
+    result = pynput_adapter.model.commands[0]
+    assert repr(result) == "Esc 0"
+    assert result.vk == Key.esc.value.vk
+
+
 def test_pynput_adapter_errors(pynput_adapter, caplog):
     pynput_adapter.modifier = Key.alt
     pynput_adapter.on_key_release(Key.tab)
