@@ -1,3 +1,4 @@
+import logging
 from typing import Callable
 from unittest.mock import Mock
 from bot.core.worker import Worker
@@ -16,12 +17,18 @@ def test_worker(params_factory: Callable[[], Params]):
     signal_mock.finished.emit.assert_called_once()
 
 
-def test_worker_errors(params_factory: Callable[[], Params]):
-    mock = Mock(side_effect=Exception)
+def test_worker_errors(params_factory: Callable[[], Params], caplog):
+    mock = Mock(side_effect=Exception("Boom"))
     params = params_factory()
     worker = Worker(mock, params)
     signal_mock = Mock()
     worker.signals = signal_mock
     worker.run()
-    signal_mock.error.emit.assert_called_once()
+    assert caplog.record_tuples == [
+        (
+            "bot.utils.logger",
+            logging.ERROR,
+            "Something went wrong",
+        )
+    ]
     signal_mock.finished.emit.assert_called_once()

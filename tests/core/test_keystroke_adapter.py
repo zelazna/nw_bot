@@ -183,7 +183,7 @@ def test_pynput_adapter_keypress_modifier(pynput_adapter, caplog):
         (
             "bot.utils.logger",
             logging.DEBUG,
-            "got modifier key: <Key.ctrl: <17>> ignoring it for know",
+            "got modifier key: <Key.ctrl: <17>> storing it for know",
         )
     ]
 

@@ -15,7 +15,7 @@ class MouseAdapter:
         self, x: int, y: int, button: Qt.MouseButton | PynputButton, pressed: bool
     ):
         match button:
-            case Qt.MouseButton.RightButton | PynputButton.left:
+            case Qt.MouseButton.RightButton | PynputButton.right:
                 kind = Button.right
             case Qt.MouseButton.LeftButton | PynputButton.left:
                 kind = Button.left

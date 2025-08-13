@@ -30,9 +30,13 @@ jobs:
       - name: Build GUI executable
         run: |
           pyinstaller nwbot.spec
+      - name: Download NSIS
+        run: choco install nsis --yes
+      - name: Build installer
+        run: makensis installer.nsi
       - name: Release
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
           files: dist/nwbot.exe
-# TODO: generate the release notes
+          generate_release_notes: true

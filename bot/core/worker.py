@@ -62,7 +62,7 @@ class Worker(QThread):
         try:
             result = self.fn(*self.args)
         except Exception:
-            logger.error("Something went wrong: \n", exc_info=True)
+            logger.error("Something went wrong", exc_info=True)
         else:
             self.signals.result.emit(result)  # Return the result of the processing
         finally:
