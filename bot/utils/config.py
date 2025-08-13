@@ -4,7 +4,6 @@ from pathlib import Path
 
 from pynput.keyboard import Key, KeyCode
 
-from bot.core.keystroke_adapter import directionalMapping
 from bot.models import (
     Button,
     DirectionalKeystroke,
@@ -13,6 +12,7 @@ from bot.models import (
     MouseClick,
     Params,
     Timer,
+    directionalMapping,
 )
 from bot.models.base_command import BaseCommand
 from bot.utils.logger import logger
@@ -64,20 +64,18 @@ def parse_commands(line: str) -> BaseCommand | None:
 
 @lru_cache(maxsize=10)
 def loadConfig(filename: str | Path) -> Params:
-    commands = []
     with open(filename, "r", encoding="utf-8") as fp:
         lines = [line.strip() for line in fp if line.strip()]
         win_num = int(lines[0].split()[1])
         limit = int(lines[1].split()[1])
         interval = lines[2].split()[1]
 
-        commands: list[BaseCommand] = []
-
-        for line in lines[3:]:
-            if c := parse_commands(line):
-                commands.append(c)
-
-    return Params(winNum=win_num, limit=limit, interval=interval, commands=commands)
+    return Params(
+        winNum=win_num,
+        limit=limit,
+        interval=interval,
+        commands=[c for line in lines[3:] if (c := parse_commands(line))],
+    )
 
 
 def saveConfig(filePath: str | Path, params: Params):

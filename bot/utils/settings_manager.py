@@ -2,11 +2,11 @@ from dataclasses import dataclass
 from typing import ClassVar
 from PySide6.QtCore import QSettings
 
-settings = QSettings("Zelazna", "NWBot")
+from bot.core.constants import APP_NAME
 
 
 class BaseSetting:
-    settings: ClassVar[QSettings] = settings
+    settings: ClassVar[QSettings] = QSettings("Zelazna", APP_NAME)
     key: str
 
 

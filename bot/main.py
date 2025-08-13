@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QApplication
 from bot.core.constants import APP_NAME
 from bot.ui import MainWindow
 
-basedir = Path(__file__).parent.parent
+basedir = Path(__file__).parent
 icon = basedir / "nwbot.ico"
 windll.shell32.SetCurrentProcessExplicitAppUserModelID("nwbot")
 

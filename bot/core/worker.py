@@ -1,10 +1,9 @@
-from typing import Any, Callable
-from PySide6.QtCore import Slot, Signal, QObject, QThread
+from typing import Callable
 
-import sys
-import traceback
+from PySide6.QtCore import QObject, QThread, Signal, Slot
 
 from bot.models import Params
+from bot.utils.logger import logger
 
 
 class WorkerSignals(QObject):
@@ -30,7 +29,6 @@ class WorkerSignals(QObject):
     finished = Signal()
     error = Signal(tuple)
     result = Signal(object)
-    interaction = Signal(object)
 
 
 class Worker(QThread):
@@ -46,7 +44,7 @@ class Worker(QThread):
 
     """
 
-    def __init__(self, fn: Callable[[Params], Any], *args: Params):
+    def __init__(self, fn: Callable[[Params], None], *args: Params):
         super(Worker, self).__init__()
 
         # Store constructor arguments (re-used for processing)
@@ -64,9 +62,7 @@ class Worker(QThread):
         try:
             result = self.fn(*self.args)
         except Exception:
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
+            logger.error("Something went wrong: \n", exc_info=True)
         else:
             self.signals.result.emit(result)  # Return the result of the processing
         finally:

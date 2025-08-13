@@ -1,5 +1,4 @@
 import importlib.metadata
-from typing import cast
 
 from pynput.keyboard import Key
 
@@ -11,8 +10,8 @@ PADDING_IN_S = 5
 TIMER_TIMEOUT_MILLISEC = 500
 DEFAULT_CONFIG_FILE = "nwbot_config.txt"
 
-ALT_VK = cast(int, Key.alt.value.vk)
-TAB_VK = cast(int, Key.tab.value.vk)
-CTRL_VK = cast(int, Key.ctrl.value.vk)
-SHIFT_VK = cast(int, Key.shift.value.vk)
-DEL_VK = cast(int, Key.delete.value.vk)
+ALT_VK = Key.alt.value.vk
+TAB_VK = Key.tab.value.vk
+CTRL_VK = Key.ctrl.value.vk
+SHIFT_VK = Key.shift.value.vk
+DEL_VK = Key.delete.value.vk

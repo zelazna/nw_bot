@@ -1,6 +1,4 @@
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any
 
 from pynput.mouse import Button as PynputButton
 from PySide6.QtCore import Qt
@@ -10,27 +8,19 @@ from bot.utils.logger import logger
 
 
 @dataclass
-class BaseMouseAdapter(ABC):
+class MouseAdapter:
     model: CommandListModel
 
-    @abstractmethod
-    def on_click(self, x: int, y: int, button: Any, pressed: bool): ...
-
-
-class QtMouseAdapter(BaseMouseAdapter):
-    def on_click(self, x: int, y: int, button: Qt.MouseButton, pressed: bool):
-        kind = Button.right if button is Qt.MouseButton.RightButton else Button.left
+    def on_click(
+        self, x: int, y: int, button: Qt.MouseButton | PynputButton, pressed: bool
+    ):
+        match button:
+            case Qt.MouseButton.RightButton | PynputButton.left:
+                kind = Button.right
+            case Qt.MouseButton.LeftButton | PynputButton.left:
+                kind = Button.left
+            case _:
+                logger.error(f"Unknow button {button}")
+                return
         self.model.commands.append(MouseClick(kind, (x, y)))
         self.model.layoutChanged.emit()
-
-
-class PynputMouseAdapter(BaseMouseAdapter):
-    def on_click(self, x: int, y: int, button: PynputButton, pressed: bool):
-        if pressed:
-            try:
-                self.model.commands.append(
-                    MouseClick(kind=Button[button.name], pos=(x, y))
-                )
-                self.model.layoutChanged.emit()
-            except KeyError:
-                logger.error(f"Unknow button {button}")

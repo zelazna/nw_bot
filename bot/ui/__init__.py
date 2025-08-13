@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QErrorMessage, QFileDialog, QMainWindow
 from bot.core.constants import APP_NAME, PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
 from bot.core.control import run
 from bot.core.keystroke_adapter import QtKeystrokeAdapter
-from bot.core.mouse_adapter import QtMouseAdapter
+from bot.core.mouse_adapter import MouseAdapter
 from bot.core.recorder import Recorder
 from bot.core.worker import Worker
 from bot.models import CommandListModel, Params
@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
 
         self.recorder = Recorder(self.commandModel)
         self.key_stroke_adapter = QtKeystrokeAdapter(self.commandModel)
-        self.mouse_adapter = QtMouseAdapter(self.commandModel)
+        self.mouse_adapter = MouseAdapter(self.commandModel)
 
         self.ui.actionSaveConfig.triggered.connect(self.saveConfig)
         self.ui.actionSaveAs.triggered.connect(self.saveConfigAs)
@@ -205,6 +205,7 @@ class MainWindow(QMainWindow):
                 f"le fichier {filepath} n'a pas ete trouve"
             )
             error_dialog.exec_()
+            recentFileManager.remove(filepath)
 
     def saveConfig(self):
         cfg = self.dumpConfig()
@@ -241,6 +242,7 @@ class MainWindow(QMainWindow):
         if filepath:
             self.loadConfigFile(filepath)
             self.addRecentMenuItem(filepath)
+            self.setWindowTitle(f"{APP_NAME} {filepath}")
 
     def dumpConfig(self) -> Params:
         return Params(

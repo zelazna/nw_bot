@@ -13,19 +13,18 @@ from bot.models import (
     Keystroke,
     ModifierKey,
     Timer,
+    directionalMapping,
 )
 from bot.utils.logger import logger
 
-directionalMapping = {k.value.vk: k for k in (Key.up, Key.down, Key.left, Key.right)}
-
-MODIFIERS = [
+MODIFIERS = (
     Key.shift,
     Key.alt,
     Key.alt_l,
     Key.ctrl,
     Key.ctrl_l,
     Key.cmd,
-]
+)
 
 PynputEvent = Key | KeyCode | None
 
@@ -88,7 +87,7 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
         self.timer.start()
 
         if event in MODIFIERS:
-            logger.debug(f"got modifier key: {event!r} ignoring it for know")
+            logger.debug(f"got modifier key: {event!r} storing it for know")
             self.modifier = event
             return
 
