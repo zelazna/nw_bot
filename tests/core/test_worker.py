@@ -1,6 +1,7 @@
 import logging
 from typing import Callable
 from unittest.mock import Mock
+from bot.core.constants import APP_NAME
 from bot.core.worker import Worker
 from bot.models import Params
 
@@ -26,7 +27,7 @@ def test_worker_errors(params_factory: Callable[[], Params], caplog):
     worker.run()
     assert caplog.record_tuples == [
         (
-            "bot.utils.logger",
+            APP_NAME,
             logging.ERROR,
             "Something went wrong",
         )

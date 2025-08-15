@@ -1,6 +1,7 @@
 import pickle
 
 from PySide6.QtCore import QMimeData, QModelIndex, Qt
+import pytest
 
 from bot.core.constants import MIME_TYPE
 from bot.models.base_command import BaseCommand
@@ -64,6 +65,22 @@ def test_can_drop_mime_data_valid():
     )
 
 
+def test_can_drop_mime_data_invalid():
+    model = CommandListModel()
+    mime_data = QMimeData()
+    mime_data.setData("Hello", pickle.dumps((0, DummyCommand("DropMe"))))
+    assert (
+        model.canDropMimeData(mime_data, Qt.DropAction.MoveAction, 0, 0, QModelIndex())
+        is False
+    )
+
+    mime_data.setData(MIME_TYPE, pickle.dumps((0, DummyCommand("DropMe"))))
+    assert (
+        model.canDropMimeData(mime_data, Qt.DropAction.MoveAction, 0, 15, QModelIndex())
+        is False
+    )
+
+
 def test_drop_mime_data_moves_item():
     cmds = [DummyCommand("One"), DummyCommand("Two"), DummyCommand("Three")]
     model = CommandListModel(cmds.copy())
@@ -74,3 +91,17 @@ def test_drop_mime_data_moves_item():
 
     model.dropMimeData(mime_data, Qt.DropAction.MoveAction, 1, 0, QModelIndex())
     assert [cmd.name for cmd in model.commands] == ["Two", "Three", "One"]
+
+
+@pytest.mark.parametrize(
+    ("params", "expected"),
+    [
+        ((Qt.DropAction.IgnoreAction, 1, 0, QModelIndex()), True),
+        ((Qt.DropAction.MoveAction, 1, 15, QModelIndex()), False),
+    ],
+)
+def test_drop_mime_data_returns(params, expected):
+    model = CommandListModel()
+    mime_data = QMimeData()
+    mime_data.setData(MIME_TYPE, pickle.dumps((0, "")))
+    assert model.dropMimeData(mime_data, *params) is expected

@@ -1,7 +1,9 @@
 import logging
-from bot.core.recorder import Recorder
+
 from pynput.mouse import Button
 
+from bot.core.constants import APP_NAME
+from bot.core.recorder import Recorder
 from bot.models import CommandListModel
 
 
@@ -22,5 +24,5 @@ def test_record_errors(caplog):
     recorder = Recorder(CommandListModel())
     recorder.onClick(1, 2, Button.middle, True)
     assert caplog.record_tuples == [
-        ("bot.utils.logger", logging.ERROR, "Unknow button Button.middle")
+        (APP_NAME, logging.ERROR, "Unknow button Button.middle")
     ]

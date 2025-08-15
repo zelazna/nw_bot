@@ -12,11 +12,11 @@ from bot.core.recorder import Recorder
 from bot.core.worker import Worker
 from bot.models import CommandListModel, Params
 from bot.ui.main_window import Ui_MainWindow
-from bot.ui.modals import FileNameModal, LogViewerModal
+from bot.ui.modals import FileNameModal, LogDialog
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
 from bot.utils import format_time, recentFileManager, saveFolderManager
 from bot.utils.config import loadConfig, saveConfig
-from bot.utils.logger import logger
+from bot.utils.logger import logger, qt_handler
 
 OUTSIDE_BUTTON_STYLE = "background-color: #0067c0; color:white;"
 
@@ -92,6 +92,13 @@ class MainWindow(QMainWindow):
         self.ui.startButton.clicked.connect(self.startBot)
 
         self.ui.appVersion.setText(f"v{VERSION}")
+
+        qt_handler.log_signal.connect(self.storeLog)
+
+        self.logs = []
+
+    def storeLog(self, message, level):
+        self.logs.append((message, level))
 
     def toggleRecordKeystrokes(self, state: bool):
         self.ui.startRecordButton.setVisible(not state)
@@ -253,7 +260,5 @@ class MainWindow(QMainWindow):
         )
 
     def showLogs(self):
-        with open("nw-bot.log", "r") as logFile:
-            logs = logFile.read()
-            logViewer = LogViewerModal(logs=logs)
-            logViewer.exec()
+        logViewer = LogDialog(self.logs, self)
+        logViewer.exec()
