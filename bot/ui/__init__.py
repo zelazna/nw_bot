@@ -3,7 +3,6 @@ import functools
 from PySide6.QtCore import Qt, QTimerEvent, Slot
 from PySide6.QtGui import QAction, QKeyEvent, QMouseEvent
 from PySide6.QtWidgets import QErrorMessage, QFileDialog, QMainWindow
-from utils.logger import logger, qt_handler
 
 from bot.core.constants import APP_NAME, PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
 from bot.core.control import run
@@ -17,6 +16,7 @@ from bot.ui.modals import FileNameModal, LogDialog
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
 from bot.utils import format_time, recentFileManager, saveFolderManager
 from bot.utils.config import loadConfig, saveConfig
+from bot.utils.logger import logger, qt_handler
 
 OUTSIDE_BUTTON_STYLE = "background-color: #0067c0; color:white;"
 
