@@ -91,7 +91,7 @@ class CommandListModel(QAbstractListModel):
         else:
             after_index = self.rowCount(QModelIndex())
         before_index, command = pickle.loads(data.data(MIME_TYPE).data())
-        
+
         logging.debug(f"Item {command} from idx {before_index} to idx {after_index}")
 
         self.beginResetModel()
