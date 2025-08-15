@@ -3,6 +3,7 @@ import os
 import tempfile
 from pathlib import Path
 
+from bot.core.constants import APP_NAME
 from bot.models import Button, DirectionalKeystroke, Keystroke, MouseClick, Params
 from bot.utils.config import loadConfig, saveConfig
 
@@ -30,9 +31,7 @@ def test_load_config(config_file_path, caplog):
     assert len(result.commands) == 15
 
     assert repr(special) == "Esc 200"
-    assert caplog.record_tuples == [
-        ("bot.utils.logger", logging.WARNING, "Unhandled Key Oopsie")
-    ]
+    assert caplog.record_tuples == [(APP_NAME, logging.WARNING, "Unhandled Key Oopsie")]
 
 
 def test_save_config(params_factory):

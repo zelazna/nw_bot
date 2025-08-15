@@ -3,6 +3,7 @@ import functools
 from PySide6.QtCore import Qt, QTimerEvent, Slot
 from PySide6.QtGui import QAction, QKeyEvent, QMouseEvent
 from PySide6.QtWidgets import QErrorMessage, QFileDialog, QMainWindow
+from utils.logger import logger, qt_handler
 
 from bot.core.constants import APP_NAME, PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
 from bot.core.control import run
@@ -12,11 +13,10 @@ from bot.core.recorder import Recorder
 from bot.core.worker import Worker
 from bot.models import CommandListModel, Params
 from bot.ui.main_window import Ui_MainWindow
-from bot.ui.modals import FileNameModal, LogViewerModal
+from bot.ui.modals import FileNameModal, LogDialog
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
 from bot.utils import format_time, recentFileManager, saveFolderManager
 from bot.utils.config import loadConfig, saveConfig
-from bot.utils.logger import logger
 
 OUTSIDE_BUTTON_STYLE = "background-color: #0067c0; color:white;"
 
@@ -92,6 +92,13 @@ class MainWindow(QMainWindow):
         self.ui.startButton.clicked.connect(self.startBot)
 
         self.ui.appVersion.setText(f"v{VERSION}")
+
+        qt_handler.log_signal.connect(self.storeLog)
+
+        self.logs = []
+
+    def storeLog(self, message, level):
+        self.logs.append((message, level))
 
     def toggleRecordKeystrokes(self, state: bool):
         self.ui.startRecordButton.setVisible(not state)
@@ -253,7 +260,5 @@ class MainWindow(QMainWindow):
         )
 
     def showLogs(self):
-        with open("nw-bot.log", "r") as logFile:
-            logs = logFile.read()
-            logViewer = LogViewerModal(logs=logs)
-            logViewer.exec()
+        logViewer = LogDialog(self.logs, self)
+        logViewer.exec()

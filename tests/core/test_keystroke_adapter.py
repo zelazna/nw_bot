@@ -7,6 +7,7 @@ from pynput.keyboard import Key, KeyCode
 from PySide6.QtCore import QEvent, Qt
 from PySide6.QtGui import QKeyEvent
 
+from bot.core.constants import APP_NAME
 from bot.core.keystroke_adapter import (
     CTRL_VK,
     PynputKeystrokeAdapter,
@@ -168,10 +169,11 @@ def test_pynput_adapter_errors(pynput_adapter, caplog):
     pynput_adapter.on_key_release(Key.tab)
     assert caplog.record_tuples == [
         (
-            "bot.utils.logger",
-            logging.ERROR,
-            "Unhandled key: <Key.tab: <9>>",
-        )
+            APP_NAME,
+            logging.DEBUG,
+            "Modifier detected along key mod: <Key.alt: <18>>, key: <Key.tab: <9>>",
+        ),
+        (APP_NAME, logging.ERROR, "Unhandled key: <Key.tab: <9>>"),
     ]
 
 
@@ -181,7 +183,7 @@ def test_pynput_adapter_keypress_modifier(pynput_adapter, caplog):
     assert pynput_adapter.modifier is Key.ctrl
     assert caplog.record_tuples == [
         (
-            "bot.utils.logger",
+            APP_NAME,
             logging.DEBUG,
             "got modifier key: <Key.ctrl: <17>> storing it for know",
         )
