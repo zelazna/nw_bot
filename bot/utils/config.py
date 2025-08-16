@@ -47,7 +47,7 @@ def parse_commands(line: str) -> Command | None:
         return DirectionalKeystroke(key.lower(), hold=timer)
 
     # Special keys
-    elif match := re.match(r"^(Esc|Enter|Return)", line):
+    elif match := re.match(r"^(Esc|Enter|Return|Space)", line):
         key = match.group().lower()
         k = getattr(Key, match.group().lower())
         return Keystroke(key, k.value.vk or 0, hold=timer)
