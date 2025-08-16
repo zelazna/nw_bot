@@ -12,7 +12,7 @@ from PySide6.QtCore import (
 )
 
 from bot.core.constants import MIME_TYPE
-from bot.models.base_command import BaseCommand
+from bot.models.command import Command
 
 Index = QModelIndex | QPersistentModelIndex
 
@@ -20,7 +20,7 @@ Index = QModelIndex | QPersistentModelIndex
 class CommandListModel(QAbstractListModel):
     def __init__(
         self,
-        commands: list[BaseCommand] | None = None,
+        commands: list[Command] | None = None,
         *args: Any,
         **kwargs: Any,
     ):

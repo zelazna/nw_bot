@@ -5,8 +5,6 @@ from typing import ClassVar
 from pynput.mouse import Button as PynoutButton
 from pynput.mouse import Controller
 
-from bot.models.base_command import BaseCommand
-
 
 class Button(IntEnum):
     left = auto()
@@ -14,7 +12,7 @@ class Button(IntEnum):
 
 
 @dataclass
-class MouseClick(BaseCommand):
+class MouseClick:
     kind: Button
     pos: tuple[int, int]
     controller: ClassVar[Controller] = Controller()

@@ -4,11 +4,11 @@ from PySide6.QtCore import QMimeData, QModelIndex, Qt
 import pytest
 
 from bot.core.constants import MIME_TYPE
-from bot.models.base_command import BaseCommand
+from bot.models.command import Command
 from bot.models.command_list import CommandListModel
 
 
-class DummyCommand(BaseCommand):
+class DummyCommand:
     def __init__(self, name):
         self.name = name
 
@@ -82,7 +82,11 @@ def test_can_drop_mime_data_invalid():
 
 
 def test_drop_mime_data_moves_item():
-    cmds = [DummyCommand("One"), DummyCommand("Two"), DummyCommand("Three")]
+    cmds: list[Command] = [
+        DummyCommand("One"),
+        DummyCommand("Two"),
+        DummyCommand("Three"),
+    ]
     model = CommandListModel(cmds.copy())
 
     # Move "One" (index 0) after "Three" (index 2)
@@ -90,7 +94,7 @@ def test_drop_mime_data_moves_item():
     mime_data.setData(MIME_TYPE, pickle.dumps((0, cmds[0])))
 
     model.dropMimeData(mime_data, Qt.DropAction.MoveAction, 1, 0, QModelIndex())
-    assert [cmd.name for cmd in model.commands] == ["Two", "Three", "One"]
+    assert [cmd.name for cmd in model.commands] == ["Two", "Three", "One"]  # type: ignore
 
 
 @pytest.mark.parametrize(

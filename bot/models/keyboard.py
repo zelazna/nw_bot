@@ -3,7 +3,6 @@ from typing import ClassVar
 
 from pynput.keyboard import Controller, Key, KeyCode
 
-from bot.models.base_command import BaseCommand
 from bot.models.timer import Timer
 
 
@@ -24,7 +23,7 @@ class ModifierKey(BaseKey):
 
 
 @dataclass
-class Keystroke(BaseKey, BaseCommand):
+class Keystroke(BaseKey):
     modifier: ModifierKey | None = None
     controller: ClassVar[Controller] = Controller()
     hold: Timer = field(default_factory=Timer)

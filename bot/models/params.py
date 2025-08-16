@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
 
-from bot.models.base_command import BaseCommand
+from bot.models.command import Command
 
 
 @dataclass
 class Params:
-    commands: list[BaseCommand] = field(default_factory=list)
+    commands: list[Command] = field(default_factory=list)
     winNum: int = 1
     limit: int = 5
     interval: str = "1"

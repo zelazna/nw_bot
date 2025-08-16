@@ -20,7 +20,7 @@ bot-gui
 ## Generate the UI python file
 
 ```bash
-pyside6-uic bot/ui/main_window.ui -o bot/ui/main_window.py
+pyside6-uic bot/ui/main_window.ui -o bot/ui/main_window_ui.py
 ```
 
 ## Generate the exec

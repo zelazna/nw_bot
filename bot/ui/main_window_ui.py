@@ -8,18 +8,10 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
-    QCursor, QFont, QFontDatabase, QGradient,
-    QIcon, QImage, QKeySequence, QLinearGradient,
-    QPainter, QPalette, QPixmap, QRadialGradient,
-    QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QGridLayout, QHBoxLayout,
-    QLabel, QLineEdit, QListView, QMainWindow,
-    QMenu, QMenuBar, QPushButton, QSizePolicy,
-    QWidget)
+from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect)
+from PySide6.QtGui import (QAction, QFont, QIcon)
+from PySide6.QtWidgets import (QComboBox, QGridLayout, QHBoxLayout,
+    QLabel, QLineEdit, QListView, QMenu, QMenuBar, QPushButton, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -190,4 +182,3 @@ class Ui_MainWindow(object):
         self.menuRecent.setTitle(QCoreApplication.translate("MainWindow", u"R\u00e9cents", None))
         self.menuOptions.setTitle(QCoreApplication.translate("MainWindow", u"Options", None))
     # retranslateUi
-

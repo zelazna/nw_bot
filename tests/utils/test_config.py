@@ -3,6 +3,8 @@ import os
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from bot.core.constants import APP_NAME
 from bot.models import Button, DirectionalKeystroke, Keystroke, MouseClick, Params
 from bot.utils.config import loadConfig, saveConfig
@@ -28,10 +30,19 @@ def test_load_config(config_file_path, caplog):
 
     assert isinstance(directional, DirectionalKeystroke)
     assert directional.key == "up"
-    assert len(result.commands) == 15
 
     assert repr(special) == "Esc 200"
     assert caplog.record_tuples == [(APP_NAME, logging.WARNING, "Unhandled Key Oopsie")]
+
+
+@pytest.mark.parametrize(
+    ("file_name", "lenght"),
+    [("test_1.txt", 15), ("test_2.txt", 11), ("test_3.txt", 11)],
+)
+def test_load_all_keys(res_folder, file_name, lenght):
+    result = loadConfig(res_folder / file_name)
+    assert isinstance(result, Params)
+    assert len(result.commands) == lenght
 
 
 def test_save_config(params_factory):
