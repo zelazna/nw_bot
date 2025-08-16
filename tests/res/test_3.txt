@@ -1,0 +1,17 @@
+winNum 1
+limit 60
+interval 1
+
+Ccedilla 200
+Ccedilla 200
+A 200
+A 200
+E 200
+E 200
+S 200
+Q 200
+D 200
+Z 200
+Z 200
+Q 200
+D 200

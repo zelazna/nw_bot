@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from pynput import keyboard, mouse
 
 from bot.core.keystroke_adapter import (
@@ -7,13 +9,15 @@ from bot.core.mouse_adapter import MouseAdapter
 from bot.models import CommandListModel
 
 
+@dataclass
 class Recorder:
-    def __init__(self, model: CommandListModel) -> None:
-        self.model = model
-        self.keyBoardListener: keyboard.Listener = None  # type: ignore
-        self.mouseListener: mouse.Listener = None  # type: ignore
-        self.mouse_adapter = MouseAdapter(model)
-        self.key_adapter = PynputKeystrokeAdapter(model)
+    model: CommandListModel
+    keyBoardListener: keyboard.Listener | None = None
+    mouseListener: mouse.Listener | None = None
+
+    def __post_init__(self):
+        self.mouse_adapter = MouseAdapter(self.model)
+        self.key_adapter = PynputKeystrokeAdapter(self.model)
 
     def onClick(self, x: int, y: int, button: mouse.Button, pressed: bool):
         self.mouse_adapter.on_click(x, y, button, pressed)

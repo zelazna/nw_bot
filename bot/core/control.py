@@ -21,13 +21,16 @@ class Runner:
     def run(self):
         for _ in range(self.params.winNum):
             for command in self.params.commands:
-                logger.debug(f"Executing for {command}")
-                command.execute()
-                sleep_time = random.choice(self.params.interval_range)
-                logger.debug(f"Waiting for {sleep_time}")
-                time.sleep(sleep_time)
-                if self.params.winNum > 1:
-                    alt_tab.execute()
+                try:
+                    logger.debug(f"Executing for {command}")
+                    command.execute()
+                    sleep_time = random.choice(self.params.interval_range)
+                    logger.debug(f"Waiting for {sleep_time}")
+                    time.sleep(sleep_time)
+                    if self.params.winNum > 1:
+                        alt_tab.execute()
+                except TypeError:
+                    logger.error(f"Command {command!r} not handled skipping")
 
 
 def run(params: Params):

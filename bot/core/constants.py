@@ -14,3 +14,5 @@ TAB_VK = Key.tab.value.vk
 CTRL_VK = Key.ctrl.value.vk
 SHIFT_VK = Key.shift.value.vk
 DEL_VK = Key.delete.value.vk
+
+UPPER_KEYS = ("&", "é", '"', "'", "(", "-", "è", "_", "ç", "à", ")", "=")

@@ -25,7 +25,7 @@ def res_folder():
 
 @pytest.fixture
 def config_file_path(res_folder):
-    return res_folder / "nwbot_config.txt"
+    return res_folder / "test_1.txt"
 
 
 @pytest.fixture

@@ -15,4 +15,4 @@ repos:
       - id: ruff
         args: [--fix]
       - id: ruff-format
-        exclude: main_window.py
+        exclude: main_window_ui.py

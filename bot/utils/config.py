@@ -14,7 +14,7 @@ from bot.models import (
     Timer,
     directionalMapping,
 )
-from bot.models.base_command import BaseCommand
+from bot.models.command import Command
 from bot.utils.logger import logger
 
 directional = [k.name for k in directionalMapping.values()]
@@ -22,7 +22,7 @@ time_pattern = r"^.* (\d{2}):(\d{2})$"
 
 
 @lru_cache(maxsize=25)
-def parse_commands(line: str) -> BaseCommand | None:
+def parse_commands(line: str) -> Command | None:
     timer = Timer(200)
 
     if founds := re.findall(r"\w+\s(\d{2,4})", line):
@@ -47,13 +47,13 @@ def parse_commands(line: str) -> BaseCommand | None:
         return DirectionalKeystroke(key.lower(), hold=timer)
 
     # Special keys
-    elif match := re.match(r"^(Esc|Enter)", line):
+    elif match := re.match(r"^(Esc|Enter|Return)", line):
         key = match.group().lower()
         k = getattr(Key, match.group().lower())
         return Keystroke(key, k.value.vk or 0, hold=timer)
 
     # Single normal keys
-    elif match := re.match(r"^([A-Z])\s\d+$", line):
+    elif match := re.match(r"^(.)\s\d+$", line):
         key = match.groups()[0].lower()
         code = KeyCode.from_char(key)
         return Keystroke(key, code.vk, hold=timer)
@@ -62,8 +62,7 @@ def parse_commands(line: str) -> BaseCommand | None:
         logger.warning(f"Unhandled Key {line}")
 
 
-@lru_cache(maxsize=10)
-def loadConfig(filename: str | Path) -> Params:
+def loadConfig(filename: str | Path) -> Params | None:
     with open(filename, "r", encoding="utf-8") as fp:
         lines = [line.strip() for line in fp if line.strip()]
         win_num = int(lines[0].split()[1])

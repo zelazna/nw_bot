@@ -1,5 +1,4 @@
 import functools
-
 from PySide6.QtCore import Qt, QTimerEvent, Slot
 from PySide6.QtGui import QAction, QKeyEvent, QMouseEvent
 from PySide6.QtWidgets import QErrorMessage, QFileDialog, QMainWindow
@@ -11,14 +10,13 @@ from bot.core.mouse_adapter import MouseAdapter
 from bot.core.recorder import Recorder
 from bot.core.worker import Worker
 from bot.models import CommandListModel, Params
-from bot.ui.main_window import Ui_MainWindow
+from bot.ui.main_window_ui import Ui_MainWindow
 from bot.ui.modals import FileNameModal, LogDialog
+from bot.ui.record import setupRecording
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
 from bot.utils import format_time, recentFileManager, saveFolderManager
 from bot.utils.config import loadConfig, saveConfig
 from bot.utils.logger import logger, qt_handler
-
-OUTSIDE_BUTTON_STYLE = "background-color: #0067c0; color:white;"
 
 
 class MainWindow(QMainWindow):
@@ -31,9 +29,11 @@ class MainWindow(QMainWindow):
         self.timer_id = 0
         self.validator = ValidateRangeOrNumber()
         self.currentFile = None
+        self.logs = []
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)  # type: ignore
+        setupRecording(self)
 
         self.commandModel = CommandListModel()
         self.ui.keyListView.setModel(self.commandModel)
@@ -52,7 +52,7 @@ class MainWindow(QMainWindow):
 
         for r in recentFileManager.load():
             action = QAction(r["path"], self)
-            action.triggered.connect(lambda: self.loadConfigFile(r["path"]))
+            action.triggered.connect(functools.partial(self.loadConfigFile, r["path"]))
             self.ui.menuRecent.addAction(action)
 
         self.ui.actionShowLogs.triggered.connect(self.showLogs)
@@ -60,30 +60,14 @@ class MainWindow(QMainWindow):
         for i in range(1, 10):
             self.ui.winNum.addItem(str(i))
 
-        self.ui.stopRecordButton.setVisible(False)
-        self.ui.startRecordButton.clicked.connect(
-            functools.partial(self.toggleRecordKeystrokes, True)
-        )
-        self.ui.stopRecordButton.clicked.connect(
-            functools.partial(self.toggleRecordKeystrokes, False)
-        )
-
-        self.ui.startRecordOutsideButton.clicked.connect(self.startRecordOutside)
-        self.ui.stopRecordOutsideButton.clicked.connect(self.stopRecordOutside)
-        self.ui.startRecordOutsideButton.setStyleSheet(OUTSIDE_BUTTON_STYLE)
-        self.ui.stopRecordOutsideButton.setStyleSheet(OUTSIDE_BUTTON_STYLE)
-        self.ui.startRecordOutsideButton.setVisible(False)
-        self.ui.stopRecordOutsideButton.setVisible(False)
-
         self.ui.deleteKey.clicked.connect(self.deleteCommand)
         self.ui.deleteAll.clicked.connect(self.deleteAllKeys)
 
-        self.interval = self.ui.interval
-        self.interval.setClearButtonEnabled(True)
+        self.ui.interval = self.ui.interval
+        self.ui.interval.setClearButtonEnabled(True)
 
-        self.limit = self.ui.limit
-        self.limit.setClearButtonEnabled(True)
-        self.limit.setValidator(ValidateNumber())
+        self.ui.limit.setClearButtonEnabled(True)
+        self.ui.limit.setValidator(ValidateNumber())
 
         self.ui.remainingTime.setVisible(False)
 
@@ -95,11 +79,7 @@ class MainWindow(QMainWindow):
 
         qt_handler.log_signal.connect(self.storeLog)
 
-        self.logs = []
-
-    def storeLog(self, message, level):
-        self.logs.append((message, level))
-
+    ## Record
     def toggleRecordKeystrokes(self, state: bool):
         self.ui.startRecordButton.setVisible(not state)
         self.ui.stopRecordButton.setVisible(state)
@@ -122,6 +102,7 @@ class MainWindow(QMainWindow):
         self.ui.startRecordButton.setVisible(not checked)
         self.ui.startRecordOutsideButton.setVisible(checked)
 
+    ## Keys and Mouse events
     def deleteAllKeys(self):
         self.commandModel.commands.clear()
         self.commandModel.layoutChanged.emit()
@@ -148,12 +129,7 @@ class MainWindow(QMainWindow):
         if self.isRecording:
             self.mouse_adapter.on_click(event.x(), event.y(), event.button(), True)
 
-    def botThreadComplete(self):
-        logger.info("bot thread complete!")
-        self.ui.startButton.setDisabled(False)
-        self.ui.stopButton.setDisabled(True)
-        self.ui.remainingTime.setVisible(False)
-
+    ## Bot Control
     @Slot()
     def startBot(self):
         params = self.dumpConfig()
@@ -163,7 +139,7 @@ class MainWindow(QMainWindow):
             self.ui.stopButton.setDisabled(False)
             self.ui.startButton.setDisabled(True)
 
-            self.timeLeft = int(self.limit.text()) * 60 * 1000 + (
+            self.timeLeft = int(self.ui.limit.text()) * 60 * 1000 + (
                 PADDING_IN_S * 1000
             )  # Convert minutes to milliseconds
             self.timer_id = self.startTimer(TIMER_TIMEOUT_MILLISEC)
@@ -172,10 +148,6 @@ class MainWindow(QMainWindow):
             self.worker = Worker(run, params)
             self.worker.signals.finished.connect(self.botThreadComplete)
             self.worker.start()
-
-    def timerEvent(self, event: QTimerEvent) -> None:
-        self.timeLeft -= TIMER_TIMEOUT_MILLISEC  # Decrease by 0.5 second
-        self.ui.remainingTime.setText(format_time(self.timeLeft))
 
     @Slot()
     def stopBot(self):
@@ -187,19 +159,21 @@ class MainWindow(QMainWindow):
         self.botThreadComplete()
         self.killTimer(self.timer_id)
 
-    def addRecentMenuItem(self, path: str):
-        action = QAction(path, self)
-        action.triggered.connect(lambda: self.loadConfigFile(path))
-        self.ui.menuRecent.addAction(action)
+    def botThreadComplete(self):
+        logger.info("bot thread complete!")
+        self.ui.startButton.setDisabled(False)
+        self.ui.stopButton.setDisabled(True)
+        self.ui.remainingTime.setVisible(False)
 
+    ## Config
     def loadConfigFile(self, filepath: str):
         logger.info(f"Loading config from {filepath}")
         try:
             result = loadConfig(filepath)
             if isinstance(result, Params):
                 self.commandModel.commands = result.commands
-                self.interval.setText(result.interval)
-                self.limit.setText(str(result.limit))
+                self.ui.interval.setText(result.interval)
+                self.ui.limit.setText(str(result.limit))
                 self.ui.winNum.setCurrentText(str(result.winNum))
                 self.commandModel.layoutChanged.emit()
                 self.setWindowTitle(f"{APP_NAME} {filepath}")
@@ -244,21 +218,39 @@ class MainWindow(QMainWindow):
         self.saveConfig()
 
     def loadConfig(self):
-        dialog = QFileDialog(self, "Choisir le fichier de config")
-        filepath, _ = dialog.getOpenFileName(self, filter="TXT files (*.txt)")
-        if filepath:
-            self.loadConfigFile(filepath)
-            self.addRecentMenuItem(filepath)
-            self.setWindowTitle(f"{APP_NAME} {filepath}")
+        try:
+            dialog = QFileDialog(self, "Choisir le fichier de config")
+            filepath, _ = dialog.getOpenFileName(self, filter="TXT files (*.txt)")
+            if filepath:
+                self.loadConfigFile(filepath)
+                self.addRecentMenuItem(filepath)
+                self.setWindowTitle(f"{APP_NAME} {filepath}")
+
+        except Exception as exc:
+            print(exc)
 
     def dumpConfig(self) -> Params:
         return Params(
             commands=self.commandModel.commands,
-            interval=self.interval.text(),
-            limit=int(self.limit.text()),
+            interval=self.ui.interval.text(),
+            limit=int(self.ui.limit.text()),
             winNum=int(self.ui.winNum.currentText()),
         )
+
+    ## LOGS
+    def storeLog(self, message, level):
+        self.logs.append((message, level))
 
     def showLogs(self):
         logViewer = LogDialog(self.logs, self)
         logViewer.exec()
+
+    ## MISC
+    def timerEvent(self, event: QTimerEvent) -> None:
+        self.timeLeft -= TIMER_TIMEOUT_MILLISEC  # Decrease by 0.5 second
+        self.ui.remainingTime.setText(format_time(self.timeLeft))
+
+    def addRecentMenuItem(self, path: str):
+        action = QAction(path, self)
+        action.triggered.connect(lambda: self.loadConfigFile(path))
+        self.ui.menuRecent.addAction(action)

@@ -6,7 +6,7 @@ from pynput.keyboard import Key, KeyCode
 from PySide6.QtCore import QElapsedTimer, Qt
 from PySide6.QtGui import QKeyEvent
 
-from bot.core.constants import ALT_VK, CTRL_VK, DEL_VK, SHIFT_VK
+from bot.core.constants import ALT_VK, CTRL_VK, DEL_VK, SHIFT_VK, UPPER_KEYS
 from bot.models import (
     CommandListModel,
     DirectionalKeystroke,
@@ -69,7 +69,11 @@ class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
                     mod = ModifierKey(key="Shift", vk=SHIFT_VK)
                 case _:
                     pass
-        keystroke = Keystroke(key=key.name, vk=vk, modifier=mod)
+
+        if event.text() in UPPER_KEYS:
+            keystroke = Keystroke(key=event.text())
+        else:
+            keystroke = Keystroke(key=key.name, vk=vk, modifier=mod)
         self.model.commands.append(keystroke)
         self.model.layoutChanged.emit()
 
