@@ -9,8 +9,6 @@ from bot.models import CommandListModel
 
 def test_recorder():
     recorder = Recorder(CommandListModel())
-    assert recorder.keyBoardListener is None
-    assert recorder.mouseListener is None
     recorder.start()
     assert recorder.keyBoardListener.running is True
     assert recorder.mouseListener.running is True

@@ -13,12 +13,7 @@ from bot.core.keystroke_adapter import (
     PynputKeystrokeAdapter,
     QtKeystrokeAdapter,
 )
-from bot.models import (
-    CommandListModel,
-    DirectionalKeystroke,
-    Keystroke,
-    ModifierKey,
-)
+from bot.models import CommandListModel, DirectionalKeystroke, Keystroke, ModifierKey
 
 
 @pytest.fixture
@@ -37,14 +32,40 @@ def pynput_adapter():
     return adapter
 
 
-def test_key_release(qt_adapter):
-    event = QKeyEvent(QEvent.Type.KeyRelease, 0x35, Qt.KeyboardModifier.NoModifier)
+events = [
+    (
+        "è",
+        "È 200",
+        QKeyEvent(QEvent.Type.KeyRelease, 201, Qt.KeyboardModifier.NoModifier, "è"),
+    ),
+    (
+        "Key_5",
+        "5 200",
+        QKeyEvent(QEvent.Type.KeyRelease, 0x35, Qt.KeyboardModifier.NoModifier),
+    ),
+    (
+        "up",
+        "Up 200",
+        QKeyEvent(
+            QEvent.Type.KeyRelease,
+            16777249,
+            Qt.KeyboardModifier.NoModifier,
+            29,
+            cast(int, Key.up.value.vk),
+            0,
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize(("key", "rep", "event"), events)
+def test_key_release(key, rep, event, qt_adapter):
     qt_adapter.on_key_release(event)
     result = qt_adapter.model.commands[0]
     assert isinstance(result, Keystroke)
-    assert result.key == "Key_5"
+    assert result.key == key
     assert result.modifier is None
-    assert result.vk == 0
+    assert repr(result) == rep
     qt_adapter.model.layoutChanged.emit.assert_called_once()
 
 
@@ -80,6 +101,7 @@ def test_on_key_release_with_modifier(key, rep, vk, event, qt_adapter):
     assert result.modifier.key == key
     assert result.modifier.vk == vk
     assert repr(result) == rep
+    qt_adapter.model.layoutChanged.emit.assert_called_once()
 
 
 def test_unhandled_modifier(qt_adapter):
@@ -92,27 +114,10 @@ def test_unhandled_modifier(qt_adapter):
 
 
 def test_match_nothing(qt_adapter):
-    event = QKeyEvent(
-        QEvent.Type.KeyRelease, 16777249, Qt.KeyboardModifier.NoModifier, 29, CTRL_VK, 0
-    )
+    event = Mock(spec=QKeyEvent)
+    event.nativeVirtualKey.return_value = CTRL_VK
     qt_adapter.on_key_release(event)
     assert qt_adapter.model.rowCount() == 0
-
-
-def test_with_directionnal(qt_adapter):
-    event = QKeyEvent(
-        QEvent.Type.KeyRelease,
-        16777249,
-        Qt.KeyboardModifier.NoModifier,
-        29,
-        cast(int, Key.up.value.vk),
-        0,
-    )
-    qt_adapter.on_key_release(event)
-    result = qt_adapter.model.commands[0]
-    assert qt_adapter.model.rowCount() == 1
-    assert isinstance(result, DirectionalKeystroke)
-    qt_adapter.model.layoutChanged.emit.assert_called_once()
 
 
 @pytest.mark.parametrize(

@@ -1,6 +1,9 @@
+import logging
 from unittest.mock import Mock, call, patch
 
+from bot.core.constants import APP_NAME
 from bot.core.control import run
+from bot.models.command import Command
 
 
 def test_run(params_factory):
@@ -15,3 +18,17 @@ def test_run(params_factory):
         assert sleep.call_args_list[0] == call(5)
         cmd_mock.execute.assert_called()
         alt_tab.execute.assert_called()
+
+
+def test_run_error(params_factory, caplog):
+    p = params_factory()
+    cmd_mock = Mock(spec=Command)
+    cmd_mock.execute.side_effect = TypeError
+    p.commands = [cmd_mock]
+    with patch("bot.core.control.time.sleep"):
+        run(p)
+    assert caplog.record_tuples[2] == (
+        APP_NAME,
+        logging.ERROR,
+        f"Command {cmd_mock!r} not handled skipping",
+    )
