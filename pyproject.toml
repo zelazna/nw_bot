@@ -36,10 +36,7 @@ addopts = "--cov=bot --cov-report=term --cov-report xml"
 
 [tool.coverage.run]
 omit = [
-    "bot/ui/__init__.py",
-    "bot/ui/main_window_ui.py",
-    "bot/ui/record.py",
-    "bot/ui/modals.py",
+    "bot/ui/**",
     "main.py",
     "tests",
     "bot/utils/logger.py",

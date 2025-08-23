@@ -1,75 +1,60 @@
-import functools
-from PySide6.QtCore import Qt, QTimerEvent, Slot
-from PySide6.QtGui import QAction, QKeyEvent, QMouseEvent
-from PySide6.QtWidgets import QErrorMessage, QFileDialog, QMainWindow
+from typing import Optional
+from PySide6.QtCore import Slot
+from PySide6.QtWidgets import QMainWindow
 
-from bot.core.constants import APP_NAME, PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
+from bot.core.constants import PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
 from bot.core.control import run
 from bot.core.keystroke_adapter import QtKeystrokeAdapter
 from bot.core.mouse_adapter import MouseAdapter
 from bot.core.recorder import Recorder
 from bot.core.worker import Worker
-from bot.models import CommandListModel, Params
+from bot.models import CommandListModel
 from bot.ui.main_window_ui import Ui_MainWindow
-from bot.ui.modals import FileNameModal, LogDialog
-from bot.ui.record import setupRecording
+from bot.ui.mixins import ConfigMixin, RecordMixin, EventMixin
+from bot.ui.modals import LogDialog
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
-from bot.utils import format_time, recentFileManager, saveFolderManager
-from bot.utils.config import loadConfig, saveConfig
+from bot.utils import format_time
 from bot.utils.logger import logger, qt_handler
 
 
-class MainWindow(QMainWindow):
+class MainWindow(ConfigMixin, EventMixin, RecordMixin, QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.worker = None
+        self.worker: Optional[Worker] = None
         self.isRecording = False
         self.timeLeft = 0
         self.timer_id = 0
         self.validator = ValidateRangeOrNumber()
-        self.currentFile = None
-        self.logs = []
+        self.currentFile: str | None = None
+        self.logs: list[tuple[str, int]] = []
+        self.commandModel = CommandListModel()
+        self.recorder = Recorder(self.commandModel)
+        self.key_stroke_adapter = QtKeystrokeAdapter(self.commandModel)
+        self.mouse_adapter = MouseAdapter(self.commandModel)
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)  # type: ignore
-        setupRecording(self)
+        self.setupRecording()
+        self.setupConfig()
+        self.setupEvents()
 
-        self.commandModel = CommandListModel()
         self.ui.keyListView.setModel(self.commandModel)
         self.ui.keyListView.setDragEnabled(True)
         self.ui.keyListView.setAcceptDrops(True)
         self.ui.keyListView.setDropIndicatorShown(True)
 
-        self.recorder = Recorder(self.commandModel)
-        self.key_stroke_adapter = QtKeystrokeAdapter(self.commandModel)
-        self.mouse_adapter = MouseAdapter(self.commandModel)
-
-        self.ui.actionSaveConfig.triggered.connect(self.saveConfig)
-        self.ui.actionSaveAs.triggered.connect(self.saveConfigAs)
-        self.ui.actionLoadConfig.triggered.connect(self.loadConfig)
         self.ui.actionUnboundRecordToggle.triggered.connect(self.toggleOutsideRecord)
-
-        for r in recentFileManager.load():
-            action = QAction(r["path"], self)
-            action.triggered.connect(functools.partial(self.loadConfigFile, r["path"]))
-            self.ui.menuRecent.addAction(action)
 
         self.ui.actionShowLogs.triggered.connect(self.showLogs)
 
         for i in range(1, 10):
             self.ui.winNum.addItem(str(i))
 
-        self.ui.deleteKey.clicked.connect(self.deleteCommand)
-        self.ui.deleteAll.clicked.connect(self.deleteAllKeys)
-
-        self.ui.interval = self.ui.interval
         self.ui.interval.setClearButtonEnabled(True)
 
         self.ui.limit.setClearButtonEnabled(True)
         self.ui.limit.setValidator(ValidateNumber())
-
-        self.ui.remainingTime.setVisible(False)
 
         self.ui.stopButton.setDisabled(True)
         self.ui.stopButton.clicked.connect(self.stopBot)
@@ -78,56 +63,6 @@ class MainWindow(QMainWindow):
         self.ui.appVersion.setText(f"v{VERSION}")
 
         qt_handler.log_signal.connect(self.storeLog)
-
-    ## Record
-    def toggleRecordKeystrokes(self, state: bool):
-        self.ui.startRecordButton.setVisible(not state)
-        self.ui.stopRecordButton.setVisible(state)
-        self.isRecording = state
-
-    def startRecordOutside(self):
-        self.recorder.start()
-        self.isRecording = False
-        self.ui.startRecordOutsideButton.setVisible(False)
-        self.ui.stopRecordOutsideButton.setVisible(True)
-
-    def stopRecordOutside(self):
-        self.ui.startRecordOutsideButton.setVisible(True)
-        self.ui.stopRecordOutsideButton.setVisible(False)
-        self.recorder.stop()
-
-    def toggleOutsideRecord(self, checked: bool):
-        if self.isRecording:
-            self.toggleRecordKeystrokes(False)
-        self.ui.startRecordButton.setVisible(not checked)
-        self.ui.startRecordOutsideButton.setVisible(checked)
-
-    ## Keys and Mouse events
-    def deleteAllKeys(self):
-        self.commandModel.commands.clear()
-        self.commandModel.layoutChanged.emit()
-        self.ui.keyListView.clearSelection()
-
-    def deleteCommand(self):
-        indexes = self.ui.keyListView.selectedIndexes()
-        if indexes:
-            # Indexes is a list of a single item in single-select mode.
-            index = indexes[0]
-            # Remove the item and refresh.
-            del self.commandModel.commands[index.row()]
-            self.commandModel.layoutChanged.emit()
-            # Clear the selection (as it is no longer valid).
-            self.ui.keyListView.clearSelection()
-
-    def keyReleaseEvent(self, event: QKeyEvent) -> None:
-        if self.isRecording:
-            self.key_stroke_adapter.on_key_release(event)
-        if event.key() == Qt.Key.Key_Delete:
-            self.deleteCommand()
-
-    def mousePressEvent(self, event: QMouseEvent) -> None:
-        if self.isRecording:
-            self.mouse_adapter.on_click(event.x(), event.y(), event.button(), True)
 
     ## Bot Control
     @Slot()
@@ -148,6 +83,8 @@ class MainWindow(QMainWindow):
             self.worker = Worker(run, params)
             self.worker.signals.finished.connect(self.botThreadComplete)
             self.worker.start()
+        else:
+            self._showErrorModal("Configuration invalide!")
 
     @Slot()
     def stopBot(self):
@@ -165,92 +102,10 @@ class MainWindow(QMainWindow):
         self.ui.stopButton.setDisabled(True)
         self.ui.remainingTime.setVisible(False)
 
-    ## Config
-    def loadConfigFile(self, filepath: str):
-        logger.info(f"Loading config from {filepath}")
-        try:
-            result = loadConfig(filepath)
-            if isinstance(result, Params):
-                self.commandModel.commands = result.commands
-                self.ui.interval.setText(result.interval)
-                self.ui.limit.setText(str(result.limit))
-                self.ui.winNum.setCurrentText(str(result.winNum))
-                self.commandModel.layoutChanged.emit()
-                self.setWindowTitle(f"{APP_NAME} {filepath}")
-                recentFileManager.add(filepath)
-                self.currentFile = filepath
-        except FileNotFoundError:
-            error_dialog = QErrorMessage()
-            error_dialog.showMessage(
-                "Une erreur c'est produite lors du chargement de la config: "
-                f"le fichier {filepath} n'a pas ete trouve"
-            )
-            error_dialog.exec_()
-            recentFileManager.remove(filepath)
-
-    def saveConfig(self):
-        cfg = self.dumpConfig()
-        if self.currentFile:
-            saveConfig(self.currentFile, cfg)
-            return
-        folder_name = saveFolderManager.get()
-
-        if not folder_name:
-            folder_name = QFileDialog.getExistingDirectory(
-                self, "Sauvegarder le fichier de config"
-            )
-            logger.info(f"{folder_name} is chosen for saving files")
-            saveFolderManager.save(folder_name)
-        if folder_name:
-            dlg = FileNameModal()
-            if dlg.exec():
-                recent = f"{folder_name}/{dlg.filename}"
-                logger.info(f"Saving config to {recent}")
-                saveConfig(recent, cfg)
-                self.addRecentMenuItem(recent)
-                self.setWindowTitle(f"{APP_NAME} {recent}")
-                recentFileManager.add(recent)
-                self.currentFile = recent
-
-    def saveConfigAs(self):
-        saveFolderManager.clear()
-        self.currentFile = None
-        self.saveConfig()
-
-    def loadConfig(self):
-        try:
-            dialog = QFileDialog(self, "Choisir le fichier de config")
-            filepath, _ = dialog.getOpenFileName(self, filter="TXT files (*.txt)")
-            if filepath:
-                self.loadConfigFile(filepath)
-                self.addRecentMenuItem(filepath)
-                self.setWindowTitle(f"{APP_NAME} {filepath}")
-
-        except Exception as exc:
-            print(exc)
-
-    def dumpConfig(self) -> Params:
-        return Params(
-            commands=self.commandModel.commands,
-            interval=self.ui.interval.text(),
-            limit=int(self.ui.limit.text()),
-            winNum=int(self.ui.winNum.currentText()),
-        )
-
     ## LOGS
-    def storeLog(self, message, level):
+    def storeLog(self, message: str, level: int):
         self.logs.append((message, level))
 
     def showLogs(self):
         logViewer = LogDialog(self.logs, self)
         logViewer.exec()
-
-    ## MISC
-    def timerEvent(self, event: QTimerEvent) -> None:
-        self.timeLeft -= TIMER_TIMEOUT_MILLISEC  # Decrease by 0.5 second
-        self.ui.remainingTime.setText(format_time(self.timeLeft))
-
-    def addRecentMenuItem(self, path: str):
-        action = QAction(path, self)
-        action.triggered.connect(lambda: self.loadConfigFile(path))
-        self.ui.menuRecent.addAction(action)
