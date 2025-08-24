@@ -1,9 +1,7 @@
 import re
 from functools import lru_cache
-from pathlib import Path
 
 from pynput.keyboard import Key, KeyCode
-
 from bot.models import (
     Button,
     DirectionalKeystroke,
@@ -12,57 +10,58 @@ from bot.models import (
     MouseClick,
     Params,
     Timer,
-    directionalMapping,
 )
 from bot.models.command import Command
 from bot.utils.logger import logger
 
-directional = [k.name for k in directionalMapping.values()]
-time_pattern = r"^.* (\d{2}):(\d{2})$"
+CLICK_RE = re.compile(r"(Left|Right) Click: \((\d+),\s*(\d+)\)")
+MODIFIER_RE = re.compile(r"(\w+)\+(\w)")
+DIRECTION_RE = re.compile(r"^(Up|Down|Left|Right)")
+SPECIAL_RE = re.compile(r"^(Esc|Enter|Return|Space)")
+NORMAL_RE = re.compile(r"^(.)\s\d+$")
+TIMER_RE = re.compile(r"\w+\s(\d{2,4})")
 
 
-@lru_cache(maxsize=25)
+def _make_keystroke(
+    key: str, hold: Timer, modifier: ModifierKey | None = None
+) -> Keystroke:
+    code = KeyCode.from_char(key)
+    return Keystroke(key, code.vk, modifier, hold=hold)
+
+
+@lru_cache
 def parse_commands(line: str) -> Command | None:
     timer = Timer(200)
 
-    if founds := re.findall(r"\w+\s(\d{2,4})", line):
+    if founds := TIMER_RE.findall(line):
         timer = Timer(int(founds[0]))
 
-    # Click
-    if match := re.match(r"(Left|Right) Click: \((\d+),\s*(\d+)\)", line):
+    if match := CLICK_RE.match(line):
         side, x, y = match.groups()
         kind = Button.left if side == "Left" else Button.right
         return MouseClick(kind=kind, pos=(int(x), int(y)))
 
-    # Key with modifier
-    elif match := re.match(r"(\w.*)\+(\w)", line):
+    elif match := MODIFIER_RE.match(line):
         modifier, key = match.groups()
-        code = KeyCode.from_char(key)
         mod = ModifierKey(modifier, getattr(Key, modifier.lower()).value.vk)
-        return Keystroke(key, code.vk, mod, hold=timer)
+        return _make_keystroke(key, timer, mod)
 
-    # Directional keys
-    elif match := re.match(r"^(Up|Down|Left|Right)(?!\s+Click)", line):
-        key = match.group()
-        return DirectionalKeystroke(key.lower(), hold=timer)
+    elif match := DIRECTION_RE.match(line):
+        return DirectionalKeystroke(match.group().lower(), hold=timer)
 
-    # Special keys
-    elif match := re.match(r"^(Esc|Enter|Return|Space)", line):
+    elif match := SPECIAL_RE.match(line):
         key = match.group().lower()
-        k = getattr(Key, match.group().lower())
+        k: Key = getattr(Key, key)
         return Keystroke(key, k.value.vk or 0, hold=timer)
 
-    # Single normal keys
-    elif match := re.match(r"^(.)\s\d+$", line):
-        key = match.groups()[0].lower()
-        code = KeyCode.from_char(key)
-        return Keystroke(key, code.vk, hold=timer)
+    elif match := NORMAL_RE.match(line):
+        return _make_keystroke(match.group(1).lower(), timer)
 
-    else:
-        logger.warning(f"Unhandled Key {line}")
+    logger.warning(f"Unhandled command line: '{line}'")
+    return None
 
 
-def loadConfig(filename: str | Path) -> Params | None:
+def loadConfig(filename: str) -> Params | None:
     with open(filename, "r", encoding="utf-8") as fp:
         lines = [line.strip() for line in fp if line.strip()]
         win_num = int(lines[0].split()[1])
@@ -77,6 +76,6 @@ def loadConfig(filename: str | Path) -> Params | None:
     )
 
 
-def saveConfig(filePath: str | Path, params: Params):
+def saveConfig(filePath: str, params: Params):
     with open(filePath, "w", encoding="utf-8") as f:
         f.write(repr(params))

@@ -2,15 +2,10 @@ import random
 import time
 from dataclasses import dataclass
 
-from pynput.keyboard import Controller as KeyBoardController
-from pynput.mouse import Controller as MouseController
-
 from bot.core.constants import ALT_VK, PADDING_IN_S, TAB_VK
 from bot.models import Keystroke, ModifierKey, Params
 from bot.utils.logger import logger
 
-mouse = MouseController()
-keyboard = KeyBoardController()
 alt_tab = Keystroke("Tab", TAB_VK, ModifierKey(key="Alt", vk=ALT_VK))
 
 

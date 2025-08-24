@@ -6,25 +6,15 @@ from pynput.keyboard import Key, KeyCode
 from PySide6.QtCore import QElapsedTimer, Qt
 from PySide6.QtGui import QKeyEvent
 
-from bot.core.constants import ALT_VK, CTRL_VK, DEL_VK, SHIFT_VK, UPPER_KEYS
+from bot.core.constants import ALT_VK, CTRL_VK, DEL_VK, SHIFT_VK
 from bot.models import (
     CommandListModel,
     DirectionalKeystroke,
     Keystroke,
     ModifierKey,
     Timer,
-    directionalMapping,
 )
 from bot.utils.logger import logger
-
-MODIFIERS = (
-    Key.shift,
-    Key.alt,
-    Key.alt_l,
-    Key.ctrl,
-    Key.ctrl_l,
-    Key.cmd,
-)
 
 PynputEvent = Key | KeyCode | None
 
@@ -32,6 +22,9 @@ PynputEvent = Key | KeyCode | None
 @dataclass
 class BaseKeyStrokeAdapter(ABC):
     model: CommandListModel
+    directionalMapping = {
+        k.value.vk: k for k in (Key.up, Key.down, Key.left, Key.right)
+    }
 
     @abstractmethod
     def on_key_press(self, event: Any): ...
@@ -41,6 +34,8 @@ class BaseKeyStrokeAdapter(ABC):
 
 
 class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
+    upper_keys = ("&", "é", '"', "'", "(", "-", "è", "_", "ç", "à", ")", "=")
+
     def on_key_press(self, event: Any): ...
     def on_key_release(self, event: QKeyEvent):
         modifier = event.modifiers()
@@ -50,8 +45,8 @@ class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
             # Ignore CTRL and ALT keys as they are modifiers
             return None
 
-        if vk in directionalMapping:
-            keystroke = DirectionalKeystroke(directionalMapping[vk].name)
+        if vk in self.directionalMapping:
+            keystroke = DirectionalKeystroke(self.directionalMapping[vk].name)
             self.model.commands.append(keystroke)
             self.model.layoutChanged.emit()
             return
@@ -70,7 +65,7 @@ class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
                 case _:
                     pass
 
-        if event.text() in UPPER_KEYS:
+        if event.text() in self.upper_keys:
             keystroke = Keystroke(key=event.text())
         else:
             keystroke = Keystroke(key=key.name, vk=vk, modifier=mod)
@@ -82,6 +77,14 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
     timer = QElapsedTimer()
     modifier: PynputEvent = None
     current_key: PynputEvent = None
+    modifiers = (
+        Key.shift,
+        Key.alt,
+        Key.alt_l,
+        Key.ctrl,
+        Key.ctrl_l,
+        Key.cmd,
+    )
 
     def on_key_press(self, event: PynputEvent):
         if not event or event == self.current_key:
@@ -90,13 +93,13 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
         self.current_key = event
         self.timer.start()
 
-        if event in MODIFIERS:
+        if event in self.modifiers:
             logger.debug(f"got modifier key: {event!r} storing it for know")
             self.modifier = event
             return
 
     def on_key_release(self, event: PynputEvent):
-        if event in MODIFIERS:
+        if event in self.modifiers:
             self.modifier = None
             return
 
@@ -105,7 +108,7 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
             if not self.modifier:
                 logger.debug(f"Get single key: {event!r}")
                 if isinstance(event, Key):
-                    if event.value.vk in directionalMapping:
+                    if event.value.vk in self.directionalMapping:
                         self.model.commands.append(
                             DirectionalKeystroke(event.name, hold=timer)
                         )

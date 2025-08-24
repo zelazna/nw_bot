@@ -6,12 +6,11 @@ if TYPE_CHECKING:
     from bot.core.recorder import Recorder
     from bot.ui.main_window_ui import Ui_MainWindow
 
-OUTSIDE_BUTTON_STYLE = "background-color: #0067c0; color:white;"
-
 
 class RecordMixin:
     ui: "Ui_MainWindow"
     recorder: "Recorder"
+    outside_button_style = "background-color: #0067c0; color:white;"
 
     def setupRecording(self):
         self.ui.stopRecordButton.setVisible(False)
@@ -24,8 +23,8 @@ class RecordMixin:
 
         self.ui.startRecordOutsideButton.clicked.connect(self.startRecordOutside)
         self.ui.stopRecordOutsideButton.clicked.connect(self.stopRecordOutside)
-        self.ui.startRecordOutsideButton.setStyleSheet(OUTSIDE_BUTTON_STYLE)
-        self.ui.stopRecordOutsideButton.setStyleSheet(OUTSIDE_BUTTON_STYLE)
+        self.ui.startRecordOutsideButton.setStyleSheet(self.outside_button_style)
+        self.ui.stopRecordOutsideButton.setStyleSheet(self.outside_button_style)
         self.ui.startRecordOutsideButton.setVisible(False)
         self.ui.stopRecordOutsideButton.setVisible(False)
 
