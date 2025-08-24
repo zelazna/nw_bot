@@ -12,8 +12,6 @@ from bot.utils.config import loadConfig, saveConfig
 from bot.utils.logger import logger
 
 if TYPE_CHECKING:
-    from bot.core.keystroke_adapter import QtKeystrokeAdapter
-    from bot.core.mouse_adapter import MouseAdapter
     from bot.core.recorder import Recorder
     from bot.models.command_list import CommandListModel
     from bot.ui.main_window_ui import Ui_MainWindow
@@ -23,8 +21,6 @@ class ConfigMixin(QMainWindow):
     ui: "Ui_MainWindow"
     recorder: "Recorder"
     commandModel: "CommandListModel"
-    key_stroke_adapter: "QtKeystrokeAdapter"
-    mouse_adapter: "MouseAdapter"
     isRecording: bool
 
     def setupConfig(self):
@@ -40,8 +36,7 @@ class ConfigMixin(QMainWindow):
     def loadConfigFile(self, filepath: str):
         logger.info(f"Loading config from {filepath}")
         try:
-            result = loadConfig(filepath)
-            if isinstance(result, Params):
+            if result := loadConfig(filepath):
                 self.commandModel.commands = result.commands
                 self.ui.interval.setText(result.interval)
                 self.ui.limit.setText(str(result.limit))
@@ -51,14 +46,14 @@ class ConfigMixin(QMainWindow):
                 recentFileManager.add(filepath)
                 self.currentFile = filepath
         except FileNotFoundError:
-            logger.exception("Error loading config", exc_info=True)
+            logger.exception("File not found", exc_info=True)
             self._showErrorModal(
                 "Une erreur c'est produite lors du chargement de la config: "
                 f"le fichier {filepath} n'a pas ete trouve"
             )
             recentFileManager.remove(filepath)
-        except Exception as exc:
-            logger.exception("Error loading config", exc_info=True)
+        except (IndexError, ValueError) as exc:
+            logger.exception(f"Invalid config header: {exc}", exc_info=True)
             self._showErrorModal(
                 f"Une erreur c'est produite lors du chargement de la config: {exc!r}"
             )

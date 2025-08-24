@@ -32,7 +32,9 @@ def test_load_config(config_file_path, caplog):
     assert directional.key == "up"
 
     assert repr(special) == "Esc 200"
-    assert caplog.record_tuples == [(APP_NAME, logging.WARNING, "Unhandled Key Oopsie")]
+    assert caplog.record_tuples == [
+        (APP_NAME, logging.WARNING, "Unhandled command line: 'Oopsie'")
+    ]
 
 
 @pytest.mark.parametrize(

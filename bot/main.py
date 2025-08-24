@@ -6,7 +6,7 @@ from PySide6 import QtGui
 from PySide6.QtWidgets import QApplication
 
 from bot.core.constants import APP_NAME
-from bot.ui import MainWindow
+from bot.ui.main_window import MainWindow
 
 basedir = Path(__file__).parent
 icon = basedir / "nwbot.ico"
