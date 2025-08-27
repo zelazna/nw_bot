@@ -72,7 +72,7 @@ def loadConfig(filename: str) -> Params | None:
         winNum=win_num,
         limit=limit,
         interval=interval,
-        commands=[c for line in lines[3:] if (c := parse_commands(line))],
+        commands=tuple(c for line in lines[3:] if (c := parse_commands(line))),
     )
 
 

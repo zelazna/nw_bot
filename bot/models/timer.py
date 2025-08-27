@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class Timer:
     milliseconds: int = 200
 

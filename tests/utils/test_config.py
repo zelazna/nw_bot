@@ -56,7 +56,7 @@ def test_save_config(params_factory):
             data = f.read()
         assert data == (
             """winNum 1
-limit 0.01
+limit 1
 interval 1-2
 
 Shift+5 200

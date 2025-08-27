@@ -11,7 +11,7 @@ class Button(IntEnum):
     right = auto()
 
 
-@dataclass
+@dataclass(frozen=True)
 class MouseClick:
     kind: Button
     pos: tuple[int, int]
