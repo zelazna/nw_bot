@@ -5,7 +5,7 @@ from bot.models.command import Command
 
 @dataclass(frozen=True)
 class Params:
-    commands: list[Command] = field(default_factory=list)
+    commands: tuple[Command, ...] = field(default_factory=tuple)
     winNum: int = 1
     limit: int = 5
     interval: str = "1"

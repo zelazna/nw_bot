@@ -77,12 +77,12 @@ def params_factory(stroke_factory, click_factory, directional_key_factory):
         limit: int = 1,
         winNum: int = 1,
         interval: str = "1-2",
-        commands: list[Command] | None = None,
+        commands: tuple[Command, ...] | None = None,
     ):
         return Params(
             limit=limit,
             commands=commands
-            or [stroke_factory(), click_factory(), directional_key_factory()],
+            or tuple([stroke_factory(), click_factory(), directional_key_factory()]),
             winNum=winNum,
             interval=interval,
         )

@@ -37,7 +37,7 @@ def test_directional(directional_key_factory):
 def test_params(stroke_factory):
     model = Params(interval="1-5")
     assert model.interval_range == [1, 2, 3, 4, 5]
-    model = Params(limit=5, commands=[stroke_factory()], winNum=1, interval="1")
+    model = Params(limit=5, commands=(stroke_factory(),), winNum=1, interval="1")
     assert model.interval_range == [1]
     assert repr(model) == "winNum 1\nlimit 5\ninterval 1\n\nShift+5 200\n\n"
 

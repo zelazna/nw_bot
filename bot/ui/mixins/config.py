@@ -37,7 +37,7 @@ class ConfigMixin(QMainWindow):
         logger.info(f"Loading config from {filepath}")
         try:
             if result := loadConfig(filepath):
-                self.commandModel.commands = result.commands
+                self.commandModel.commands = list(result.commands)
                 self.ui.interval.setText(result.interval)
                 self.ui.limit.setText(str(result.limit))
                 self.ui.winNum.setCurrentText(str(result.winNum))
@@ -97,7 +97,7 @@ class ConfigMixin(QMainWindow):
 
     def dumpConfig(self) -> Params:
         return Params(
-            commands=self.commandModel.commands,
+            commands=tuple(self.commandModel.commands),
             interval=self.ui.interval.text(),
             limit=int(self.ui.limit.text()),
             winNum=int(self.ui.winNum.currentText()),
