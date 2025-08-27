@@ -13,6 +13,7 @@ from bot.models import (
     MouseClick,
     Params,
 )
+from bot.models.command import Command
 
 CURRENT_FOLDER = Path(__file__).parent
 RES_FOLDER = CURRENT_FOLDER / "res"
@@ -73,23 +74,15 @@ def directional_key_factory():
 @pytest.fixture
 def params_factory(stroke_factory, click_factory, directional_key_factory):
     def _create(
-        limit: float = 0.01,
+        limit: int = 1,
         winNum: int = 1,
         interval: str = "1-2",
-        num_keystrokes: int = 1,
-        num_mouse_click: int = 1,
+        commands: list[Command] | None = None,
     ):
-        commands = []
-        for _ in range(1, num_keystrokes + 1):
-            commands.append(stroke_factory())
-        for _ in range(1, num_mouse_click + 1):
-            commands.append(click_factory())
-
-        commands.append(directional_key_factory())
-
         return Params(
-            limit=limit,  # type: ignore
-            commands=commands,
+            limit=limit,
+            commands=commands
+            or [stroke_factory(), click_factory(), directional_key_factory()],
             winNum=winNum,
             interval=interval,
         )

@@ -6,7 +6,7 @@ from pynput.keyboard import Controller, Key, KeyCode
 from bot.models.timer import Timer
 
 
-@dataclass
+@dataclass(frozen=True)
 class BaseKey:
     key: str
     vk: int | None = None
@@ -22,7 +22,7 @@ class ModifierKey(BaseKey):
         return key_repr.capitalize()
 
 
-@dataclass
+@dataclass(frozen=True)
 class Keystroke(BaseKey):
     modifier: ModifierKey | None = None
     controller: ClassVar[Controller] = Controller()
@@ -49,7 +49,7 @@ class Keystroke(BaseKey):
                 self.controller.release(self.modifier.key_code)
 
 
-@dataclass
+@dataclass(frozen=True)
 class DirectionalKeystroke(Keystroke):
     def __repr__(self) -> str:
         return f"{self.key.capitalize()} {self.hold!r}"
