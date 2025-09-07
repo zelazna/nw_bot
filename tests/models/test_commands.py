@@ -4,7 +4,6 @@ from PySide6.QtCore import QMimeData, QModelIndex, Qt
 import pytest
 
 from bot.core.constants import MIME_TYPE
-from bot.models.command import Command
 from bot.models.command_list import CommandListModel
 
 
@@ -82,7 +81,7 @@ def test_can_drop_mime_data_invalid():
 
 
 def test_drop_mime_data_moves_item():
-    cmds: list[Command] = [
+    cmds = [
         DummyCommand("One"),
         DummyCommand("Two"),
         DummyCommand("Three"),

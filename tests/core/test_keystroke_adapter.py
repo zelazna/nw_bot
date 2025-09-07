@@ -36,16 +36,19 @@ events = [
     (
         "è",
         "È 200",
+        Keystroke,
         QKeyEvent(QEvent.Type.KeyRelease, 201, Qt.KeyboardModifier.NoModifier, "è"),
     ),
     (
         "Key_5",
         "5 200",
+        Keystroke,
         QKeyEvent(QEvent.Type.KeyRelease, 0x35, Qt.KeyboardModifier.NoModifier),
     ),
     (
         "up",
         "Up 200",
+        DirectionalKeystroke,
         QKeyEvent(
             QEvent.Type.KeyRelease,
             16777249,
@@ -58,13 +61,12 @@ events = [
 ]
 
 
-@pytest.mark.parametrize(("key", "rep", "event"), events)
-def test_key_release(key, rep, event, qt_adapter):
+@pytest.mark.parametrize(("key", "rep", "model", "event"), events)
+def test_key_release(key, rep, event, model, qt_adapter):
     qt_adapter.on_key_release(event)
     result = qt_adapter.model.commands[0]
-    assert isinstance(result, Keystroke)
+    assert isinstance(result, model)
     assert result.key == key
-    assert result.modifier is None
     assert repr(result) == rep
     qt_adapter.model.layoutChanged.emit.assert_called_once()
 

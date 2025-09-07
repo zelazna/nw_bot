@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 from pynput.keyboard import Key, KeyCode
 from PySide6.QtCore import QElapsedTimer, Qt
@@ -46,7 +46,7 @@ class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
             return None
 
         if vk in self.directionalMapping:
-            keystroke = DirectionalKeystroke(self.directionalMapping[vk].name)
+            keystroke = DirectionalKeystroke(key=self.directionalMapping[vk].name)
             self.model.commands.append(keystroke)
             self.model.layoutChanged.emit()
             return
@@ -104,21 +104,21 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
             return
 
         try:
-            timer = Timer(self.timer.elapsed())
+            timer = Timer(milliseconds=self.timer.elapsed())
             if not self.modifier:
                 logger.debug(f"Get single key: {event!r}")
                 if isinstance(event, Key):
                     if event.value.vk in self.directionalMapping:
                         self.model.commands.append(
-                            DirectionalKeystroke(event.name, hold=timer)
+                            DirectionalKeystroke(key=event.name, hold=timer)
                         )
                     elif event.value.vk:
                         self.model.commands.append(
-                            Keystroke(event.name, vk=event.value.vk, hold=timer)
+                            Keystroke(key=event.name, vk=event.value.vk, hold=timer)
                         )
                 elif isinstance(event, KeyCode):
                     self.model.commands.append(
-                        Keystroke(event.char, event.vk, hold=timer)  # type: ignore
+                        Keystroke(key=cast(str, event.char), vk=event.vk, hold=timer)
                     )
             else:
                 logger.debug(
@@ -135,7 +135,7 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
                     key = event.value.char if isinstance(event, Key) else event.char  # type: ignore
 
                 self.model.commands.append(
-                    Keystroke(key, event.vk, modifier, timer)  # type: ignore
+                    Keystroke(key=key, vk=event.vk, modifier=modifier, hold=timer)  # type: ignore
                 )
             self.current_key = None
             self.model.layoutChanged.emit()

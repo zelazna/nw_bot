@@ -21,7 +21,7 @@ def test_keystroke(stroke_factory):
             call(model.modifier.key_code),
         ]
         sleep.assert_called_once_with(model.hold.seconds)
-        assert repr(Keystroke("truc", 125)) == "Truc 200"
+        assert repr(Keystroke(key="truc", vk=125)) == "Truc 200"
 
 
 def test_directional(directional_key_factory):

@@ -1,0 +1,52 @@
+{
+    "commands": [
+        {
+            "key": "Key_Percent",
+            "vk": 53,
+            "hold": {
+                "milliseconds": 5000
+            },
+            "modifier": {
+                "key": "Shift",
+                "vk": 160,
+                "hold": {
+                    "milliseconds": 200
+                }
+            }
+        },
+        {
+            "key": "Key_A",
+            "vk": 65,
+            "hold": {
+                "milliseconds": 200
+            },
+            "modifier": null
+        },
+        {
+            "kind": 1,
+            "pos": [
+                338,
+                260
+            ]
+        },
+        {
+            "key": "up",
+            "is_directional": true,
+            "vk": null,
+            "hold": {
+                "milliseconds": 200
+            }
+        },
+        {
+            "key": "Key_Escape",
+            "vk": 27,
+            "hold": {
+                "milliseconds": 200
+            },
+            "modifier": null
+        }
+    ],
+    "winNum": 2,
+    "limit": 4,
+    "interval": "1-3"
+}

@@ -1,9 +1,10 @@
 import time
-from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
-class Timer:
+from bot.models.base_model import BotBaseModel
+
+
+class Timer(BotBaseModel):
     milliseconds: int = 200
 
     def __repr__(self) -> str:

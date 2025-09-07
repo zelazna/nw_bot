@@ -13,7 +13,6 @@ from bot.models import (
     MouseClick,
     Params,
 )
-from bot.models.command import Command
 
 CURRENT_FOLDER = Path(__file__).parent
 RES_FOLDER = CURRENT_FOLDER / "res"
@@ -26,7 +25,7 @@ def res_folder():
 
 @pytest.fixture
 def config_file_path(res_folder):
-    return res_folder / "test_1.txt"
+    return res_folder / "test.json"
 
 
 @pytest.fixture
@@ -36,37 +35,56 @@ def config_file(config_file_path):
 
 
 @pytest.fixture
-def stroke_factory():
+def key_controller():
+    return Mock(spec=KeyController)
+
+
+@pytest.fixture
+def mouse_controller():
+    return Mock(spec=MouseController)
+
+
+@pytest.fixture
+def modifier_factory(key_controller):
+    def create(*, key="Shift", vk=160):
+        ModifierKey.controller = key_controller
+        return ModifierKey(key=key, vk=vk)
+
+    return create
+
+
+@pytest.fixture
+def stroke_factory(key_controller, modifier_factory):
     def create(
         *,
         key="Key_5",
         vk=0,
-        modifier=ModifierKey(key="Shift", vk=160),
+        modifier=None,
     ):
-        Keystroke.controller = Mock(spec=KeyController)
+        Keystroke.controller = key_controller
         return Keystroke(
-            key,
-            vk,
-            modifier,
+            key=key,
+            vk=vk,
+            modifier=modifier or modifier_factory(),
         )
 
     return create
 
 
 @pytest.fixture
-def click_factory():
+def click_factory(mouse_controller):
     def create(*, kind=Button.left, pos=(0, 0)):
-        MouseClick.controller = Mock(spec=MouseController)
-        return MouseClick(kind, pos)
+        MouseClick.controller = mouse_controller
+        return MouseClick(kind=kind, pos=pos)
 
     return create
 
 
 @pytest.fixture
-def directional_key_factory():
+def directional_key_factory(key_controller):
     def create(*, key="Up"):
-        DirectionalKeystroke.controller = Mock(spec=KeyController)
-        return DirectionalKeystroke(key)
+        DirectionalKeystroke.controller = key_controller
+        return DirectionalKeystroke(key=key)
 
     return create
 
@@ -74,10 +92,10 @@ def directional_key_factory():
 @pytest.fixture
 def params_factory(stroke_factory, click_factory, directional_key_factory):
     def _create(
-        limit: int = 1,
-        winNum: int = 1,
-        interval: str = "1-2",
-        commands: tuple[Command, ...] | None = None,
+        limit=1,
+        winNum=1,
+        interval="1-2",
+        commands=None,
     ):
         return Params(
             limit=limit,

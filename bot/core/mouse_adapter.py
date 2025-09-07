@@ -22,5 +22,5 @@ class MouseAdapter:
             case _:
                 logger.error(f"Unknow button {button}")
                 return
-        self.model.commands.append(MouseClick(kind, (x, y)))
+        self.model.commands.append(MouseClick(kind=kind, pos=(x, y)))
         self.model.layoutChanged.emit()

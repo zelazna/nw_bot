@@ -4,15 +4,16 @@ from typing import Any, List, Sequence
 
 from PySide6.QtCore import (
     QAbstractListModel,
+    QByteArray,
     QMimeData,
-    Qt,
     QModelIndex,
     QPersistentModelIndex,
-    QByteArray,
+    Qt,
 )
 
 from bot.core.constants import MIME_TYPE
-from bot.models.command import Command
+from bot.models.keyboard import DirectionalKeystroke, Keystroke
+from bot.models.mouse import MouseClick
 
 Index = QModelIndex | QPersistentModelIndex
 
@@ -20,7 +21,7 @@ Index = QModelIndex | QPersistentModelIndex
 class CommandListModel(QAbstractListModel):
     def __init__(
         self,
-        commands: list[Command] | None = None,
+        commands: list[Keystroke | DirectionalKeystroke | MouseClick] | None = None,
         *args: Any,
         **kwargs: Any,
     ):
