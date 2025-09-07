@@ -1,15 +1,18 @@
-from dataclasses import dataclass, field
+from contextlib import contextmanager
 from typing import ClassVar
 
+from pydantic import Field
 from pynput.keyboard import Controller, Key, KeyCode
 
+from bot.models.base_model import BotBaseModel
 from bot.models.timer import Timer
 
 
-@dataclass(frozen=True)
-class BaseKey:
+class BaseKey(BotBaseModel):
     key: str
     vk: int | None = None
+    controller: ClassVar[Controller] = Controller()
+    hold: Timer = Field(default_factory=Timer)
 
     @property
     def key_code(self) -> KeyCode:
@@ -21,12 +24,16 @@ class ModifierKey(BaseKey):
         key_repr = self.key.split("_")[0]
         return key_repr.capitalize()
 
+    @contextmanager
+    def execute(self):
+        self.controller.press(self.key_code)
+        yield
+        return self.controller.release(self.key_code)
 
-@dataclass(frozen=True)
+
 class Keystroke(BaseKey):
     modifier: ModifierKey | None = None
-    controller: ClassVar[Controller] = Controller()
-    hold: Timer = field(default_factory=Timer)
+    hold: Timer = Field(default_factory=Timer)
 
     def __repr__(self) -> str:
         try:
@@ -39,18 +46,19 @@ class Keystroke(BaseKey):
 
     def execute(self):
         if self.modifier:
-            self.controller.press(self.modifier.key_code)
-        try:
-            self.controller.press(self.key_code)
-            self.hold.execute()
-            self.controller.release(self.key_code)
-        finally:
-            if self.modifier:
-                self.controller.release(self.modifier.key_code)
+            with self.modifier.execute():
+                return self._tap()
+        return self._tap()
+
+    def _tap(self):
+        self.controller.press(self.key_code)
+        self.hold.execute()
+        self.controller.release(self.key_code)
 
 
-@dataclass(frozen=True)
-class DirectionalKeystroke(Keystroke):
+class DirectionalKeystroke(BaseKey):
+    is_directional: bool = True  # Only for pydantic validate_model
+
     def __repr__(self) -> str:
         return f"{self.key.capitalize()} {self.hold!r}"
 

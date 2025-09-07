@@ -6,7 +6,7 @@ from bot.core.constants import ALT_VK, PADDING_IN_S, TAB_VK
 from bot.models import Keystroke, ModifierKey, Params
 from bot.utils.logger import logger
 
-alt_tab = Keystroke("Tab", TAB_VK, ModifierKey(key="Alt", vk=ALT_VK))
+alt_tab = Keystroke(key="Tab", vk=TAB_VK, modifier=ModifierKey(key="Alt", vk=ALT_VK))
 
 
 @dataclass

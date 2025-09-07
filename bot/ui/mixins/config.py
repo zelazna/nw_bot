@@ -89,7 +89,7 @@ class ConfigMixin(QMainWindow):
 
     def loadConfig(self):
         dialog = QFileDialog(self, "Choisir le fichier de config")
-        filepath, _ = dialog.getOpenFileName(self, filter="TXT files (*.txt)")
+        filepath, _ = dialog.getOpenFileName(self, filter="JSON files (*.json)")
         if filepath:
             self.loadConfigFile(filepath)
             self.addRecentMenuItem(filepath)

@@ -1,11 +1,14 @@
-from dataclasses import dataclass, field
+from pydantic import ConfigDict, Field
 
-from bot.models.command import Command
+from bot.models import DirectionalKeystroke, Keystroke, MouseClick
+from bot.models.base_model import BotBaseModel
 
 
-@dataclass(frozen=True)
-class Params:
-    commands: tuple[Command, ...] = field(default_factory=tuple)
+class Params(BotBaseModel):
+    model_config = ConfigDict(frozen=True)
+    commands: tuple[Keystroke | DirectionalKeystroke | MouseClick, ...] = Field(
+        default_factory=tuple
+    )
     winNum: int = 1
     limit: int = 5
     interval: str = "1"
