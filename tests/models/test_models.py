@@ -12,13 +12,9 @@ def test_keystroke(stroke_factory):
     assert model.modifier.key_code == KeyCode(model.modifier.vk)
     with patch("bot.models.timer.time.sleep") as sleep:
         model.execute()
-        assert model.controller.press.call_args_list == [
+        assert model.controller.pressed.call_args_list == [
             call(model.modifier.key_code),
             call(model.key_code),
-        ]
-        assert model.controller.release.call_args_list == [
-            call(model.key_code),
-            call(model.modifier.key_code),
         ]
         sleep.assert_called_once_with(model.hold.seconds)
         assert repr(Keystroke(key="truc", vk=125)) == "Truc 200"
@@ -29,8 +25,7 @@ def test_directional(directional_key_factory):
     key = getattr(Key, model.key.lower())
     with patch("bot.models.timer.time.sleep") as sleep:
         model.execute()
-        model.controller.press.assert_called_once_with(key)
-        model.controller.release.assert_called_once_with(key)
+        model.controller.pressed.assert_called_once_with(key)
         sleep.assert_called_once_with(model.hold.seconds)
 
 
@@ -47,5 +42,4 @@ def test_mouse_click(click_factory):
     assert repr(model) == "Left Click: (0, 0)"
     button = getattr(Button, model.kind.name)
     model.execute()
-    model.controller.press.assert_called_once_with(button)
-    model.controller.release.assert_called_once_with(button)
+    model.controller.click.assert_called_once_with(button)

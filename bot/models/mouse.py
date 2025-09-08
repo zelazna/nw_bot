@@ -21,6 +21,4 @@ class MouseClick(BotBaseModel):
         return f"{self.kind.name.capitalize()} Click: {self.pos}"
 
     def execute(self):
-        button = getattr(PynoutButton, self.kind.name)
-        self.controller.press(button)
-        self.controller.release(button)
+        self.controller.click(getattr(PynoutButton, self.kind.name))

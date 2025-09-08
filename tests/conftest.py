@@ -1,5 +1,5 @@
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from pynput.keyboard import Controller as KeyController
@@ -36,7 +36,12 @@ def config_file(config_file_path):
 
 @pytest.fixture
 def key_controller():
-    return Mock(spec=KeyController)
+    k_ctlr = Mock(spec=KeyController)
+    _mock = MagicMock()
+    _mock.__enter__.return_value = Mock()
+    k_ctlr.pressed.return_value = _mock
+
+    return k_ctlr
 
 
 @pytest.fixture
