@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QErrorMessage, QFileDialog, QMainWindow
+from pydantic import ValidationError
 
 from bot.core.constants import APP_NAME
 from bot.models import Params
@@ -46,14 +47,14 @@ class ConfigMixin(QMainWindow):
                 recentFileManager.add(filepath)
                 self.currentFile = filepath
         except FileNotFoundError:
-            logger.exception("File not found", exc_info=True)
+            logger.exception("File not found")
             self._showErrorModal(
                 "Une erreur c'est produite lors du chargement de la config: "
                 f"le fichier {filepath} n'a pas ete trouve"
             )
             recentFileManager.remove(filepath)
-        except (IndexError, ValueError) as exc:
-            logger.exception(f"Invalid config header: {exc}", exc_info=True)
+        except ValidationError as exc:
+            logger.exception(f"Invalid config: {exc}")
             self._showErrorModal(
                 f"Une erreur c'est produite lors du chargement de la config: {exc!r}"
             )

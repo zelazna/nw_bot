@@ -14,13 +14,13 @@ def test_run(params_factory, key_controller):
         time.time.side_effect = [1, 1, 99]
         run(p)
         time.sleep.assert_has_calls([call(5), call(1)])
-        key_controller.press.assert_called()
+        key_controller.pressed.assert_called()
         alt_tab.execute.assert_called()
 
 
 def test_run_error(params_factory, caplog, stroke_factory, key_controller):
     cmd = stroke_factory()
-    key_controller.press.side_effect = TypeError
+    key_controller.pressed.side_effect = TypeError
     p = params_factory(commands=(stroke_factory(),))
     with patch("bot.core.control.time") as time:
         time.time.side_effect = [1, 1, 99]

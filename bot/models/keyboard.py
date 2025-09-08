@@ -26,9 +26,8 @@ class ModifierKey(BaseKey):
 
     @contextmanager
     def execute(self):
-        self.controller.press(self.key_code)
-        yield
-        return self.controller.release(self.key_code)
+        with self.controller.pressed(self.key_code):
+            yield
 
 
 class Keystroke(BaseKey):
@@ -51,9 +50,8 @@ class Keystroke(BaseKey):
         return self._tap()
 
     def _tap(self):
-        self.controller.press(self.key_code)
-        self.hold.execute()
-        self.controller.release(self.key_code)
+        with self.controller.pressed(self.key_code):
+            self.hold.execute()
 
 
 class DirectionalKeystroke(BaseKey):
@@ -63,7 +61,5 @@ class DirectionalKeystroke(BaseKey):
         return f"{self.key.capitalize()} {self.hold!r}"
 
     def execute(self):
-        key = getattr(Key, self.key.lower())
-        self.controller.press(key)
-        self.hold.execute()
-        self.controller.release(key)
+        with self.controller.pressed(getattr(Key, self.key.lower())):
+            self.hold.execute()
