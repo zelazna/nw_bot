@@ -37,9 +37,7 @@ def config_file(config_file_path):
 @pytest.fixture
 def key_controller():
     k_ctlr = Mock(spec=KeyController)
-    _mock = MagicMock()
-    _mock.__enter__.return_value = Mock()
-    k_ctlr.pressed.return_value = _mock
+    k_ctlr.pressed.return_value = MagicMock()
 
     return k_ctlr
 
