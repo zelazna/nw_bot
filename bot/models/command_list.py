@@ -28,10 +28,14 @@ class CommandListModel(QAbstractListModel):
         super().__init__(*args, **kwargs)
         self.commands = commands if commands else []
 
-    def data(self, index: Index, role: int = 0) -> str | None:
+    def data(self, index: Index, role: int = 0):
+        if not index.isValid():
+            return None
+        command = self.commands[index.row()]
         if role == Qt.ItemDataRole.DisplayRole:
-            command = self.commands[index.row()]
             return repr(command)
+        if role == Qt.ItemDataRole.UserRole:
+            return command
 
     def rowCount(self, parent: Index = QModelIndex()) -> int:
         return len(self.commands)
@@ -39,8 +43,13 @@ class CommandListModel(QAbstractListModel):
     def flags(self, index: Index) -> Qt.ItemFlag:
         flags = super().flags(index)
         if index.isValid():
-            flags |= Qt.ItemFlag.ItemIsDragEnabled | Qt.ItemFlag.ItemIsDropEnabled
+            flags |= Qt.ItemFlag.ItemIsDragEnabled
+        else:
+            flags |= Qt.ItemFlag.ItemIsDropEnabled
         return flags
+
+    def supportedDropActions(self) -> Qt.DropAction:
+        return Qt.DropAction.MoveAction
 
     def mimeTypes(self) -> List[str]:
         types = super().mimeTypes()
@@ -85,19 +94,19 @@ class CommandListModel(QAbstractListModel):
             return False
         if action is Qt.DropAction.IgnoreAction:
             return True
-        if row != -1:
-            after_index = row
-        elif parent.isValid():
-            after_index = parent.row()
-        else:
-            after_index = self.rowCount(QModelIndex())
+        insert_at = row if row != -1 else self.rowCount(QModelIndex())
         before_index, command = pickle.loads(data.data(MIME_TYPE).data())
 
-        logging.debug(f"Item {command} from idx {before_index} to idx {after_index}")
+        logging.debug(f"Item {command} from idx {before_index} to idx {insert_at}")
+
+        if before_index == insert_at or before_index + 1 == insert_at:
+            return True
 
         self.beginResetModel()
         item = self.commands.pop(before_index)
-        self.commands.insert(after_index + 1, item)
+        if before_index < insert_at:
+            insert_at -= 1
+        self.commands.insert(insert_at, item)
         self.endResetModel()
 
         return True

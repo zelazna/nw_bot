@@ -1,14 +1,17 @@
+from functools import partial
 from typing import Optional
+
 from PySide6.QtCore import Slot
-from PySide6.QtWidgets import QMainWindow
+from PySide6.QtWidgets import QAbstractItemView, QMainWindow
 
 from bot.core.constants import PADDING_IN_S, TIMER_TIMEOUT_MILLISEC, VERSION
 from bot.core.control import run
 from bot.core.keystroke_adapter import QtKeystrokeAdapter
 from bot.core.mouse_adapter import MouseAdapter
 from bot.core.recorder import Recorder
-from bot.core.worker import Worker
+from bot.core.worker import Worker, WorkerSignals
 from bot.models import CommandListModel
+from bot.ui.delegates import CommandDelegate
 from bot.ui.main_window_ui import Ui_MainWindow
 from bot.ui.mixins import ConfigMixin, RecordMixin, EventMixin
 from bot.ui.modals import LogDialog
@@ -40,8 +43,8 @@ class MainWindow(ConfigMixin, EventMixin, RecordMixin, QMainWindow):
         self.setupEvents()
 
         self.ui.keyListView.setModel(self.commandModel)
-        self.ui.keyListView.setDragEnabled(True)
-        self.ui.keyListView.setAcceptDrops(True)
+        self.ui.keyListView.setItemDelegate(CommandDelegate(self.ui.keyListView))
+        self.ui.keyListView.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         self.ui.keyListView.setDropIndicatorShown(True)
 
         self.ui.actionUnboundRecordToggle.triggered.connect(self.toggleOutsideRecord)
@@ -80,8 +83,12 @@ class MainWindow(ConfigMixin, EventMixin, RecordMixin, QMainWindow):
             self.timer_id = self.startTimer(TIMER_TIMEOUT_MILLISEC)
             logger.info(f"Starting timer with {format_time(self.timeLeft)} minutes")
 
-            self.worker = Worker(run, params)
+            self.ui.keyListView.setDragDropMode(QAbstractItemView.DragDropMode.NoDragDrop)
+            signals = WorkerSignals()
+            self.worker = Worker(partial(run, on_command=signals.current_command.emit), params)
+            self.worker.signals = signals
             self.worker.signals.finished.connect(self.botThreadComplete)
+            self.worker.signals.current_command.connect(self.setCurrentCommand)
             self.worker.start()
         else:
             self._showErrorModal("Configuration invalide!")
@@ -101,6 +108,12 @@ class MainWindow(ConfigMixin, EventMixin, RecordMixin, QMainWindow):
         self.ui.startButton.setDisabled(False)
         self.ui.stopButton.setDisabled(True)
         self.ui.remainingTime.setVisible(False)
+        self.ui.keyListView.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+        self.ui.keyListView.clearSelection()
+
+    @Slot(int)
+    def setCurrentCommand(self, index: int):
+        self.ui.keyListView.setCurrentIndex(self.commandModel.index(index, 0))
 
     ## LOGS
     def storeLog(self, message: str, level: int):
