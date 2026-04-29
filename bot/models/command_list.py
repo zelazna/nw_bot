@@ -31,6 +31,8 @@ class CommandListModel(QAbstractListModel):
     def data(self, index: Index, role: int = 0):
         if not index.isValid():
             return None
+        if not (0 <= index.row() < len(self.commands)):
+            return None
         command = self.commands[index.row()]
         if role == Qt.ItemDataRole.DisplayRole:
             return repr(command)
@@ -68,6 +70,10 @@ class CommandListModel(QAbstractListModel):
         mimeData.setData(MIME_TYPE, data)
         return mimeData
 
+    def add_command(self, command: Keystroke | DirectionalKeystroke | MouseClick) -> None:
+        self.commands.append(command)
+        self.layoutChanged.emit()
+
     def canDropMimeData(
         self,
         data: QMimeData,
@@ -102,11 +108,13 @@ class CommandListModel(QAbstractListModel):
         if before_index == insert_at or before_index + 1 == insert_at:
             return True
 
-        self.beginResetModel()
+        root = QModelIndex()
+        if not self.beginMoveRows(root, before_index, before_index, root, insert_at):
+            return True
         item = self.commands.pop(before_index)
         if before_index < insert_at:
             insert_at -= 1
         self.commands.insert(insert_at, item)
-        self.endResetModel()
+        self.endMoveRows()
 
         return True

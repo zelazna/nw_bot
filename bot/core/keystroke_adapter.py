@@ -46,9 +46,7 @@ class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
             return None
 
         if vk in self.directionalMapping:
-            keystroke = DirectionalKeystroke(key=self.directionalMapping[vk].name)
-            self.model.commands.append(keystroke)
-            self.model.layoutChanged.emit()
+            self.model.add_command(DirectionalKeystroke(key=self.directionalMapping[vk].name))
             return
 
         key = Qt.Key(event.key())
@@ -69,8 +67,7 @@ class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
             keystroke = Keystroke(key=event.text())
         else:
             keystroke = Keystroke(key=key.name, vk=vk, modifier=mod)
-        self.model.commands.append(keystroke)
-        self.model.layoutChanged.emit()
+        self.model.add_command(keystroke)
 
 
 class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
@@ -109,15 +106,15 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
                 logger.debug(f"Get single key: {event!r}")
                 if isinstance(event, Key):
                     if event.value.vk in self.directionalMapping:
-                        self.model.commands.append(
+                        self.model.add_command(
                             DirectionalKeystroke(key=event.name, hold=timer)
                         )
                     elif event.value.vk:
-                        self.model.commands.append(
+                        self.model.add_command(
                             Keystroke(key=event.name, vk=event.value.vk, hold=timer)
                         )
                 elif isinstance(event, KeyCode):
-                    self.model.commands.append(
+                    self.model.add_command(
                         Keystroke(key=cast(str, event.char), vk=event.vk, hold=timer)
                     )
             else:
@@ -134,11 +131,10 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
                 else:
                     key = event.value.char if isinstance(event, Key) else event.char  # type: ignore
 
-                self.model.commands.append(
+                self.model.add_command(
                     Keystroke(key=key, vk=event.vk, modifier=modifier, hold=timer)  # type: ignore
                 )
             self.current_key = None
-            self.model.layoutChanged.emit()
 
         except AttributeError:
             logger.error(f"Unhandled key: {event!r}", exc_info=True)
