@@ -48,23 +48,25 @@ def mouse_controller():
 
 
 @pytest.fixture
-def modifier_factory(key_controller):
+def modifier_factory(key_controller, monkeypatch):
+    monkeypatch.setattr("bot.models.keyboard._default_keyboard_executor", key_controller)
+
     def create(*, key="Shift", vk=160):
-        ModifierKey.controller = key_controller
         return ModifierKey(key=key, vk=vk)
 
     return create
 
 
 @pytest.fixture
-def stroke_factory(key_controller, modifier_factory):
+def stroke_factory(key_controller, modifier_factory, monkeypatch):
+    monkeypatch.setattr("bot.models.keyboard._default_keyboard_executor", key_controller)
+
     def create(
         *,
         key="Key_5",
         vk=0,
         modifier=None,
     ):
-        Keystroke.controller = key_controller
         return Keystroke(
             key=key,
             vk=vk,
@@ -75,18 +77,20 @@ def stroke_factory(key_controller, modifier_factory):
 
 
 @pytest.fixture
-def click_factory(mouse_controller):
+def click_factory(mouse_controller, monkeypatch):
+    monkeypatch.setattr("bot.models.mouse._default_mouse_executor", mouse_controller)
+
     def create(*, kind=Button.left, pos=(0, 0)):
-        MouseClick.controller = mouse_controller
         return MouseClick(kind=kind, pos=pos)
 
     return create
 
 
 @pytest.fixture
-def directional_key_factory(key_controller):
+def directional_key_factory(key_controller, monkeypatch):
+    monkeypatch.setattr("bot.models.keyboard._default_keyboard_executor", key_controller)
+
     def create(*, key="Up"):
-        DirectionalKeystroke.controller = key_controller
         return DirectionalKeystroke(key=key)
 
     return create

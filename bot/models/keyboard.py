@@ -2,16 +2,17 @@ from contextlib import contextmanager
 from typing import ClassVar
 
 from pydantic import Field
-from pynput.keyboard import Controller, Key, KeyCode
+from pynput.keyboard import Controller as _PynputKeyboardController, Key, KeyCode
 
-from bot.models.base_model import BotBaseModel, Command
+from bot.models.base_model import BotBaseModel, Command, KeyboardExecutor
 from bot.models.timer import SleepCommand
+
+_default_keyboard_executor: KeyboardExecutor = _PynputKeyboardController()
 
 
 class BaseKey(BotBaseModel):
     key: str
     vk: int | None = None
-    controller: ClassVar[Controller] = Controller()
     hold: SleepCommand = Field(default_factory=SleepCommand)
 
     @property
@@ -25,8 +26,9 @@ class ModifierKey(BaseKey):
         return key_repr.capitalize()
 
     @contextmanager
-    def execute(self):
-        with self.controller.pressed(self.key_code):
+    def execute(self, executor: KeyboardExecutor | None = None):
+        kb = executor or _default_keyboard_executor
+        with kb.pressed(self.key_code):
             yield
 
 
@@ -43,14 +45,15 @@ class Keystroke(BaseKey, Command):
             return f"{self.modifier!r}+{key_repr.upper()} {self.hold!r}"
         return f"{key_repr.capitalize()} {self.hold!r}"
 
-    def execute(self):
+    def execute(self, executor: KeyboardExecutor | None = None):
+        kb = executor or _default_keyboard_executor
         if self.modifier:
-            with self.modifier.execute():
-                return self._tap()
-        return self._tap()
+            with self.modifier.execute(executor=kb):
+                return self._tap(kb)
+        return self._tap(kb)
 
-    def _tap(self):
-        with self.controller.pressed(self.key_code):
+    def _tap(self, executor: KeyboardExecutor):
+        with executor.pressed(self.key_code):
             self.hold.execute()
 
 
@@ -60,6 +63,7 @@ class DirectionalKeystroke(BaseKey, Command):
     def __repr__(self) -> str:
         return f"{self.key.capitalize()} {self.hold!r}"
 
-    def execute(self):
-        with self.controller.pressed(getattr(Key, self.key.lower())):
+    def execute(self, executor: KeyboardExecutor | None = None):
+        kb = executor or _default_keyboard_executor
+        with kb.pressed(getattr(Key, self.key.lower())):
             self.hold.execute()

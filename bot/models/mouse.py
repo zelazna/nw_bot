@@ -1,10 +1,11 @@
 from enum import IntEnum, auto
-from typing import ClassVar
 
-from pynput.mouse import Button as PynoutButton
-from pynput.mouse import Controller
+from pynput.mouse import Button as PynputButton
+from pynput.mouse import Controller as _PynputMouseController
 
-from bot.models.base_model import BotBaseModel, Command
+from bot.models.base_model import BotBaseModel, Command, MouseExecutor
+
+_default_mouse_executor: MouseExecutor = _PynputMouseController()
 
 
 class Button(IntEnum):
@@ -15,10 +16,10 @@ class Button(IntEnum):
 class MouseClick(BotBaseModel, Command):
     kind: Button
     pos: tuple[int, int]
-    controller: ClassVar[Controller] = Controller()
 
     def __repr__(self) -> str:
         return f"{self.kind.name.capitalize()} Click: {self.pos}"
 
-    def execute(self):
-        self.controller.click(getattr(PynoutButton, self.kind.name))
+    def execute(self, executor: MouseExecutor | None = None):
+        mouse = executor or _default_mouse_executor
+        mouse.click(getattr(PynputButton, self.kind.name))
