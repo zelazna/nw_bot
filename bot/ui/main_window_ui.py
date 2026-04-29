@@ -8,16 +8,25 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect)
-from PySide6.QtGui import (QAction, QFont, QIcon)
-from PySide6.QtWidgets import (QComboBox, QGridLayout, QHBoxLayout,
-    QLabel, QLineEdit, QListView, QMenu, QMenuBar, QPushButton, QWidget)
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
+    QCursor, QFont, QFontDatabase, QGradient,
+    QIcon, QImage, QKeySequence, QLinearGradient,
+    QPainter, QPalette, QPixmap, QRadialGradient,
+    QTransform)
+from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout,
+    QLabel, QLineEdit, QListView, QMainWindow,
+    QMenu, QMenuBar, QPushButton, QSizePolicy,
+    QSpacerItem, QStackedWidget, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(528, 600)
+        MainWindow.resize(540, 560)
+        MainWindow.setMinimumSize(QSize(460, 380))
         self.actionSaveConfig = QAction(MainWindow)
         self.actionSaveConfig.setObjectName(u"actionSaveConfig")
         icon = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentSave))
@@ -41,95 +50,172 @@ class Ui_MainWindow(object):
         self.actionSaveAs.setIcon(icon4)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.gridLayout = QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.middle = QWidget(self.centralwidget)
-        self.middle.setObjectName(u"middle")
-        self.startRecordButton = QPushButton(self.middle)
+        self.centralLayout = QVBoxLayout(self.centralwidget)
+        self.centralLayout.setSpacing(8)
+        self.centralLayout.setObjectName(u"centralLayout")
+        self.centralLayout.setContentsMargins(10, 10, 10, 10)
+        self.contentLayout = QHBoxLayout()
+        self.contentLayout.setSpacing(12)
+        self.contentLayout.setObjectName(u"contentLayout")
+        self.leftLayout = QVBoxLayout()
+        self.leftLayout.setSpacing(6)
+        self.leftLayout.setObjectName(u"leftLayout")
+        self.recordStack = QStackedWidget(self.centralwidget)
+        self.recordStack.setObjectName(u"recordStack")
+        self.recordStack.setMaximumSize(QSize(16777215, 28))
+        self.page_start = QWidget()
+        self.page_start.setObjectName(u"page_start")
+        self.page_startLayout = QVBoxLayout(self.page_start)
+        self.page_startLayout.setObjectName(u"page_startLayout")
+        self.page_startLayout.setContentsMargins(0, 0, 0, 0)
+        self.startRecordButton = QPushButton(self.page_start)
         self.startRecordButton.setObjectName(u"startRecordButton")
-        self.startRecordButton.setGeometry(QRect(20, 10, 210, 24))
-        self.stopRecordButton = QPushButton(self.middle)
+
+        self.page_startLayout.addWidget(self.startRecordButton)
+
+        self.recordStack.addWidget(self.page_start)
+        self.page_stop = QWidget()
+        self.page_stop.setObjectName(u"page_stop")
+        self.page_stopLayout = QVBoxLayout(self.page_stop)
+        self.page_stopLayout.setObjectName(u"page_stopLayout")
+        self.page_stopLayout.setContentsMargins(0, 0, 0, 0)
+        self.stopRecordButton = QPushButton(self.page_stop)
         self.stopRecordButton.setObjectName(u"stopRecordButton")
-        self.stopRecordButton.setEnabled(True)
-        self.stopRecordButton.setGeometry(QRect(20, 10, 211, 24))
-        self.keyListView = QListView(self.middle)
-        self.keyListView.setObjectName(u"keyListView")
-        self.keyListView.setGeometry(QRect(20, 110, 210, 361))
-        self.deleteKey = QPushButton(self.middle)
-        self.deleteKey.setObjectName(u"deleteKey")
-        self.deleteKey.setGeometry(QRect(20, 70, 210, 24))
-        self.deleteAll = QPushButton(self.middle)
-        self.deleteAll.setObjectName(u"deleteAll")
-        self.deleteAll.setGeometry(QRect(20, 40, 210, 24))
-        self.startRecordOutsideButton = QPushButton(self.middle)
+
+        self.page_stopLayout.addWidget(self.stopRecordButton)
+
+        self.recordStack.addWidget(self.page_stop)
+        self.page_startOutside = QWidget()
+        self.page_startOutside.setObjectName(u"page_startOutside")
+        self.page_startOutsideLayout = QVBoxLayout(self.page_startOutside)
+        self.page_startOutsideLayout.setObjectName(u"page_startOutsideLayout")
+        self.page_startOutsideLayout.setContentsMargins(0, 0, 0, 0)
+        self.startRecordOutsideButton = QPushButton(self.page_startOutside)
         self.startRecordOutsideButton.setObjectName(u"startRecordOutsideButton")
-        self.startRecordOutsideButton.setGeometry(QRect(20, 10, 211, 24))
-        font = QFont()
-        font.setBold(False)
-        self.startRecordOutsideButton.setFont(font)
-        self.stopRecordOutsideButton = QPushButton(self.middle)
+
+        self.page_startOutsideLayout.addWidget(self.startRecordOutsideButton)
+
+        self.recordStack.addWidget(self.page_startOutside)
+        self.page_stopOutside = QWidget()
+        self.page_stopOutside.setObjectName(u"page_stopOutside")
+        self.page_stopOutsideLayout = QVBoxLayout(self.page_stopOutside)
+        self.page_stopOutsideLayout.setObjectName(u"page_stopOutsideLayout")
+        self.page_stopOutsideLayout.setContentsMargins(0, 0, 0, 0)
+        self.stopRecordOutsideButton = QPushButton(self.page_stopOutside)
         self.stopRecordOutsideButton.setObjectName(u"stopRecordOutsideButton")
-        self.stopRecordOutsideButton.setEnabled(True)
-        self.stopRecordOutsideButton.setGeometry(QRect(20, 10, 211, 24))
-        self.appVersion = QLabel(self.middle)
-        self.appVersion.setObjectName(u"appVersion")
-        self.appVersion.setGeometry(QRect(10, 530, 231, 16))
-        self.label_2 = QLabel(self.middle)
+
+        self.page_stopOutsideLayout.addWidget(self.stopRecordOutsideButton)
+
+        self.recordStack.addWidget(self.page_stopOutside)
+
+        self.leftLayout.addWidget(self.recordStack)
+
+        self.deleteAll = QPushButton(self.centralwidget)
+        self.deleteAll.setObjectName(u"deleteAll")
+
+        self.leftLayout.addWidget(self.deleteAll)
+
+        self.deleteKey = QPushButton(self.centralwidget)
+        self.deleteKey.setObjectName(u"deleteKey")
+
+        self.leftLayout.addWidget(self.deleteKey)
+
+        self.keyListView = QListView(self.centralwidget)
+        self.keyListView.setObjectName(u"keyListView")
+
+        self.leftLayout.addWidget(self.keyListView)
+
+
+        self.contentLayout.addLayout(self.leftLayout)
+
+        self.line = QFrame(self.centralwidget)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShape(QFrame.Shape.VLine)
+        self.line.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.contentLayout.addWidget(self.line)
+
+        self.rightLayout = QVBoxLayout()
+        self.rightLayout.setSpacing(4)
+        self.rightLayout.setObjectName(u"rightLayout")
+        self.label_2 = QLabel(self.centralwidget)
         self.label_2.setObjectName(u"label_2")
-        self.label_2.setGeometry(QRect(260, 0, 141, 31))
-        self.label_3 = QLabel(self.middle)
-        self.label_3.setObjectName(u"label_3")
-        self.label_3.setGeometry(QRect(260, 60, 131, 16))
-        self.label = QLabel(self.middle)
-        self.label.setObjectName(u"label")
-        self.label.setGeometry(QRect(260, 110, 171, 16))
-        self.interval = QLineEdit(self.middle)
+
+        self.rightLayout.addWidget(self.label_2)
+
+        self.interval = QLineEdit(self.centralwidget)
         self.interval.setObjectName(u"interval")
-        self.interval.setGeometry(QRect(260, 30, 231, 24))
-        self.limit = QLineEdit(self.middle)
+
+        self.rightLayout.addWidget(self.interval)
+
+        self.label_3 = QLabel(self.centralwidget)
+        self.label_3.setObjectName(u"label_3")
+
+        self.rightLayout.addWidget(self.label_3)
+
+        self.limit = QLineEdit(self.centralwidget)
         self.limit.setObjectName(u"limit")
-        self.limit.setGeometry(QRect(260, 80, 231, 24))
-        self.winNum = QComboBox(self.middle)
+
+        self.rightLayout.addWidget(self.limit)
+
+        self.label = QLabel(self.centralwidget)
+        self.label.setObjectName(u"label")
+
+        self.rightLayout.addWidget(self.label)
+
+        self.winNum = QComboBox(self.centralwidget)
         self.winNum.setObjectName(u"winNum")
-        self.winNum.setGeometry(QRect(260, 130, 231, 24))
-        self.startButton = QPushButton(self.middle)
+
+        self.rightLayout.addWidget(self.winNum)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.rightLayout.addItem(self.verticalSpacer)
+
+
+        self.contentLayout.addLayout(self.rightLayout)
+
+
+        self.centralLayout.addLayout(self.contentLayout)
+
+        self.bottomLayout = QHBoxLayout()
+        self.bottomLayout.setSpacing(8)
+        self.bottomLayout.setObjectName(u"bottomLayout")
+        self.appVersion = QLabel(self.centralwidget)
+        self.appVersion.setObjectName(u"appVersion")
+
+        self.bottomLayout.addWidget(self.appVersion)
+
+        self.bottomSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.bottomLayout.addItem(self.bottomSpacer)
+
+        self.startButton = QPushButton(self.centralwidget)
         self.startButton.setObjectName(u"startButton")
-        self.startButton.setGeometry(QRect(270, 520, 121, 31))
-        self.remainingTime = QLabel(self.middle)
+        self.startButton.setMinimumSize(QSize(90, 0))
+
+        self.bottomLayout.addWidget(self.startButton)
+
+        self.remainingTime = QLabel(self.centralwidget)
         self.remainingTime.setObjectName(u"remainingTime")
-        self.remainingTime.setGeometry(QRect(450, 500, 49, 16))
-        self.stopButton = QPushButton(self.middle)
+        self.remainingTime.setMinimumSize(QSize(68, 0))
+        self.remainingTime.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.bottomLayout.addWidget(self.remainingTime)
+
+        self.stopButton = QPushButton(self.centralwidget)
         self.stopButton.setObjectName(u"stopButton")
-        self.stopButton.setGeometry(QRect(400, 520, 101, 31))
-        self.stopRecordOutsideButton.raise_()
-        self.startRecordOutsideButton.raise_()
-        self.stopRecordButton.raise_()
-        self.startRecordButton.raise_()
-        self.keyListView.raise_()
-        self.deleteKey.raise_()
-        self.deleteAll.raise_()
-        self.appVersion.raise_()
-        self.label_2.raise_()
-        self.label_3.raise_()
-        self.label.raise_()
-        self.interval.raise_()
-        self.limit.raise_()
-        self.winNum.raise_()
-        self.startButton.raise_()
-        self.remainingTime.raise_()
-        self.stopButton.raise_()
+        self.stopButton.setMinimumSize(QSize(90, 0))
 
-        self.horizontalLayout.addWidget(self.middle)
+        self.bottomLayout.addWidget(self.stopButton)
 
 
-        self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
+        self.centralLayout.addLayout(self.bottomLayout)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 528, 21))
+        self.menubar.setGeometry(QRect(0, 0, 540, 21))
         self.menuParametres = QMenu(self.menubar)
         self.menuParametres.setObjectName(u"menuParametres")
         self.menuRecent = QMenu(self.menuParametres)
@@ -164,17 +250,17 @@ class Ui_MainWindow(object):
         self.actionSaveAs.setText(QCoreApplication.translate("MainWindow", u"Enregister sous", None))
         self.startRecordButton.setText(QCoreApplication.translate("MainWindow", u"Demarrer l'enregistrement", None))
         self.stopRecordButton.setText(QCoreApplication.translate("MainWindow", u"Arreter l'enregistrement", None))
-        self.deleteKey.setText(QCoreApplication.translate("MainWindow", u"Supprimer", None))
-        self.deleteAll.setText(QCoreApplication.translate("MainWindow", u"Tout supprimer", None))
         self.startRecordOutsideButton.setText(QCoreApplication.translate("MainWindow", u"Demarrer l'enregistrement", None))
         self.stopRecordOutsideButton.setText(QCoreApplication.translate("MainWindow", u"Arreter l'enregistrement", None))
-        self.appVersion.setText(QCoreApplication.translate("MainWindow", u"Version", None))
+        self.deleteAll.setText(QCoreApplication.translate("MainWindow", u"Tout supprimer", None))
+        self.deleteKey.setText(QCoreApplication.translate("MainWindow", u"Supprimer", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Intervale entre les touches", None))
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Limite de temps (en m)", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"Nombre de fenetres", None))
         self.interval.setText("")
         self.interval.setPlaceholderText(QCoreApplication.translate("MainWindow", u"1 ou 1-5 pour aleatoire entre deux valeurs", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Limite de temps (en m)", None))
         self.limit.setText(QCoreApplication.translate("MainWindow", u"2", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"Nombre de fenetres", None))
+        self.appVersion.setText(QCoreApplication.translate("MainWindow", u"Version", None))
         self.startButton.setText(QCoreApplication.translate("MainWindow", u"Depart", None))
         self.remainingTime.setText(QCoreApplication.translate("MainWindow", u"00:00:00", None))
         self.stopButton.setText(QCoreApplication.translate("MainWindow", u"Arret", None))
@@ -182,3 +268,4 @@ class Ui_MainWindow(object):
         self.menuRecent.setTitle(QCoreApplication.translate("MainWindow", u"R\u00e9cents", None))
         self.menuOptions.setTitle(QCoreApplication.translate("MainWindow", u"Options", None))
     # retranslateUi
+

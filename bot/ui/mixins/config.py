@@ -99,7 +99,7 @@ class ConfigMixin(QMainWindow):
     def dumpConfig(self) -> Params:
         return Params(
             commands=tuple(self.commandModel.commands),
-            interval=self.ui.interval.text(),
+            interval=self.ui.interval.text() or "1",
             limit=int(self.ui.limit.text()),
             winNum=int(self.ui.winNum.currentText()),
         )
