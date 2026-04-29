@@ -9,7 +9,7 @@ from bot.core.constants import APP_NAME
 from bot.models import Params
 from bot.ui.modals import FileNameModal
 from bot.utils import recentFileManager, saveFolderManager
-from bot.utils.config import loadConfig, saveConfig
+from bot.utils.config import ConfigService
 from bot.utils.logger import logger
 
 if TYPE_CHECKING:
@@ -25,6 +25,7 @@ class ConfigMixin(QMainWindow):
     isRecording: bool
 
     def setupConfig(self):
+        self._config_service = ConfigService()
         self.ui.actionSaveConfig.triggered.connect(self.saveConfig)
         self.ui.actionSaveAs.triggered.connect(self.saveConfigAs)
         self.ui.actionLoadConfig.triggered.connect(self.loadConfig)
@@ -37,7 +38,7 @@ class ConfigMixin(QMainWindow):
     def loadConfigFile(self, filepath: str):
         logger.info(f"Loading config from {filepath}")
         try:
-            if result := loadConfig(filepath):
+            if result := self._config_service.load(filepath):
                 self.commandModel.commands = list(result.commands)
                 self.ui.interval.setText(result.interval)
                 self.ui.limit.setText(str(result.limit))
@@ -62,7 +63,7 @@ class ConfigMixin(QMainWindow):
     def saveConfig(self):
         cfg = self.dumpConfig()
         if self.currentFile:
-            saveConfig(self.currentFile, cfg)
+            self._config_service.save(self.currentFile, cfg)
             return
         folder_name = saveFolderManager.get()
 
@@ -77,7 +78,7 @@ class ConfigMixin(QMainWindow):
             if dlg.exec():
                 recent = f"{folder_name}/{dlg.filename}"
                 logger.info(f"Saving config to {recent}")
-                saveConfig(recent, cfg)
+                self._config_service.save(recent, cfg)
                 self.addRecentMenuItem(recent)
                 self.setWindowTitle(f"{APP_NAME} {recent}")
                 recentFileManager.add(recent)

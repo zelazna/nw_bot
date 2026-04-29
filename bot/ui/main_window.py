@@ -14,6 +14,7 @@ from bot.models import CommandListModel
 from bot.ui.delegates import CommandDelegate
 from bot.ui.main_window_ui import Ui_MainWindow
 from bot.ui.mixins import ConfigMixin, RecordMixin, EventMixin
+from bot.ui.mixins.record import RecordingMode
 from bot.ui.modals import LogDialog
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
 from bot.utils import format_time
@@ -25,7 +26,7 @@ class MainWindow(ConfigMixin, EventMixin, RecordMixin, QMainWindow):
         super().__init__()
 
         self.worker: Optional[Worker] = None
-        self.isRecording = False
+        self.recording_mode = RecordingMode.IDLE
         self.timeLeft = 0
         self.timer_id = 0
         self.validator = ValidateRangeOrNumber()
