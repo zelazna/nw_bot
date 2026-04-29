@@ -75,19 +75,19 @@ events = [
     (
         "Alt",
         "Alt+5 200",
-        18,
+        Key.alt.value.vk,
         QKeyEvent(QEvent.Type.KeyRelease, 0x35, Qt.KeyboardModifier.AltModifier),
     ),
     (
         "Ctrl",
         "Ctrl+5 200",
-        17,
+        Key.ctrl.value.vk,
         QKeyEvent(QEvent.Type.KeyRelease, 0x35, Qt.KeyboardModifier.ControlModifier),
     ),
     (
         "Shift",
         "Shift+5 200",
-        160,
+        Key.shift.value.vk,
         QKeyEvent(QEvent.Type.KeyRelease, 0x35, Qt.KeyboardModifier.ShiftModifier),
     ),
 ]
@@ -178,9 +178,9 @@ def test_pynput_adapter_errors(pynput_adapter, caplog):
         (
             APP_NAME,
             logging.DEBUG,
-            "Modifier detected along key mod: <Key.alt: <18>>, key: <Key.tab: <9>>",
+            f"Modifier detected along key mod: {Key.alt!r}, key: {Key.tab!r}",
         ),
-        (APP_NAME, logging.ERROR, "Unhandled key: <Key.tab: <9>>"),
+        (APP_NAME, logging.ERROR, f"Unhandled key: {Key.tab!r}"),
     ]
 
 
@@ -192,7 +192,7 @@ def test_pynput_adapter_keypress_modifier(pynput_adapter, caplog):
         (
             APP_NAME,
             logging.DEBUG,
-            "got modifier key: <Key.ctrl: <17>> storing it for know",
+            f"got modifier key: {Key.ctrl!r} storing it for know",
         )
     ]
 
