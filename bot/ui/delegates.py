@@ -2,6 +2,7 @@ from PySide6.QtCore import QModelIndex, QRect, QSize, Qt
 from PySide6.QtGui import QColor, QFont, QPainter, QPen
 from PySide6.QtWidgets import QStyle, QStyledItemDelegate, QStyleOptionViewItem
 
+from bot.models import Command
 from bot.models.keyboard import DirectionalKeystroke, Keystroke
 from bot.models.mouse import MouseClick
 
@@ -19,7 +20,7 @@ _PADDING_LEFT = 10
 _BADGE_HPAD = 10
 
 
-def _badge_color(command) -> QColor:
+def _badge_color(command: Command) -> QColor:
     if isinstance(command, DirectionalKeystroke):
         return _COLOR_DIR
     if isinstance(command, Keystroke):
@@ -29,7 +30,7 @@ def _badge_color(command) -> QColor:
     return _COLOR_KEY
 
 
-def _badge_label(command) -> str:
+def _badge_label(command: Command) -> str:
     if isinstance(command, Keystroke):
         try:
             key_repr = command.key.split("_")[1]
@@ -45,7 +46,7 @@ def _badge_label(command) -> str:
     return repr(command)
 
 
-def _secondary_text(command) -> str:
+def _secondary_text(command: Command) -> str:
     if isinstance(command, (Keystroke, DirectionalKeystroke)):
         return f"{command.hold.milliseconds} ms"
     if isinstance(command, MouseClick):
@@ -55,9 +56,13 @@ def _secondary_text(command) -> str:
 
 class CommandDelegate(QStyledItemDelegate):
     def sizeHint(self, option: QStyleOptionViewItem, index: QModelIndex) -> QSize:
-        return QSize(option.rect.width(), _ROW_HEIGHT)
+        hint = super().sizeHint(option, index)
+        hint.setHeight(_ROW_HEIGHT)
+        return hint
 
-    def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex):
+    def paint(
+        self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex
+    ):
         painter.save()
 
         rect: QRect = option.rect
@@ -107,7 +112,9 @@ class CommandDelegate(QStyledItemDelegate):
             painter.setFont(secondary_font)
             painter.setPen(QPen(_COLOR_TEXT_SECONDARY))
             text_x = badge_x + badge_w + 10
-            text_rect = QRect(text_x, rect.y(), rect.right() - text_x - 4, rect.height())
+            text_rect = QRect(
+                text_x, rect.y(), rect.right() - text_x - 4, rect.height()
+            )
             painter.drawText(
                 text_rect,
                 Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,

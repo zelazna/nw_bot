@@ -20,6 +20,20 @@ def test_run(params_factory, key_controller):
         alt_tab.execute.assert_called()
 
 
+def test_run_on_command_indices(params_factory, key_controller):
+    collected: list[int] = []
+    p = params_factory(winNum=1, interval="1")
+    with (
+        patch("bot.core.control.time") as time,
+        patch("bot.models.timer.time"),
+    ):
+        time.time.side_effect = [1, 1, 99]
+        run(p, on_command=collected.append)
+
+    expected = [i for i, cmd in enumerate(p.commands) if cmd.is_reportable]
+    assert collected == expected
+
+
 def test_run_error(params_factory, caplog, stroke_factory, key_controller):
     cmd = stroke_factory()
     key_controller.pressed.side_effect = TypeError

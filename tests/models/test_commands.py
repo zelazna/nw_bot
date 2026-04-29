@@ -31,10 +31,10 @@ def test_data_display_role():
 
 def test_flags_valid_index():
     model = CommandListModel([DummyCommand("A")])
-    index = model.index(0)
-    flags = model.flags(index)
-    assert flags & Qt.ItemFlag.ItemIsDragEnabled
-    assert flags & Qt.ItemFlag.ItemIsDropEnabled
+    valid_index = model.index(0)
+    assert model.flags(valid_index) & Qt.ItemFlag.ItemIsDragEnabled
+    # Only the root (invalid) index accepts drops — individual items are drag sources only
+    assert model.flags(QModelIndex()) & Qt.ItemFlag.ItemIsDropEnabled
 
 
 def test_mime_types_contains_custom_type():
@@ -88,11 +88,11 @@ def test_drop_mime_data_moves_item():
     ]
     model = CommandListModel(cmds.copy())
 
-    # Move "One" (index 0) after "Three" (index 2)
+    # Move "One" (index 0) after "Three" (index 2): row=3 means "insert before end"
     mime_data = QMimeData()
     mime_data.setData(MIME_TYPE, pickle.dumps((0, cmds[0])))
 
-    model.dropMimeData(mime_data, Qt.DropAction.MoveAction, 1, 0, QModelIndex())
+    model.dropMimeData(mime_data, Qt.DropAction.MoveAction, 3, 0, QModelIndex())
     assert [cmd.name for cmd in model.commands] == ["Two", "Three", "One"]  # type: ignore
 
 
