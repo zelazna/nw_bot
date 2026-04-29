@@ -1,37 +1,29 @@
-import random
 import time
-from dataclasses import dataclass
+from typing import Callable
 
 from bot.core.constants import ALT_VK, PADDING_IN_S, TAB_VK
-from bot.models import Keystroke, ModifierKey, Params
+from bot.models import Keystroke, ModifierKey, Params, SleepRandomCommand
 from bot.utils.logger import logger
+
 
 alt_tab = Keystroke(key="Tab", vk=TAB_VK, modifier=ModifierKey(key="Alt", vk=ALT_VK))
 
 
-@dataclass
-class Runner:
-    params: Params
-
-    def run(self):
-        for _ in range(self.params.winNum):
-            for command in self.params.commands:
-                try:
-                    logger.debug(f"Executing for {command}")
-                    command.execute()
-                    sleep_time = random.choice(self.params.interval_range)
-                    logger.debug(f"Waiting for {sleep_time}")
-                    time.sleep(sleep_time)
-                    if self.params.winNum > 1:
-                        alt_tab.execute()
-                except TypeError:
-                    logger.error(f"Command {command!r} not handled skipping")
-
-
-def run(params: Params):
-    time.sleep(PADDING_IN_S)  # Allow to switch window in time
-    end = time.time() + params.limit * 60
+def run(params: Params, on_command: Callable[[int], None] | None = None) -> None:
+    sleep = SleepRandomCommand(interval_range=params.interval_range)
     logger.info(f"Running with params:\n{params}")
-    runner = Runner(params)
+    time.sleep(PADDING_IN_S)
+    end = time.time() + params.limit * 60
     while time.time() < end:
-        runner.run()
+        for _ in range(params.winNum):
+            for i, cmd in enumerate(params.commands):
+                if on_command and not isinstance(cmd, SleepRandomCommand):
+                    on_command(i)
+                try:
+                    logger.debug(f"Executing {cmd}")
+                    cmd.execute()
+                except TypeError:
+                    logger.error(f"Command {cmd!r} not handled skipping")
+                sleep.execute()
+                if params.winNum > 1:
+                    alt_tab.execute()

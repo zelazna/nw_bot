@@ -29,6 +29,7 @@ class WorkerSignals(QObject):
     finished = Signal()
     error = Signal(tuple)
     result = Signal(object)
+    current_command = Signal(int)
 
 
 class Worker(QThread):
