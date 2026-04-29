@@ -17,7 +17,7 @@ def run(params: Params, on_command: Callable[[int], None] | None = None) -> None
     while time.time() < end:
         for _ in range(params.winNum):
             for i, cmd in enumerate(params.commands):
-                if on_command and not isinstance(cmd, SleepRandomCommand):
+                if on_command and cmd.is_reportable:
                     on_command(i)
                 try:
                     logger.debug(f"Executing {cmd}")

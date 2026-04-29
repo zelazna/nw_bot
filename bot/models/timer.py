@@ -1,5 +1,6 @@
 import random
 import time
+from typing import ClassVar
 
 from bot.models.base_model import BotBaseModel, Command
 
@@ -19,6 +20,7 @@ class SleepCommand(BotBaseModel, Command):
 
 
 class SleepRandomCommand(BotBaseModel, Command):
+    is_reportable: ClassVar[bool] = False
     interval_range: list[int]
 
     def execute(self) -> None:
