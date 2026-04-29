@@ -1,10 +1,10 @@
+import random
 import time
 
+from bot.models.base_model import BotBaseModel, Command
 
-from bot.models.base_model import BotBaseModel
 
-
-class Timer(BotBaseModel):
+class SleepCommand(BotBaseModel, Command):
     milliseconds: int = 200
 
     def __repr__(self) -> str:
@@ -16,3 +16,10 @@ class Timer(BotBaseModel):
 
     def execute(self):
         time.sleep(self.seconds)
+
+
+class SleepRandomCommand(BotBaseModel, Command):
+    interval_range: list[int]
+
+    def execute(self) -> None:
+        time.sleep(random.choice(self.interval_range))

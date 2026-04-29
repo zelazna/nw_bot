@@ -12,7 +12,7 @@ from bot.models import (
     DirectionalKeystroke,
     Keystroke,
     ModifierKey,
-    Timer,
+    SleepCommand,
 )
 from bot.utils.logger import logger
 
@@ -104,7 +104,7 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
             return
 
         try:
-            timer = Timer(milliseconds=self.timer.elapsed())
+            timer = SleepCommand(milliseconds=self.timer.elapsed())
             if not self.modifier:
                 logger.debug(f"Get single key: {event!r}")
                 if isinstance(event, Key):

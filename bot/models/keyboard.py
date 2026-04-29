@@ -4,15 +4,15 @@ from typing import ClassVar
 from pydantic import Field
 from pynput.keyboard import Controller, Key, KeyCode
 
-from bot.models.base_model import BotBaseModel
-from bot.models.timer import Timer
+from bot.models.base_model import BotBaseModel, Command
+from bot.models.timer import SleepCommand
 
 
 class BaseKey(BotBaseModel):
     key: str
     vk: int | None = None
     controller: ClassVar[Controller] = Controller()
-    hold: Timer = Field(default_factory=Timer)
+    hold: SleepCommand = Field(default_factory=SleepCommand)
 
     @property
     def key_code(self) -> KeyCode:
@@ -30,9 +30,9 @@ class ModifierKey(BaseKey):
             yield
 
 
-class Keystroke(BaseKey):
+class Keystroke(BaseKey, Command):
     modifier: ModifierKey | None = None
-    hold: Timer = Field(default_factory=Timer)
+    hold: SleepCommand = Field(default_factory=SleepCommand)
 
     def __repr__(self) -> str:
         try:
@@ -54,7 +54,7 @@ class Keystroke(BaseKey):
             self.hold.execute()
 
 
-class DirectionalKeystroke(BaseKey):
+class DirectionalKeystroke(BaseKey, Command):
     is_directional: bool = True  # Only for pydantic validate_model
 
     def __repr__(self) -> str:
