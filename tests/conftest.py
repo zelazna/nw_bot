@@ -19,6 +19,11 @@ RES_FOLDER = CURRENT_FOLDER / "res"
 
 
 @pytest.fixture
+def signals():
+    return MagicMock()
+
+
+@pytest.fixture
 def res_folder():
     return RES_FOLDER
 

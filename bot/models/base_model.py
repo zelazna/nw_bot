@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import ClassVar, Protocol
 
 from pydantic import BaseModel, ConfigDict
@@ -11,9 +12,10 @@ class MouseExecutor(Protocol):
     def click(self, button) -> None: ...
 
 
-class Command:
+class Command(ABC):
     is_reportable: ClassVar[bool] = True
 
+    @abstractmethod
     def execute(self) -> None: ...
 
 

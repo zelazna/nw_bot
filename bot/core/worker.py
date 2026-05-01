@@ -45,12 +45,12 @@ class Worker(QThread):
 
     """
 
-    def __init__(self, fn: Callable[[Params], None], *args: Params):
+    def __init__(self, fn: Callable[[Params, WorkerSignals], None], params: Params):
         super(Worker, self).__init__()
 
         # Store constructor arguments (re-used for processing)
         self.fn = fn
-        self.args = args
+        self.params = params
         self.signals = WorkerSignals()
 
     @Slot()
@@ -61,7 +61,7 @@ class Worker(QThread):
 
         # Retrieve args/kwargs here; and fire processing using them
         try:
-            result = self.fn(*self.args)
+            result = self.fn(self.params, self.signals)
         except Exception:
             logger.error("Something went wrong", exc_info=True)
         else:

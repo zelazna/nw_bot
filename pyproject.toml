@@ -27,6 +27,7 @@ build-backend = "setuptools.build_meta"
 
 [project.optional-dependencies]
 test = ["pytest==8.4.1", "pytest-cov==6.2.1", "pre_commit==4.3.0"]
+lint = ["basedpyright"]
 
 [tool.setuptools_scm]
 
@@ -39,7 +40,8 @@ addopts = "--cov=bot --cov-report=term --cov-report xml"
 omit = ["bot/ui/**", "main.py", "tests/**", "bot/utils/logger.py"]
 
 [tool.pyright]
-exclude = ["**/tests/**", ".venv", "build"]
+exclude = ["tests", ".venv", "build", "bot/ui/main_window_ui.py"]
+ignore = ["tests"]
 
 [project.gui-scripts]
 bot-gui = "bot:main"

@@ -1,6 +1,3 @@
-from functools import partial
-from typing import Optional
-
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QAbstractItemView, QMainWindow
 
@@ -9,11 +6,11 @@ from bot.core.control import run
 from bot.core.keystroke_adapter import QtKeystrokeAdapter
 from bot.core.mouse_adapter import MouseAdapter
 from bot.core.recorder import Recorder
-from bot.core.worker import Worker, WorkerSignals
+from bot.core.worker import Worker
 from bot.models import CommandListModel
 from bot.ui.delegates import CommandDelegate
 from bot.ui.main_window_ui import Ui_MainWindow
-from bot.ui.mixins import ConfigMixin, RecordMixin, EventMixin
+from bot.ui.mixins import ConfigMixin, EventMixin, RecordMixin
 from bot.ui.mixins.record import RecordingMode
 from bot.ui.modals import LogDialog
 from bot.ui.validators import ValidateNumber, ValidateRangeOrNumber
@@ -25,7 +22,7 @@ class MainWindow(ConfigMixin, EventMixin, RecordMixin, QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.worker: Optional[Worker] = None
+        self.worker: Worker | None = None
         self.recording_mode = RecordingMode.IDLE
         self.timeLeft = 0
         self.timer_id = 0
@@ -84,10 +81,10 @@ class MainWindow(ConfigMixin, EventMixin, RecordMixin, QMainWindow):
             self.timer_id = self.startTimer(TIMER_TIMEOUT_MILLISEC)
             logger.info(f"Starting timer with {format_time(self.timeLeft)} minutes")
 
-            self.ui.keyListView.setDragDropMode(QAbstractItemView.DragDropMode.NoDragDrop)
-            signals = WorkerSignals()
-            self.worker = Worker(partial(run, on_command=signals.current_command.emit), params)
-            self.worker.signals = signals
+            self.ui.keyListView.setDragDropMode(
+                QAbstractItemView.DragDropMode.NoDragDrop
+            )
+            self.worker = Worker(run, params)
             self.worker.signals.finished.connect(self.botThreadComplete)
             self.worker.signals.current_command.connect(self.setCurrentCommand)
             self.worker.start()
