@@ -124,8 +124,8 @@ class CommandListModel(QAbstractListModel):
             return True
 
         root = QModelIndex()
-        if not self.beginMoveRows(root, before_index, before_index, root, insert_at):  # pyright: ignore[reportAny]
-            return True
+        if not self.beginMoveRows(root, before_index, before_index, root, insert_at):  # pyright: ignore[reportAny]  # pragma: no cover
+            return True  # pragma: no cover
         item = self.commands.pop(before_index)  # pyright: ignore[reportAny]
         if before_index < insert_at:
             insert_at -= 1

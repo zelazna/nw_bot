@@ -22,3 +22,10 @@ def test_adapter(button, kind):
     assert model.rowCount() == 1
     assert isinstance(model.commands[0], MouseClick)
     assert model.commands[0].kind == kind
+
+
+def test_adapter_ignores_release():
+    model = CommandListModel()
+    adapter = MouseAdapter(model)
+    adapter.on_click(1, 2, PynputButton.left, False)
+    assert model.rowCount() == 0

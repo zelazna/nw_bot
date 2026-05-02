@@ -200,3 +200,8 @@ def test_pynput_adapter_keypress_modifier(pynput_adapter, caplog):
 def test_pynput_adapter_with_none(pynput_adapter):
     pynput_adapter.on_key_press(None)
     pynput_adapter.model.layoutChanged.emit.assert_not_called()
+
+
+def test_qt_adapter_ignores_non_qt_event(qt_adapter):
+    qt_adapter.on_key_release(Key.space)
+    assert qt_adapter.model.rowCount() == 0
