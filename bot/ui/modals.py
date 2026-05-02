@@ -1,21 +1,29 @@
 import logging
+from typing import final, override
+
 from PySide6.QtWidgets import (
+    QComboBox,
     QDialog,
     QDialogButtonBox,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
-    QVBoxLayout,
     QPlainTextEdit,
-    QHBoxLayout,
-    QComboBox,
+    QVBoxLayout,
+    QWidget,
 )
 
 from bot.core.constants import DEFAULT_CONFIG_FILE, VERSION
 
 
+@final
 class FileNameModal(QDialog):
-    def __init__(self):
+    buttonBox: QDialogButtonBox
+    fileNameEdit: QLineEdit
+
+    def __init__(self) -> None:
         super().__init__()
+        self.filename: str = ""
         QBtn = (
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
@@ -33,15 +41,22 @@ class FileNameModal(QDialog):
         self.fileNameEdit.setText(DEFAULT_CONFIG_FILE)
         self.setLayout(layout)
 
-    def accept(self):
+    @override
+    def accept(self) -> None:
         self.filename = self.fileNameEdit.text()
         if not self.filename:
             return
         super().accept()
 
 
+@final
 class LogDialog(QDialog):
-    def __init__(self, logs, parent=None):
+    logs: list[tuple[str, int]]
+    current_filter: int
+    filter_combo: QComboBox
+    text_edit: QPlainTextEdit
+
+    def __init__(self, logs: list[tuple[str, int]], parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle(f"Logs ({VERSION})")
         self.resize(700, 500)
@@ -58,7 +73,6 @@ class LogDialog(QDialog):
             ["Tous", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         )
         self.filter_combo.currentIndexChanged.connect(self.refresh_logs)
-        control_layout.addWidget(self.filter_combo)
         layout.addLayout(control_layout)
 
         self.text_edit = QPlainTextEdit()
@@ -71,7 +85,7 @@ class LogDialog(QDialog):
 
         self.refresh_logs()
 
-    def should_display(self, levelno):
+    def should_display(self, levelno: int) -> bool:
         if self.current_filter == 0:
             return True
         filter_levels = [
@@ -83,7 +97,7 @@ class LogDialog(QDialog):
         ]
         return levelno >= filter_levels[self.current_filter - 1]
 
-    def refresh_logs(self):
+    def refresh_logs(self) -> None:
         self.current_filter = self.filter_combo.currentIndex()
         self.text_edit.clear()
 

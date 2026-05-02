@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, final
 
 from PySide6.QtCore import QObject, QThread, Signal, Slot
 
@@ -6,65 +6,33 @@ from bot.models import Params
 from bot.utils.logger import logger
 
 
+@final
 class WorkerSignals(QObject):
-    """
-    Defines the signals available from a running worker thread.
-
-    Supported signals are:
-
-    finished
-        No data
-
-    error
-        tuple (exctype, value, traceback.format_exc() )
-
-    result
-        object data returned from processing, anything
-
-    progress
-        int indicating % progress
-
-    """
-
-    finished = Signal()
-    error = Signal(tuple)
-    result = Signal(object)
-    current_command = Signal(int)
+    finished: Signal = Signal()
+    error: Signal = Signal(tuple)
+    result: Signal = Signal(object)
+    current_command: Signal = Signal(int)
 
 
+@final
 class Worker(QThread):
-    """
-    Worker thread
+    fn: Callable[["Params", WorkerSignals], None]
+    params: Params
+    signals: WorkerSignals
 
-    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
-
-    :param callback: The function callback to run on this worker thread. Supplied args and
-                     kwargs will be passed through to the runner.
-    :type callback: function
-    :param args: Arguments to pass to the callback function
-
-    """
-
-    def __init__(self, fn: Callable[[Params, WorkerSignals], None], params: Params):
+    def __init__(self, fn: Callable[["Params", WorkerSignals], None], params: Params):
         super(Worker, self).__init__()
-
-        # Store constructor arguments (re-used for processing)
         self.fn = fn
         self.params = params
         self.signals = WorkerSignals()
 
-    @Slot()
-    def run(self):
-        """
-        Initialise the runner function with passed args.
-        """
-
-        # Retrieve args/kwargs here; and fire processing using them
+    @Slot()  # pyright: ignore[reportAny]
+    def run(self) -> None:
         try:
             result = self.fn(self.params, self.signals)
         except Exception:
             logger.error("Something went wrong", exc_info=True)
         else:
-            self.signals.result.emit(result)  # Return the result of the processing
+            self.signals.result.emit(result)
         finally:
-            self.signals.finished.emit()  # Done
+            self.signals.finished.emit()

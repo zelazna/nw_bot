@@ -1,8 +1,12 @@
 import re
+from typing import final, override
+
 from PySide6.QtGui import QValidator
 
 
+@final
 class ValidateNumber(QValidator):
+    @override
     def validate(self, num: str, index: int) -> tuple[QValidator.State, str, int]:
         pattern = re.compile("[0-9]{1,3}")
 

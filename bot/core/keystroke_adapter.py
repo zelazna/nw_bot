@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import ClassVar, cast, final, override
 
 from pynput.keyboard import Key, KeyCode
 from PySide6.QtCore import QElapsedTimer, Qt
@@ -22,27 +22,35 @@ PynputEvent = Key | KeyCode | None
 @dataclass
 class BaseKeyStrokeAdapter(ABC):
     model: CommandListModel
-    directionalMapping = {
+    directionalMapping: ClassVar[dict[int | None, Key]] = {
         k.value.vk: k for k in (Key.up, Key.down, Key.left, Key.right)
     }
 
     @abstractmethod
-    def on_key_press(self, event: Any): ...
+    def on_key_press(self, event: PynputEvent) -> None: ...
 
     @abstractmethod
-    def on_key_release(self, event: Any): ...
+    def on_key_release(self, event: PynputEvent) -> None: ...
 
 
+@final
+@dataclass
 class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
-    upper_keys = ("&", "é", '"', "'", "(", "-", "è", "_", "ç", "à", ")", "=")
+    upper_keys: ClassVar[tuple[str, ...]] = (
+        "&", "é", '"', "'", "(", "-", "è", "_", "ç", "à", ")", "="
+    )
 
-    def on_key_press(self, event: Any): ...
-    def on_key_release(self, event: QKeyEvent):
+    @override
+    def on_key_press(self, event: PynputEvent) -> None: ...
+
+    @override
+    def on_key_release(self, event: PynputEvent) -> None:  # type: ignore[override]
+        if not isinstance(event, QKeyEvent):
+            return
         modifier = event.modifiers()
         vk: int = event.nativeVirtualKey()
 
         if vk in (CTRL_VK, ALT_VK, DEL_VK):
-            # Ignore CTRL and ALT keys as they are modifiers
             return None
 
         if vk in self.directionalMapping:
@@ -72,11 +80,13 @@ class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
         self.model.add_command(keystroke)
 
 
+@final
+@dataclass
 class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
-    timer = QElapsedTimer()
     modifier: PynputEvent = None
     current_key: PynputEvent = None
-    modifiers = (
+    timer: ClassVar[QElapsedTimer] = QElapsedTimer()
+    modifiers: ClassVar[tuple[Key, ...]] = (
         Key.shift,
         Key.alt,
         Key.alt_l,
@@ -85,8 +95,9 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
         Key.cmd,
     )
 
-    def on_key_press(self, event: PynputEvent):
-        if not event or event == self.current_key:
+    @override
+    def on_key_press(self, event: PynputEvent) -> None:
+        if not event:
             return
 
         self.current_key = event
@@ -97,7 +108,8 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
             self.modifier = event
             return
 
-    def on_key_release(self, event: PynputEvent):
+    @override
+    def on_key_release(self, event: PynputEvent) -> None:
         if event in self.modifiers:
             self.modifier = None
             return
@@ -124,17 +136,17 @@ class PynputKeystrokeAdapter(BaseKeyStrokeAdapter):
                     f"Modifier detected along key mod: {self.modifier!r}, key: {event!r}"
                 )
                 modifier = ModifierKey(
-                    key=self.modifier.name,  # type: ignore
-                    vk=self.modifier.value.vk,  # type: ignore
+                    key=self.modifier.name,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]
+                    vk=self.modifier.value.vk,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]
                 )
 
                 if self.modifier in (Key.ctrl, Key.ctrl_l):
-                    key = self._decode_ctrl_char(event.char)  # type: ignore
+                    key = self._decode_ctrl_char(event.char)  # pyright: ignore[reportAttributeAccessIssue, reportArgumentType, reportOptionalMemberAccess, reportUnknownMemberType]
                 else:
-                    key = event.value.char if isinstance(event, Key) else event.char  # type: ignore
+                    key = event.value.char if isinstance(event, Key) else event.char  # pyright: ignore[reportOptionalMemberAccess]
 
                 self.model.add_command(
-                    Keystroke(key=key, vk=event.vk, modifier=modifier, hold=timer)  # type: ignore
+                    Keystroke(key=key, vk=event.vk, modifier=modifier, hold=timer)  # pyright: ignore[reportAttributeAccessIssue, reportArgumentType, reportOptionalMemberAccess, reportUnknownMemberType, reportUnknownArgumentType]
                 )
             self.current_key = None
 

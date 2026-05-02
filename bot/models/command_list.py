@@ -1,12 +1,14 @@
 import logging
 import pickle
-from typing import Any, List, Sequence
+from collections.abc import Sequence
+from typing import final, override
 
 from PySide6.QtCore import (
     QAbstractListModel,
     QByteArray,
     QMimeData,
     QModelIndex,
+    QObject,
     QPersistentModelIndex,
     Qt,
 )
@@ -18,17 +20,20 @@ from bot.models.mouse import MouseClick
 Index = QModelIndex | QPersistentModelIndex
 
 
+@final
 class CommandListModel(QAbstractListModel):
+    commands: list[Keystroke | DirectionalKeystroke | MouseClick]
+
     def __init__(
         self,
         commands: list[Keystroke | DirectionalKeystroke | MouseClick] | None = None,
-        *args: Any,
-        **kwargs: Any,
+        parent: QObject | None = None,
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(parent)
         self.commands = commands if commands else []
 
-    def data(self, index: Index, role: int = 0):
+    @override
+    def data(self, index: Index, role: int = 0) -> object:
         if not index.isValid():
             return None
         if not (0 <= index.row() < len(self.commands)):
@@ -38,10 +43,13 @@ class CommandListModel(QAbstractListModel):
             return repr(command)
         if role == Qt.ItemDataRole.UserRole:
             return command
+        return None
 
-    def rowCount(self, parent: Index = QModelIndex()) -> int:
+    @override
+    def rowCount(self, parent: Index = QModelIndex()) -> int:  # pyright: ignore[reportCallInDefaultInitializer]
         return len(self.commands)
 
+    @override
     def flags(self, index: Index) -> Qt.ItemFlag:
         flags = super().flags(index)
         if index.isValid():
@@ -50,30 +58,36 @@ class CommandListModel(QAbstractListModel):
             flags |= Qt.ItemFlag.ItemIsDropEnabled
         return flags
 
+    @override
     def supportedDropActions(self) -> Qt.DropAction:
         return Qt.DropAction.MoveAction
 
-    def mimeTypes(self) -> List[str]:
+    @override
+    def mimeTypes(self) -> list[str]:
         types = super().mimeTypes()
         types.append(MIME_TYPE)
         return types
 
+    @override
     def mimeData(self, indexes: Sequence[QModelIndex]) -> QMimeData:
         mimeData = QMimeData()
         data = QByteArray()
 
         for idx in indexes:
             if idx.isValid():
-                idx = idx.row()
-                data.append(pickle.dumps((idx, self.commands[idx])))
+                row = idx.row()
+                data.append(pickle.dumps((row, self.commands[row])))
 
         mimeData.setData(MIME_TYPE, data)
         return mimeData
 
-    def add_command(self, command: Keystroke | DirectionalKeystroke | MouseClick) -> None:
+    def add_command(
+        self, command: Keystroke | DirectionalKeystroke | MouseClick
+    ) -> None:
         self.commands.append(command)
         self.layoutChanged.emit()
 
+    @override
     def canDropMimeData(
         self,
         data: QMimeData,
@@ -88,6 +102,7 @@ class CommandListModel(QAbstractListModel):
             return False
         return True
 
+    @override
     def dropMimeData(
         self,
         data: QMimeData,
@@ -101,7 +116,7 @@ class CommandListModel(QAbstractListModel):
         if action is Qt.DropAction.IgnoreAction:
             return True
         insert_at = row if row != -1 else self.rowCount(QModelIndex())
-        before_index, command = pickle.loads(data.data(MIME_TYPE).data())
+        before_index, command = pickle.loads(data.data(MIME_TYPE).data())  # pyright: ignore[reportAny]
 
         logging.debug(f"Item {command} from idx {before_index} to idx {insert_at}")
 
@@ -109,9 +124,9 @@ class CommandListModel(QAbstractListModel):
             return True
 
         root = QModelIndex()
-        if not self.beginMoveRows(root, before_index, before_index, root, insert_at):
+        if not self.beginMoveRows(root, before_index, before_index, root, insert_at):  # pyright: ignore[reportAny]
             return True
-        item = self.commands.pop(before_index)
+        item = self.commands.pop(before_index)  # pyright: ignore[reportAny]
         if before_index < insert_at:
             insert_at -= 1
         self.commands.insert(insert_at, item)

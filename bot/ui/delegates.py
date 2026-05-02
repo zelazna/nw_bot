@@ -1,5 +1,7 @@
-from PySide6.QtCore import QModelIndex, QRect, QSize, Qt
-from PySide6.QtGui import QColor, QFont, QPainter, QPen
+from typing import Protocol, final, override
+
+from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QRect, QSize, Qt
+from PySide6.QtGui import QColor, QFont, QPainter, QPalette, QPen
 from PySide6.QtWidgets import QStyle, QStyledItemDelegate, QStyleOptionViewItem
 
 from bot.models import Command
@@ -18,6 +20,19 @@ _BADGE_H = 24
 _BADGE_RADIUS = 6
 _PADDING_LEFT = 10
 _BADGE_HPAD = 10
+
+
+class _FullStyleOption(Protocol):
+    """Attributes that QStyleOption exposes at runtime but are absent from PySide6 stubs."""
+
+    @property
+    def rect(self) -> QRect: ...
+    @property
+    def state(self) -> QStyle.StateFlag: ...  # QStyle.State (QFlags) not in PySide6 stubs
+    @property
+    def palette(self) -> QPalette: ...
+    @property
+    def font(self) -> QFont: ...
 
 
 def _badge_color(command: Command) -> QColor:
@@ -54,26 +69,37 @@ def _secondary_text(command: Command) -> str:
     return ""
 
 
+@final
 class CommandDelegate(QStyledItemDelegate):
-    def sizeHint(self, option: QStyleOptionViewItem, index: QModelIndex) -> QSize:
+    @override
+    def sizeHint(
+        self, option: QStyleOptionViewItem, index: QModelIndex | QPersistentModelIndex
+    ) -> QSize:
         hint = super().sizeHint(option, index)
         hint.setHeight(_ROW_HEIGHT)
         return hint
 
+    @override
     def paint(
-        self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex
-    ):
+        self,
+        painter: QPainter | None,
+        option: QStyleOptionViewItem,
+        index: QModelIndex | QPersistentModelIndex,
+    ) -> None:
+        if painter is None:
+            return
         painter.save()
 
-        rect: QRect = option.rect
+        opt: _FullStyleOption = option  # pyright: ignore[reportAssignmentType]
+        rect: QRect = opt.rect
 
         # Background
-        if option.state & QStyle.StateFlag.State_Selected:
+        if opt.state & QStyle.StateFlag.State_Selected:
             painter.fillRect(rect, _COLOR_BG_SELECTED)
         else:
-            painter.fillRect(rect, option.palette.base())
+            painter.fillRect(rect, opt.palette.base())
 
-        command = index.data(Qt.ItemDataRole.UserRole)
+        command: Command | None = index.data(Qt.ItemDataRole.UserRole)  # pyright: ignore[reportAny]
         if command is None:
             painter.restore()
             return
@@ -83,7 +109,7 @@ class CommandDelegate(QStyledItemDelegate):
         secondary = _secondary_text(command)
 
         # Measure badge width
-        badge_font = QFont(option.font)
+        badge_font = QFont(opt.font)
         badge_font.setBold(True)
         badge_font.setPointSize(badge_font.pointSize() - 1)
         painter.setFont(badge_font)
@@ -107,7 +133,7 @@ class CommandDelegate(QStyledItemDelegate):
 
         # Draw secondary text
         if secondary:
-            secondary_font = QFont(option.font)
+            secondary_font = QFont(opt.font)
             secondary_font.setPointSize(secondary_font.pointSize() - 1)
             painter.setFont(secondary_font)
             painter.setPen(QPen(_COLOR_TEXT_SECONDARY))
