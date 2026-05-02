@@ -46,7 +46,9 @@ class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
             return None
 
         if vk in self.directionalMapping:
-            self.model.add_command(DirectionalKeystroke(key=self.directionalMapping[vk].name))
+            self.model.add_command(
+                DirectionalKeystroke(key=self.directionalMapping[vk].name)
+            )
             return
 
         key = Qt.Key(event.key())
