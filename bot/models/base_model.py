@@ -21,4 +21,6 @@ class Command(ABC):
 
 
 class BotBaseModel(BaseModel):
-    model_config: ClassVar[ConfigDict] = ConfigDict(strict=True, extra="forbid", frozen=True)
+    model_config: ClassVar[ConfigDict] = ConfigDict(
+        strict=True, extra="forbid", frozen=True
+    )

@@ -25,8 +25,12 @@ class RecordHandler:
         self._recorder = recorder
         self.mode = RecordingMode.IDLE
 
-        ui.startRecordButton.clicked.connect(functools.partial(self.toggle_keystrokes, True))
-        ui.stopRecordButton.clicked.connect(functools.partial(self.toggle_keystrokes, False))
+        ui.startRecordButton.clicked.connect(
+            functools.partial(self.toggle_keystrokes, True)
+        )
+        ui.stopRecordButton.clicked.connect(
+            functools.partial(self.toggle_keystrokes, False)
+        )
         ui.startRecordOutsideButton.clicked.connect(self.start_outside)
         ui.stopRecordOutsideButton.clicked.connect(self.stop_outside)
         ui.startRecordOutsideButton.setStyleSheet(self._OUTSIDE_BUTTON_STYLE)

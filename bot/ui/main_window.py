@@ -106,11 +106,15 @@ class MainWindow(QMainWindow):
             self.ui.stopButton.setDisabled(False)
             self.ui.startButton.setDisabled(True)
 
-            self.timeLeft = int(self.ui.limit.text()) * 60 * 1000 + (PADDING_IN_S * 1000)
+            self.timeLeft = int(self.ui.limit.text()) * 60 * 1000 + (
+                PADDING_IN_S * 1000
+            )
             self.timer_id = self.startTimer(TIMER_TIMEOUT_MILLISEC)
             logger.info(f"Starting timer with {format_time(self.timeLeft)} minutes")
 
-            self.ui.keyListView.setDragDropMode(QAbstractItemView.DragDropMode.NoDragDrop)
+            self.ui.keyListView.setDragDropMode(
+                QAbstractItemView.DragDropMode.NoDragDrop
+            )
             self.worker = Worker(run, params)
             self.worker.signals.finished.connect(self.botThreadComplete)
             self.worker.signals.current_command.connect(self.setCurrentCommand)  # pyright: ignore[reportAny]

@@ -28,7 +28,9 @@ class _FullStyleOption(Protocol):
     @property
     def rect(self) -> QRect: ...
     @property
-    def state(self) -> QStyle.StateFlag: ...  # QStyle.State (QFlags) not in PySide6 stubs
+    def state(
+        self,
+    ) -> QStyle.StateFlag: ...  # QStyle.State (QFlags) not in PySide6 stubs
     @property
     def palette(self) -> QPalette: ...
     @property

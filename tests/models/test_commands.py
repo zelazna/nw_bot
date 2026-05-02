@@ -115,7 +115,9 @@ def test_drop_mime_data_noop():
     model = CommandListModel(cmds.copy())
     mime_data = QMimeData()
     mime_data.setData(MIME_TYPE, pickle.dumps((0, cmds[0])))
-    result = model.dropMimeData(mime_data, Qt.DropAction.MoveAction, 0, 0, QModelIndex())
+    result = model.dropMimeData(
+        mime_data, Qt.DropAction.MoveAction, 0, 0, QModelIndex()
+    )
     assert result is True
     assert [cmd.name for cmd in model.commands] == ["A", "B"]
 

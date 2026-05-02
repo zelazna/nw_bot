@@ -56,7 +56,9 @@ class LogDialog(QDialog):
     filter_combo: QComboBox
     text_edit: QPlainTextEdit
 
-    def __init__(self, logs: list[tuple[str, int]], parent: QWidget | None = None) -> None:
+    def __init__(
+        self, logs: list[tuple[str, int]], parent: QWidget | None = None
+    ) -> None:
         super().__init__(parent)
         self.setWindowTitle(f"Logs ({VERSION})")
         self.resize(700, 500)

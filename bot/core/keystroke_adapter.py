@@ -37,7 +37,18 @@ class BaseKeyStrokeAdapter(ABC):
 @dataclass
 class QtKeystrokeAdapter(BaseKeyStrokeAdapter):
     upper_keys: ClassVar[tuple[str, ...]] = (
-        "&", "é", '"', "'", "(", "-", "è", "_", "ç", "à", ")", "="
+        "&",
+        "é",
+        '"',
+        "'",
+        "(",
+        "-",
+        "è",
+        "_",
+        "ç",
+        "à",
+        ")",
+        "=",
     )
 
     @override

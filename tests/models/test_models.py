@@ -7,7 +7,9 @@ from bot.models import Keystroke, Params
 
 
 def test_keystroke_without_modifier(key_controller, monkeypatch):
-    monkeypatch.setattr("bot.models.keyboard._default_keyboard_executor", key_controller)
+    monkeypatch.setattr(
+        "bot.models.keyboard._default_keyboard_executor", key_controller
+    )
     model = Keystroke(key="Key_5", vk=0x35)
     with patch("bot.models.timer.time.sleep"):
         model.execute()
