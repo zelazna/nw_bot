@@ -13,7 +13,9 @@ class MouseAdapter:
 
     def on_click(
         self, x: int, y: int, button: Qt.MouseButton | PynputButton, pressed: bool
-    ):
+    ) -> None:
+        if not pressed:
+            return
         match button:
             case Qt.MouseButton.RightButton | PynputButton.right:
                 kind = Button.right
