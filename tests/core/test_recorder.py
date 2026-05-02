@@ -20,7 +20,7 @@ def test_recorder():
 
 def test_record_errors(caplog):
     recorder = Recorder(CommandListModel())
-    recorder.onClick(1, 2, Button.middle, True)
+    recorder.mouseAdapter.on_click(1, 2, Button.middle, True)
     assert caplog.record_tuples == [
         (APP_NAME, logging.ERROR, "Unknow button Button.middle")
     ]
