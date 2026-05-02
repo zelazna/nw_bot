@@ -117,7 +117,7 @@ class ConfigHandler:
     def show_error(self, message: str) -> None:
         error_dialog = QErrorMessage()
         error_dialog.showMessage(message)
-        error_dialog.exec_()
+        error_dialog.exec()
 
     def _add_recent_menu_item(self, path: str) -> None:
         action = QAction(path, self._window)

@@ -126,9 +126,7 @@ class MainWindow(QMainWindow):
     def stopBot(self) -> None:
         logger.info("Stopping bot")
         if self.worker:
-            self.worker.terminate()
-            self.worker.wait()
-            self.worker.terminate()
+            self.worker.wait(3000)
         self.botThreadComplete()
         self.killTimer(self.timer_id)
 
