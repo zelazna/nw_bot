@@ -1,10 +1,10 @@
-.PHONY: help run test lint typecheck format check ui translations install dev clean build installer
+.PHONY: help run test lint typecheck format check ui translations compile-i18n install dev clean build installer
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-run: ## Run the bot application
+run: ui compile-i18n ## Run the bot application
 	uv run python bot/main.py
 
 test: ## Run tests with coverage
@@ -29,6 +29,9 @@ ui: ## Compile Qt Designer .ui files to Python
 
 translations: ## Update .ts translation files and compile to .qm
 	uv run pyside6-lupdate bot/ui/main_window.ui bot/ui/modals.py bot/ui/handlers/config_handler.py bot/ui/main_window.py -ts bot/i18n/nw_bot_fr.ts
+	$(MAKE) compile-i18n
+
+compile-i18n: ## Compile .ts translation files to .qm
 	uv run pyside6-lrelease bot/i18n/nw_bot_fr.ts -qm bot/i18n/nw_bot_fr.qm
 
 install: ## Install dependencies
