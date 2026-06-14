@@ -73,7 +73,7 @@
             <item>
              <widget class="QPushButton" name="startRecordButton">
               <property name="text">
-               <string>Demarrer l'enregistrement</string>
+               <string>Start recording</string>
               </property>
              </widget>
             </item>
@@ -96,7 +96,7 @@
             <item>
              <widget class="QPushButton" name="stopRecordButton">
               <property name="text">
-               <string>Arreter l'enregistrement</string>
+               <string>Stop recording</string>
               </property>
              </widget>
             </item>
@@ -119,7 +119,7 @@
             <item>
              <widget class="QPushButton" name="startRecordOutsideButton">
               <property name="text">
-               <string>Demarrer l'enregistrement</string>
+               <string>Start recording</string>
               </property>
              </widget>
             </item>
@@ -142,7 +142,7 @@
             <item>
              <widget class="QPushButton" name="stopRecordOutsideButton">
               <property name="text">
-               <string>Arreter l'enregistrement</string>
+               <string>Stop recording</string>
               </property>
              </widget>
             </item>
@@ -153,14 +153,14 @@
         <item>
          <widget class="QPushButton" name="deleteAll">
           <property name="text">
-           <string>Tout supprimer</string>
+           <string>Delete all</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="deleteKey">
           <property name="text">
-           <string>Supprimer</string>
+           <string>Delete</string>
           </property>
          </widget>
         </item>
@@ -189,7 +189,7 @@
         <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>Intervale entre les touches</string>
+           <string>Interval between keystrokes</string>
           </property>
          </widget>
         </item>
@@ -199,14 +199,14 @@
            <string/>
           </property>
           <property name="placeholderText">
-           <string>1 ou 1-5 pour aleatoire entre deux valeurs</string>
+           <string>1 or 1-5 for a random value between two</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QLabel" name="label_3">
           <property name="text">
-           <string>Limite de temps (en m)</string>
+           <string>Time limit (in m)</string>
           </property>
          </widget>
         </item>
@@ -220,7 +220,7 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Nombre de fenetres</string>
+           <string>Number of windows</string>
           </property>
          </widget>
         </item>
@@ -273,7 +273,7 @@
          <size><width>90</width><height>0</height></size>
         </property>
         <property name="text">
-         <string>Depart</string>
+         <string>Start</string>
         </property>
        </widget>
       </item>
@@ -296,7 +296,7 @@
          <size><width>90</width><height>0</height></size>
         </property>
         <property name="text">
-         <string>Arret</string>
+         <string>Stop</string>
         </property>
        </widget>
       </item>
@@ -315,11 +315,11 @@
    </property>
    <widget class="QMenu" name="menuParametres">
     <property name="title">
-     <string>Fichier</string>
+     <string>File</string>
     </property>
     <widget class="QMenu" name="menuRecent">
      <property name="title">
-      <string>Récents</string>
+      <string>Recent</string>
      </property>
     </widget>
     <addaction name="actionLoadConfig"/>
@@ -342,10 +342,10 @@
     <iconset theme="QIcon::ThemeIcon::DocumentSave"/>
    </property>
    <property name="text">
-    <string>Sauver</string>
+    <string>Save</string>
    </property>
    <property name="toolTip">
-    <string>Sauver la config</string>
+    <string>Save config</string>
    </property>
   </action>
   <action name="actionLoadConfig">
@@ -353,7 +353,7 @@
     <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
    </property>
    <property name="text">
-    <string>Charger la config</string>
+    <string>Load config</string>
    </property>
   </action>
   <action name="actionShowLogs">
@@ -361,7 +361,7 @@
     <iconset theme="QIcon::ThemeIcon::FormatJustifyLeft"/>
    </property>
    <property name="text">
-    <string>Afficher le journal</string>
+    <string>Show logs</string>
    </property>
   </action>
   <action name="actionUnboundRecordToggle">
@@ -372,7 +372,7 @@
     <iconset theme="QIcon::ThemeIcon::MediaRecord"/>
    </property>
    <property name="text">
-    <string>Enregistrer en dehors</string>
+    <string>Record outside</string>
    </property>
   </action>
   <action name="actionSaveAs">
@@ -380,7 +380,7 @@
     <iconset theme="QIcon::ThemeIcon::DocumentSaveAs"/>
    </property>
    <property name="text">
-    <string>Enregister sous</string>
+    <string>Save as</string>
    </property>
   </action>
  </widget>

@@ -2,7 +2,14 @@ import time
 
 from bot.core.constants import ALT_VK, PADDING_IN_S, TAB_VK
 from bot.core.worker import WorkerSignals
-from bot.models import Command, Keystroke, ModifierKey, Params, SleepRandomCommand
+from bot.models import (
+    Command,
+    Keystroke,
+    ModifierKey,
+    Params,
+    SleepCommand,
+    SleepRandomCommand,
+)
 from bot.utils.logger import logger
 
 alt_tab = Keystroke(key="Tab", vk=TAB_VK, modifier=ModifierKey(key="Alt", vk=ALT_VK))
@@ -10,7 +17,7 @@ alt_tab = Keystroke(key="Tab", vk=TAB_VK, modifier=ModifierKey(key="Alt", vk=ALT
 
 def _build_command_list(params: Params) -> list[Command]:
     sleep = SleepRandomCommand(interval_range=params.interval_range)
-    commands: list[Command] = []
+    commands: list[Command] = [SleepCommand(milliseconds=PADDING_IN_S * 1000)]
     for _ in range(params.winNum):
         for cmd in params.commands:
             commands.extend([cmd, sleep])
@@ -23,7 +30,6 @@ def run(params: Params, signals: WorkerSignals) -> None:
     commands = _build_command_list(params)
     cmd_indices = {id(cmd): i for i, cmd in enumerate(params.commands)}
     end = time.time() + params.limit * 60
-    time.sleep(PADDING_IN_S)
 
     while time.time() < end:
         for cmd in commands:

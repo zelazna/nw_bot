@@ -1,6 +1,7 @@
 import functools
 from typing import TYPE_CHECKING, final
 
+from PySide6.QtCore import QCoreApplication
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QErrorMessage, QFileDialog, QMainWindow
 from pydantic import ValidationError
@@ -60,13 +61,19 @@ class ConfigHandler:
         except FileNotFoundError:
             logger.exception("File not found")
             self.show_error(
-                f"Une erreur c'est produite lors du chargement de la config: le fichier {filepath} n'a pas ete trouve"
+                QCoreApplication.translate(
+                    "ConfigHandler",
+                    "An error occurred while loading config: file {filepath} was not found",
+                ).format(filepath=filepath)
             )
             recentFileManager.remove(filepath)
         except ValidationError as exc:
             logger.exception(f"Invalid config: {exc}")
             self.show_error(
-                f"Une erreur c'est produite lors du chargement de la config: {exc!r}"
+                QCoreApplication.translate(
+                    "ConfigHandler",
+                    "An error occurred while loading config: {exc}",
+                ).format(exc=repr(exc))
             )
 
     def save(self) -> None:
@@ -78,7 +85,8 @@ class ConfigHandler:
 
         if not folder_name:
             folder_name = QFileDialog.getExistingDirectory(
-                self._window, "Sauvegarder le fichier de config"
+                self._window,
+                QCoreApplication.translate("ConfigHandler", "Save configuration file"),
             )
             logger.info(f"{folder_name} is chosen for saving files")
             saveFolderManager.save(folder_name)
@@ -99,7 +107,10 @@ class ConfigHandler:
         self.save()
 
     def load(self) -> None:
-        dialog = QFileDialog(self._window, "Choisir le fichier de config")
+        dialog = QFileDialog(
+            self._window,
+            QCoreApplication.translate("ConfigHandler", "Choose configuration file"),
+        )
         filepath, _ = dialog.getOpenFileName(self._window, filter="JSON files (*.json)")
         if filepath:
             self.load_file(filepath)

@@ -5,7 +5,7 @@ a = Analysis(
     ['bot/main.py'],
     pathex=[],
     binaries=[],
-    datas=[('nwbot.ico', '.')],
+    datas=[('nwbot.ico', '.'), ('bot/i18n/*.qm', 'i18n')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

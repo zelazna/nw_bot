@@ -201,6 +201,7 @@ dependencies = [
     { name = "pyside6-addons" },
     { name = "pyside6-essentials" },
     { name = "pywin32-ctypes" },
+    { name = "setuptools" },
     { name = "shiboken6" },
     { name = "zstandard" },
 ]
@@ -236,6 +237,7 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'test'", specifier = "==6.2.1" },
     { name = "pywin32-ctypes", specifier = "==0.2.3" },
     { name = "ruff", marker = "extra == 'lint'", specifier = ">=0.15.12" },
+    { name = "setuptools", specifier = ">=70" },
     { name = "shiboken6", specifier = "==6.9.1" },
     { name = "zstandard", specifier = "==0.23.0" },
 ]

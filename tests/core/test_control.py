@@ -14,7 +14,7 @@ def test_run(params_factory, key_controller, signals):
     ):
         time.time.side_effect = [1, 1, 99]
         run(p, signals)
-        time.sleep.assert_called_once_with(5)
+        timer_time.sleep.assert_any_call(5.0)
         timer_time.sleep.assert_called_with(1)
         key_controller.pressed.assert_called()
         alt_tab.execute.assert_called()
@@ -45,7 +45,7 @@ def test_run_error(params_factory, caplog, stroke_factory, key_controller, signa
     ):
         time.time.side_effect = [1, 1, 99]
         run(p, signals)
-    assert caplog.record_tuples[2] == (
+    assert caplog.record_tuples[3] == (
         APP_NAME,
         logging.ERROR,
         f"Command {cmd!r} not handled skipping",

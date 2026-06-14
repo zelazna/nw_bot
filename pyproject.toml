@@ -19,6 +19,7 @@ dependencies = [
     "zstandard==0.23.0",
     "pynput==1.8.1",
     "pydantic==2.11.7",
+    "setuptools>=70",
 ]
 
 [build-system]
