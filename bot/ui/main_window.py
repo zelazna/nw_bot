@@ -1,6 +1,6 @@
 from typing import final, override
 
-from PySide6.QtCore import Qt, QTimerEvent, Slot
+from PySide6.QtCore import QCoreApplication, Qt, QTimerEvent, Slot
 from PySide6.QtGui import QKeyEvent, QMouseEvent
 from PySide6.QtWidgets import QAbstractItemView, QMainWindow
 
@@ -120,7 +120,9 @@ class MainWindow(QMainWindow):
             self.worker.signals.current_command.connect(self.setCurrentCommand)  # pyright: ignore[reportAny]
             self.worker.start()
         else:
-            self.config.show_error("Configuration invalide!")
+            self.config.show_error(
+                QCoreApplication.translate("MainWindow", "Invalid configuration!")
+            )
 
     @Slot()  # pyright: ignore[reportAny]
     def stopBot(self) -> None:

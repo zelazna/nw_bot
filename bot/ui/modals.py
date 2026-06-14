@@ -1,6 +1,7 @@
 import logging
 from typing import final, override
 
+from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -33,7 +34,9 @@ class FileNameModal(QDialog):
         self.buttonBox.rejected.connect(self.reject)
 
         layout = QVBoxLayout()
-        message = QLabel("Nom du fichier de configuration:")
+        message = QLabel(
+            QCoreApplication.translate("FileNameModal", "Configuration file name:")
+        )
         layout.addWidget(message)
         self.fileNameEdit = QLineEdit()
         layout.addWidget(self.fileNameEdit)
@@ -69,10 +72,19 @@ class LogDialog(QDialog):
         layout = QVBoxLayout(self)
 
         control_layout = QHBoxLayout()
-        control_layout.addWidget(QLabel("Filtrer :"))
+        control_layout.addWidget(
+            QLabel(QCoreApplication.translate("LogDialog", "Filter:"))
+        )
         self.filter_combo = QComboBox()
         self.filter_combo.addItems(
-            ["Tous", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+            [
+                QCoreApplication.translate("LogDialog", "All"),
+                "DEBUG",
+                "INFO",
+                "WARNING",
+                "ERROR",
+                "CRITICAL",
+            ]
         )
         self.filter_combo.currentIndexChanged.connect(self.refresh_logs)
         layout.addLayout(control_layout)

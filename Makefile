@@ -1,4 +1,4 @@
-.PHONY: help run test lint typecheck format check ui install dev clean build installer
+.PHONY: help run test lint typecheck format check ui translations install dev clean build installer
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -26,6 +26,10 @@ check: ## Run pre-commit hooks on all files
 
 ui: ## Compile Qt Designer .ui files to Python
 	uv run pyside6-uic bot/ui/main_window.ui -o bot/ui/main_window_ui.py
+
+translations: ## Update .ts translation files and compile to .qm
+	uv run pyside6-lupdate bot/ui/main_window.ui bot/ui/modals.py bot/ui/handlers/config_handler.py bot/ui/main_window.py -ts bot/i18n/nw_bot_fr.ts
+	uv run pyside6-lrelease bot/i18n/nw_bot_fr.ts -qm bot/i18n/nw_bot_fr.qm
 
 install: ## Install dependencies
 	uv sync
