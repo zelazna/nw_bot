@@ -26,6 +26,9 @@ jobs:
       - name: Generate UI file
         run: uv run pyside6-uic bot/ui/main_window.ui -o bot/ui/main_window_ui.py
 
+      - name: Compile translations
+        run: uv run pyside6-lrelease bot/i18n/nw_bot_fr.ts -qm bot/i18n/nw_bot_fr.qm
+
       - name: Build GUI executable
         run: uv run pyinstaller nwbot.spec
 
