@@ -27,8 +27,15 @@ class Recorder:
         self.keyBoardListener.start()
         self.mouseListener = mouse.Listener(on_click=self.mouseAdapter.on_click)
         self.mouseListener.start()
+        self.keyBoardListener.wait()
+        self.mouseListener.wait()
 
     def stop(self):
         if self.keyBoardListener and self.mouseListener:
             self.keyBoardListener.stop()
-            self.mouseListener.stop()
+            try:
+                self.mouseListener.stop()
+            except Exception:
+                # On Linux/Xvfb the Xlib display connection can be closed
+                # before stop() is called — the listener is already stopped
+                pass
