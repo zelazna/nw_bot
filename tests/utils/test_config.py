@@ -7,7 +7,7 @@ import pytest
 from pydantic import ValidationError
 
 from bot.models import Button, DirectionalKeystroke, Keystroke, MouseClick, Params
-from bot.utils.config import loadConfig, saveConfig
+from bot.utils.config import ConfigService, loadConfig, saveConfig
 
 
 def test_load_config(config_file_path):
@@ -65,6 +65,19 @@ def test_save_config(params_factory):
             "limit": 1,
             "interval": "1-2",
         }
+
+
+def test_config_service_load(config_file_path):
+    service = ConfigService()
+    result = service.load(str(config_file_path))
+    assert isinstance(result, Params)
+
+
+def test_config_service_save(params_factory, tmp_path):
+    service = ConfigService()
+    path = str(tmp_path / "out.json")
+    service.save(path, params_factory())
+    assert Path(path).exists()
 
 
 def test_load_config_with_malformed_json(tmp_path):

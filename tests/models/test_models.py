@@ -6,13 +6,23 @@ from pynput.mouse import Button
 from bot.models import Keystroke, Params
 
 
-def test_keystroke(stroke_factory):
+def test_keystroke_without_modifier(key_controller, monkeypatch):
+    monkeypatch.setattr(
+        "bot.models.keyboard._default_keyboard_executor", key_controller
+    )
+    model = Keystroke(key="Key_5", vk=0x35)
+    with patch("bot.models.timer.time.sleep"):
+        model.execute()
+        key_controller.pressed.assert_called_once_with(model.key_code)
+
+
+def test_keystroke(stroke_factory, key_controller):
     model = stroke_factory()
     assert repr(model) == "Shift+5 200"
     assert model.modifier.key_code == KeyCode(model.modifier.vk)
     with patch("bot.models.timer.time.sleep") as sleep:
         model.execute()
-        assert model.controller.pressed.call_args_list == [
+        assert key_controller.pressed.call_args_list == [
             call(model.modifier.key_code),
             call(model.key_code),
         ]
@@ -20,12 +30,12 @@ def test_keystroke(stroke_factory):
         assert repr(Keystroke(key="truc", vk=125)) == "Truc 200"
 
 
-def test_directional(directional_key_factory):
+def test_directional(directional_key_factory, key_controller):
     model = directional_key_factory()
     key = getattr(Key, model.key.lower())
     with patch("bot.models.timer.time.sleep") as sleep:
         model.execute()
-        model.controller.pressed.assert_called_once_with(key)
+        key_controller.pressed.assert_called_once_with(key)
         sleep.assert_called_once_with(model.hold.seconds)
 
 
@@ -37,9 +47,9 @@ def test_params(stroke_factory):
     assert repr(model) == "winNum 1\nlimit 5\ninterval 1\n\nShift+5 200\n\n"
 
 
-def test_mouse_click(click_factory):
+def test_mouse_click(click_factory, mouse_controller):
     model = click_factory()
     assert repr(model) == "Left Click: (0, 0)"
     button = getattr(Button, model.kind.name)
     model.execute()
-    model.controller.click.assert_called_once_with(button)
+    mouse_controller.click.assert_called_once_with(button)

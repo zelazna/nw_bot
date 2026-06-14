@@ -1,29 +1,26 @@
 import logging
-from typing import Callable
 from unittest.mock import Mock
+
 from bot.core.constants import APP_NAME
 from bot.core.worker import Worker
-from bot.models import Params
 
 
-def test_worker(params_factory: Callable[[], Params]):
+def test_worker(params_factory, signals):
     mock = Mock()
     params = params_factory()
-    signal_mock = Mock()
     worker = Worker(mock, params)
-    worker.signals = signal_mock
+    worker.signals = signals
     worker.run()
-    mock.assert_called_once_with(params)
-    signal_mock.result.emit.assert_called_once()
-    signal_mock.finished.emit.assert_called_once()
+    mock.assert_called_once_with(params, signals)
+    signals.result.emit.assert_called_once()
+    signals.finished.emit.assert_called_once()
 
 
-def test_worker_errors(params_factory: Callable[[], Params], caplog):
+def test_worker_errors(params_factory, caplog, signals):
     mock = Mock(side_effect=Exception("Boom"))
     params = params_factory()
     worker = Worker(mock, params)
-    signal_mock = Mock()
-    worker.signals = signal_mock
+    worker.signals = signals
     worker.run()
     assert caplog.record_tuples == [
         (
@@ -32,4 +29,4 @@ def test_worker_errors(params_factory: Callable[[], Params], caplog):
             "Something went wrong",
         )
     ]
-    signal_mock.finished.emit.assert_called_once()
+    signals.finished.emit.assert_called_once()

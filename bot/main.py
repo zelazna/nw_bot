@@ -13,6 +13,7 @@ icon = basedir / "nwbot.ico"
 # Windows-specific: Set app user model ID for taskbar grouping
 if sys.platform == "win32":
     from ctypes import windll
+
     windll.shell32.SetCurrentProcessExplicitAppUserModelID("nwbot")
 
 app = QApplication(sys.argv)

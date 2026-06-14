@@ -16,3 +16,13 @@ def saveConfig(filePath: str, params: Params):
                 sort_keys=True,
             )
         )
+
+
+class ConfigService:
+    """Pure I/O service with no Qt dependency."""
+
+    def load(self, filepath: str) -> Params:
+        return loadConfig(filepath)
+
+    def save(self, filepath: str, params: Params) -> None:
+        saveConfig(filepath, params)

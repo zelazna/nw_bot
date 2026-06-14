@@ -13,7 +13,9 @@ class MouseAdapter:
 
     def on_click(
         self, x: int, y: int, button: Qt.MouseButton | PynputButton, pressed: bool
-    ):
+    ) -> None:
+        if not pressed:
+            return
         match button:
             case Qt.MouseButton.RightButton | PynputButton.right:
                 kind = Button.right
@@ -22,5 +24,4 @@ class MouseAdapter:
             case _:
                 logger.error(f"Unknow button {button}")
                 return
-        self.model.commands.append(MouseClick(kind=kind, pos=(x, y)))
-        self.model.layoutChanged.emit()
+        self.model.add_command(MouseClick(kind=kind, pos=(x, y)))

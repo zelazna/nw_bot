@@ -1,11 +1,15 @@
+from typing import ClassVar, final, override
+
 from pydantic import ConfigDict, Field
 
-from bot.models import DirectionalKeystroke, Keystroke, MouseClick
 from bot.models.base_model import BotBaseModel
+from bot.models.keyboard import DirectionalKeystroke, Keystroke
+from bot.models.mouse import MouseClick
 
 
+@final
 class Params(BotBaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
     commands: tuple[Keystroke | DirectionalKeystroke | MouseClick, ...] = Field(
         default_factory=tuple
     )
@@ -22,6 +26,7 @@ class Params(BotBaseModel):
             interval_range = [int(self.interval)]
         return interval_range
 
+    @override
     def __repr__(self) -> str:
         cmds = [f"{cmd!r}\n" for cmd in self.commands]
 

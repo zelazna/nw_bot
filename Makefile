@@ -1,4 +1,4 @@
-.PHONY: help run test lint format check ui install dev clean build installer
+.PHONY: help run test lint typecheck format check ui install dev clean build installer
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -10,9 +10,12 @@ run: ## Run the bot application
 test: ## Run tests with coverage
 	uv run pytest
 
-lint: ## Run ruff linter and formatter checks
+lint: typecheck ## Run basedpyright type check then ruff linter and formatter checks
 	uv run ruff check bot/ tests/
 	uv run ruff format --check bot/ tests/
+
+typecheck: ## Run basedpyright static type checker
+	uv run basedpyright
 
 format: ## Auto-fix lint issues and format code
 	uv run ruff check --fix bot/ tests/
@@ -27,8 +30,8 @@ ui: ## Compile Qt Designer .ui files to Python
 install: ## Install dependencies
 	uv sync
 
-dev: ## Install dev dependencies (including test tools)
-	uv sync --extra test
+dev: ## Install all dev dependencies (test + lint tools)
+	uv sync --extra test --extra lint
 	uv run pre-commit install
 
 clean: ## Clean build artifacts and cache files

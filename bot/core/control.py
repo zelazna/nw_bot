@@ -1,37 +1,37 @@
-import random
 import time
-from dataclasses import dataclass
 
 from bot.core.constants import ALT_VK, PADDING_IN_S, TAB_VK
-from bot.models import Keystroke, ModifierKey, Params
+from bot.core.worker import WorkerSignals
+from bot.models import Command, Keystroke, ModifierKey, Params, SleepRandomCommand
 from bot.utils.logger import logger
 
 alt_tab = Keystroke(key="Tab", vk=TAB_VK, modifier=ModifierKey(key="Alt", vk=ALT_VK))
 
 
-@dataclass
-class Runner:
-    params: Params
-
-    def run(self):
-        for _ in range(self.params.winNum):
-            for command in self.params.commands:
-                try:
-                    logger.debug(f"Executing for {command}")
-                    command.execute()
-                    sleep_time = random.choice(self.params.interval_range)
-                    logger.debug(f"Waiting for {sleep_time}")
-                    time.sleep(sleep_time)
-                    if self.params.winNum > 1:
-                        alt_tab.execute()
-                except TypeError:
-                    logger.error(f"Command {command!r} not handled skipping")
+def _build_command_list(params: Params) -> list[Command]:
+    sleep = SleepRandomCommand(interval_range=params.interval_range)
+    commands: list[Command] = []
+    for _ in range(params.winNum):
+        for cmd in params.commands:
+            commands.extend([cmd, sleep])
+        commands.append(alt_tab)
+    return commands
 
 
-def run(params: Params):
-    time.sleep(PADDING_IN_S)  # Allow to switch window in time
-    end = time.time() + params.limit * 60
+def run(params: Params, signals: WorkerSignals) -> None:
     logger.info(f"Running with params:\n{params}")
-    runner = Runner(params)
+    commands = _build_command_list(params)
+    cmd_indices = {id(cmd): i for i, cmd in enumerate(params.commands)}
+    end = time.time() + params.limit * 60
+    time.sleep(PADDING_IN_S)
+
     while time.time() < end:
-        runner.run()
+        for cmd in commands:
+            params_idx = cmd_indices.get(id(cmd))
+            if params_idx is not None and cmd.is_reportable:
+                signals.current_command.emit(params_idx)
+            try:
+                logger.debug(f"Executing {cmd}")
+                cmd.execute()
+            except TypeError:
+                logger.error(f"Command {cmd!r} not handled skipping")
